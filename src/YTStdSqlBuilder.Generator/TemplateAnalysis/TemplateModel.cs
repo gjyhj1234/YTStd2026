@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using Microsoft.CodeAnalysis;
 
 namespace YTStdSqlBuilder.Generator.TemplateAnalysis
 {
@@ -13,17 +14,22 @@ namespace YTStdSqlBuilder.Generator.TemplateAnalysis
         public string? Namespace { get; }
         public ImmutableArray<TemplateQueryInfo> QueryMethods { get; }
         public bool IsStatic { get; }
+        public ImmutableArray<DiagnosticInfo> PendingDiagnostics { get; }
 
         public TemplateClassInfo(
             string className,
             string? ns,
             ImmutableArray<TemplateQueryInfo> queryMethods,
-            bool isStatic)
+            bool isStatic,
+            ImmutableArray<DiagnosticInfo> pendingDiagnostics = default)
         {
             ClassName = className;
             Namespace = ns;
             QueryMethods = queryMethods;
             IsStatic = isStatic;
+            PendingDiagnostics = pendingDiagnostics.IsDefault
+                ? ImmutableArray<DiagnosticInfo>.Empty
+                : pendingDiagnostics;
         }
 
         public bool Equals(TemplateClassInfo? other)
@@ -391,6 +397,42 @@ namespace YTStdSqlBuilder.Generator.TemplateAnalysis
             Column = column;
             TableAlias = tableAlias;
             Descending = descending;
+        }
+    }
+
+    /// <summary>
+    /// Serializable diagnostic info that can pass through the incremental pipeline.
+    /// </summary>
+    internal sealed class DiagnosticInfo : IEquatable<DiagnosticInfo>
+    {
+        public string Id { get; }
+        public string Message { get; }
+        public DiagnosticSeverity Severity { get; }
+
+        public DiagnosticInfo(string id, string message, DiagnosticSeverity severity)
+        {
+            Id = id;
+            Message = message;
+            Severity = severity;
+        }
+
+        public bool Equals(DiagnosticInfo? other)
+        {
+            if (other is null) return false;
+            return Id == other.Id && Message == other.Message && Severity == other.Severity;
+        }
+
+        public override bool Equals(object? obj) => Equals(obj as DiagnosticInfo);
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hash = 17;
+                hash = hash * 31 + (Id?.GetHashCode() ?? 0);
+                hash = hash * 31 + (Message?.GetHashCode() ?? 0);
+                hash = hash * 31 + Severity.GetHashCode();
+                return hash;
+            }
         }
     }
 }

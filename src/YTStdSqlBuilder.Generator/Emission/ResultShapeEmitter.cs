@@ -27,7 +27,7 @@ namespace YTStdSqlBuilder.Generator.Emission
 
             foreach (var col in columns)
             {
-                string defaultVal = ResultShapeAnalyzer.GetDefaultValue(col.ClrType);
+                string? defaultVal = ResultShapeAnalyzer.GetDefaultValue(col.ClrType);
                 string suffix = defaultVal != null ? $" = {defaultVal};" : "";
                 sb.AppendLine($"{indent}    public {col.ClrType} {col.PropertyName} {{ get; init; }}{suffix}");
             }

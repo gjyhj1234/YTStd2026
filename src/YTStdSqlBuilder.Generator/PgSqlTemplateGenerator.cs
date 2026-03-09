@@ -44,6 +44,7 @@ namespace YTStdSqlBuilder.Generator
 
             // Find [PgSqlQuery] methods
             var queryMethods = new List<TemplateQueryInfo>();
+            var pendingDiagnostics = new List<DiagnosticInfo>();
 
             foreach (var member in classDecl.Members)
             {
@@ -89,7 +90,16 @@ namespace YTStdSqlBuilder.Generator
                     }
                 }
 
-                if (defineMethod == null) continue;
+                if (defineMethod == null)
+                {
+                    pendingDiagnostics.Add(new DiagnosticInfo(
+                        TemplateDiagnosticDescriptors.NoDefineMethod.Id,
+                        string.Format(
+                            TemplateDiagnosticDescriptors.NoDefineMethod.MessageFormat.ToString(),
+                            methodName),
+                        TemplateDiagnosticDescriptors.NoDefineMethod.DefaultSeverity));
+                    continue;
+                }
 
                 // Analyze the Define_ method
                 var queryInfo = TemplateAnalyzer.Analyze(
@@ -101,23 +111,41 @@ namespace YTStdSqlBuilder.Generator
                 }
             }
 
-            if (queryMethods.Count == 0)
+            if (queryMethods.Count == 0 && pendingDiagnostics.Count == 0)
                 return null;
 
             return new TemplateClassInfo(
                 className,
                 ns,
                 queryMethods.ToImmutableArray(),
-                isStatic);
+                isStatic,
+                pendingDiagnostics.ToImmutableArray());
         }
 
         private static void GenerateCode(SourceProductionContext context, TemplateClassInfo info)
         {
-            string source = TemplateEmitter.Emit(info);
-            string hintName = info.Namespace != null
-                ? $"{info.Namespace}.{info.ClassName}.g.cs"
-                : $"{info.ClassName}.g.cs";
-            context.AddSource(hintName, source);
+            // Report any pending diagnostics
+            foreach (var diag in info.PendingDiagnostics)
+            {
+                context.ReportDiagnostic(Diagnostic.Create(
+                    new DiagnosticDescriptor(
+                        diag.Id,
+                        diag.Message,
+                        diag.Message,
+                        "YTStdSqlBuilder",
+                        diag.Severity,
+                        isEnabledByDefault: true),
+                    Location.None));
+            }
+
+            if (info.QueryMethods.Length > 0)
+            {
+                string source = TemplateEmitter.Emit(info);
+                string hintName = info.Namespace != null
+                    ? $"{info.Namespace}.{info.ClassName}.g.cs"
+                    : $"{info.ClassName}.g.cs";
+                context.AddSource(hintName, source);
+            }
         }
     }
 }

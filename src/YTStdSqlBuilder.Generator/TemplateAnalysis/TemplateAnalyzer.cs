@@ -359,7 +359,6 @@ namespace YTStdSqlBuilder.Generator.TemplateAnalysis
             if (args.Count >= 4)
             {
                 string? condParamName = ExtractConditionParamName(args[0].Expression);
-                var remaining = new SeparatedSyntaxList<ArgumentSyntax>();
                 // Create a new list with args[1..3]
                 var subArgs = SyntaxFactory.SeparatedList(args.Skip(1));
                 ExtractWhereClause(subArgs, tables, parameters, clauses, logicalOp, true, condParamName);
