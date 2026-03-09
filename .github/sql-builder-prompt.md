@@ -346,6 +346,53 @@ Source Generator 的使用方式必须尽量清晰，不要搞成用户根本不
 
 不能只追求某一个维度。
 
+## 4.5 运行时 API 与 模板 API 的关系说明
+
+本框架存在两套 API 上下文，你必须理解它们的区别和关联：
+
+### 运行时 Builder API（Runtime Builder API）
+用于运行时动态构建 SQL。
+
+```csharp
+// 表引用：可以使用预定义表模型或 Table.Def() 工厂方法
+var user = Tables.Users.As("u");        // 预定义表模型方式（推荐）
+var user = Table.Def("users").As("u");  // 字符串工厂方式
+
+// 列引用：索引器风格
+user["id"]                  // 返回列表达式
+user["name"]                // 返回列表达式
+
+// 类型标注（用于 DTO 生成）
+user["id"].As<int>("id")    // 索引器 + 泛型类型标注
+user["id"].As<int>()        // 省略别名时使用列名
+
+// 参数：值包装
+Param.Value(18)             // 将运行时值包装为参数表达式
+```
+
+### 模板 Builder API（Template Builder API）
+用于在 `Define_` 方法中描述 SQL 结构，供 Source Generator 在编译期分析语法树。
+
+```csharp
+// 表引用：通过 PgSqlTemplateBuilder 上下文创建
+var user = b.Table("users", "u");
+
+// 列引用 + 类型标注
+user.Col<int>("id")         // 列引用 + 泛型类型标注（推荐，可静态分析）
+user.Col("name")            // 省略泛型时默认 string
+
+// 参数：命名参数引用（映射到方法签名中的参数）
+b.Param<int>("userId")      // 引用 partial 方法签名中的 userId 参数
+```
+
+### 设计要点
+- 两套 API 的**语义一致**：相同的表/列/条件/操作符概念
+- 两套 API 的**语法形式不同**是合理的，因为上下文不同：
+  - 运行时 API 需要传入实际值（`Param.Value(18)`）
+  - 模板 API 需要引用参数名（`b.Param<int>("userId")`），以便生成器关联到方法签名
+- 索引器 `user["id"]` 与 `user.Col("id")` 应是等价语法糖
+- 生成器在生成回退代码时，会将模板 API 转换为运行时 API 调用
+
 ---
 
 # 5. 最终功能范围
@@ -535,6 +582,14 @@ Source Generator 分析 `Define_GetUserById` 的语法树后，会生成：
 - `GetUserByIdRow` 结果结构类型
 - `ReadGetUserByIdRow(NpgsqlDataReader reader)` Reader 方法
 
+### Define_ 方法命名约定
+- 命名规则：`Define_{查询方法名}`，例如查询方法 `GetUserById` 对应 `Define_GetUserById`
+- 访问修饰符：`private static void`
+- 参数：固定为 `(PgSqlTemplateBuilder b)` 一个参数
+- 此方法不会在运行时被调用，仅供 Source Generator 在编译期分析语法树
+- Source Generator 通过匹配方法名前缀 `Define_` 自动关联到对应的 `[PgSqlQuery]` 标记的 partial 方法
+- 如果找不到对应的 `Define_` 方法，则报编译错误或诊断警告
+
 ### 可选替代方式
 
 #### 方式 A：通过特性参数传递 SQL 模板（适合简单场景）
@@ -580,24 +635,24 @@ static partial void BuildQuery(PgSqlTemplateBuilder b);
 ```csharp
 public static class UserSqlGenerated
 {
-    public const string GetById_Sql = "...";
+    public const string GetUserById_Sql = "...";
 
-    public static PgSqlParam[] GetById_Params(int id) { ... }
+    public static PgSqlParam[] GetUserById_Params(int id) { ... }
 
-    public static string GetById_DebugSql(int id) { ... }
+    public static string GetUserById_DebugSql(int id) { ... }
 
-    public static PgSqlRenderResult GetById(int id) { ... }
+    public static PgSqlRenderResult GetUserById(int id) { ... }
 
-    public sealed partial class GetByIdRow
+    public sealed class GetUserByIdRow
     {
         public int Id { get; init; }
         public string Name { get; init; } = "";
     }
 
     // Reader 方法：从 DataReader 直接映射到 DTO（基于序号读取，高性能）
-    public static GetByIdRow ReadGetByIdRow(NpgsqlDataReader reader)
+    public static GetUserByIdRow ReadGetUserByIdRow(NpgsqlDataReader reader)
     {
-        return new GetByIdRow
+        return new GetUserByIdRow
         {
             Id = reader.GetInt32(0),
             Name = reader.GetString(1)
@@ -624,19 +679,19 @@ public static class UserSqlGenerated
 你必须认真吸收这个要求，最终方案中必须支持类似以下目标体验：
 
 ```csharp
-var result = UserSqlGenerated.GetById(id);
+var result = UserSqlGenerated.GetUserById(id);
 ```
 
 或：
 
 ```csharp
-var sql = UserQueryExtensions.BuildGetByIdSql(id);
+var sql = UserQueryExtensions.BuildGetUserByIdSql(id);
 ```
 
 或：
 
 ```csharp
-var rowType = typeof(UserSqlGenerated.GetByIdRow);
+var rowType = typeof(UserSqlGenerated.GetUserByIdRow);
 ```
 
 总之必须体现：
@@ -1077,9 +1132,38 @@ public readonly struct PgSqlParam
 - 不要为了“也许以后要用”塞太多没用字段
 - 给出合理取舍
 
+## 13.2 渲染结果模型
+`PgSqlRenderResult` 是 Builder/Interpreter 的最终输出，用于向 Npgsql/ADO.NET 提交执行。
+请设计一个轻量结果结构，至少包含：
+
+```csharp
+public readonly struct PgSqlRenderResult
+{
+    public readonly string Sql;           // 参数化 SQL（如 SELECT ... WHERE "id" = @p0）
+    public readonly PgSqlParam[] Params;  // 参数数组
+
+    public PgSqlRenderResult(string sql, PgSqlParam[] @params)
+    {
+        Sql = sql;
+        Params = @params;
+    }
+}
+```
+
+你可以按需调整（例如改为 class、添加 DebugSql 等），但必须满足：
+- 包含 `Sql` 和 `Params` 两个核心属性
+- 使用后可直接传给 Npgsql 执行
+- 轻量、不过度设计
+
+### 参数编号规则
+参数使用自增编号命名：`@p0`、`@p1`、`@p2`...
+- 编号顺序按参数在 SQL 中出现的先后顺序自增
+- 子查询参数与主查询统一编号（不独立重置）
+- 模板 API 中的命名参数（如 `b.Param<int>("userId")`）会由生成器映射到编号参数（如 `@p0`）
+
 ---
 
-## 13.2 调试 SQL 字面量格式化
+## 13.3 调试 SQL 字面量格式化
 必须提供 PostgreSQL 调试字面量格式化器，支持至少：
 
 - `null` => `NULL`
@@ -1474,14 +1558,15 @@ public static partial class UserQueries
 - `SqlComparisonOperator`
 
 模板 / 生成器：
-- `PgSqlTemplateAttribute`（`[PgSqlTemplate]` — 标记包含模板定义的类）
-- `PgSqlQueryAttribute`（`[PgSqlQuery]` — 标记单个查询模板方法）
+- `PgSqlTemplateAttribute`（`[PgSqlTemplate]` — 标记包含模板定义的 partial 类）
+- `PgSqlQueryAttribute`（`[PgSqlQuery]` — 标记单个查询模板方法，支持属性：`FallbackToInterpreter = true` 显式指定回退到运行时解释器）
+- `PgSqlTemplateBuilder`（模板定义方法中使用的 Builder，供 Source Generator 分析语法树）
 - `QueryResultShape`
 - `QueryResultColumn`
-- `TemplateAnalyzer`（分析语法树提取 SQL 结构）
+- `TemplateAnalyzer`（分析 Define_ 方法的语法树，提取 SQL 结构信息）
 - `TemplateEmitter`（生成代码输出）
-- `TemplateSupportAnalyzer`（判定是否可静态生成）
-- `ResultShapeAnalyzer`（分析 SELECT 列结构以生成 DTO）
+- `TemplateSupportAnalyzer`（判定是否可静态生成 SQL 常量 / 是否可生成 DTO）
+- `ResultShapeAnalyzer`（分析 SELECT 列结构以生成 DTO 和 Reader 方法）
 - `TemplateFallbackPolicy`
 
 内部：
