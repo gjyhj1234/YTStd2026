@@ -1460,12 +1460,19 @@ public static partial class UserQueries
             user.Col<string>("name"),
             user.Col<int>("order_count"))
          .From(user)
-         .WhereIf(!string.IsNullOrEmpty(b.Param<string?>("name")),
+         .WhereIf(b.ConditionRef("name", "!string.IsNullOrEmpty({0})"),
                   user.Col("name"), Op.ILike, b.Param<string?>("name"))
-         .AndIf(b.Param<int?>("minAge").HasValue,
+         .AndIf(b.ConditionRef("minAge", "{0}.HasValue"),
                 user.Col("age"), Op.Gte, b.Param<int?>("minAge"))
-         .AndIf(b.Param<int?>("maxAge").HasValue,
+         .AndIf(b.ConditionRef("maxAge", "{0}.HasValue"),
                 user.Col("age"), Op.Lte, b.Param<int?>("maxAge"));
+        // 说明：
+        // b.ConditionRef("name", "!string.IsNullOrEmpty({0})") 
+        //   表示条件引用方法参数 "name"，运行时用 !string.IsNullOrEmpty(name) 判断
+        //   {0} 会被替换为实际的方法参数变量名
+        // 这是模板 API 的设计，Source Generator 在生成回退代码时会将其转换为：
+        //   .WhereIf(!string.IsNullOrEmpty(name), ...)
+    }
     }
 }
 ```
@@ -1622,7 +1629,7 @@ public static partial class UserQueries
 7. 动态 SQL 回退解释器但仍生成结果结构的正确性
 8. 不支持模板的诊断/回退策略
 9. Reader 方法生成正确性（序号映射、可空类型处理）
-9. 生成结果与运行时解释器输出一致性
+10. 生成结果与运行时解释器输出一致性
 
 ## 20.3 Benchmark
 至少比较：
