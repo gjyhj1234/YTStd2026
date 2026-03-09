@@ -1114,17 +1114,11 @@ order.UserId
 public readonly struct PgSqlParam
 {
     public readonly string Name;
+    public readonly NpgsqlDbType DbType;
     public readonly object? Value;
 }
 ```
 
-但你必须进一步评估并决定是否增加：
-- `NpgsqlDbType?`
-- `DbType?`
-- `Size`
-- `Precision`
-- `Scale`
-- `Direction`
 
 要求：
 - 设计不要过重
