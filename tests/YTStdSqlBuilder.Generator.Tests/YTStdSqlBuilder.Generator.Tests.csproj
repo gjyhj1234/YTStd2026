@@ -22,10 +22,12 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing.XUnit" Version="1.1.2" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\YTStdSqlBuilder.Generator\YTStdSqlBuilder.Generator.csproj" />
+    <ProjectReference Include="..\..\src\YTStdSqlBuilder\YTStdSqlBuilder.csproj" />
   </ItemGroup>
 
 </Project>

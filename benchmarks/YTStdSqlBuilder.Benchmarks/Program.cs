@@ -6,6 +6,6 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        // Add benchmark classes here as they are created
+        BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
     }
 }
