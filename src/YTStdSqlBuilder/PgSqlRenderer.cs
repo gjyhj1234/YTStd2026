@@ -8,33 +8,33 @@ internal static partial class PgSqlRenderer
 {
     internal static PgSqlRenderResult RenderQuery(PgSqlQueryBuilder builder, PgSqlRenderMode mode)
     {
-        var ctx = new RenderContext(mode);
-        RenderQueryCore(builder, ctx);
+        var ctx = new RenderContext(mode, stackalloc char[256]);
+        RenderQueryCore(builder, ref ctx);
         return ctx.ToResult();
     }
 
     internal static PgSqlRenderResult RenderInsert(PgSqlInsertBuilder builder, PgSqlRenderMode mode)
     {
-        var ctx = new RenderContext(mode);
-        RenderInsertCore(builder, ctx);
+        var ctx = new RenderContext(mode, stackalloc char[256]);
+        RenderInsertCore(builder, ref ctx);
         return ctx.ToResult();
     }
 
     internal static PgSqlRenderResult RenderUpdate(PgSqlUpdateBuilder builder, PgSqlRenderMode mode)
     {
-        var ctx = new RenderContext(mode);
-        RenderUpdateCore(builder, ctx);
+        var ctx = new RenderContext(mode, stackalloc char[256]);
+        RenderUpdateCore(builder, ref ctx);
         return ctx.ToResult();
     }
 
     internal static PgSqlRenderResult RenderDelete(PgSqlDeleteBuilder builder, PgSqlRenderMode mode)
     {
-        var ctx = new RenderContext(mode);
-        RenderDeleteCore(builder, ctx);
+        var ctx = new RenderContext(mode, stackalloc char[256]);
+        RenderDeleteCore(builder, ref ctx);
         return ctx.ToResult();
     }
 
-    private static void RenderQueryCore(PgSqlQueryBuilder builder, RenderContext ctx)
+    private static void RenderQueryCore(PgSqlQueryBuilder builder, ref RenderContext ctx)
     {
         // SELECT
         ctx.Append(Q.Select);
@@ -46,7 +46,7 @@ internal static partial class PgSqlRenderer
             ctx.Append(' ');
         }
 
-        RenderSelectItems(builder.SelectItems, ctx);
+        RenderSelectItems(builder.SelectItems, ref ctx);
 
         // FROM
         if (builder.FromTable is not null)
@@ -54,14 +54,14 @@ internal static partial class PgSqlRenderer
             ctx.Append(' ');
             ctx.Append(Q.From);
             ctx.Append(' ');
-            RenderTableSource(builder.FromTable, ctx);
+            RenderTableSource(builder.FromTable, ref ctx);
         }
         else if (builder.FromSubQuery is not null)
         {
             ctx.Append(' ');
             ctx.Append(Q.From);
             ctx.Append(" (");
-            RenderQueryCore(builder.FromSubQuery, ctx);
+            RenderQueryCore(builder.FromSubQuery, ref ctx);
             ctx.Append(") ");
             ctx.Append(Q.As);
             ctx.Append(' ');
@@ -80,11 +80,11 @@ internal static partial class PgSqlRenderer
                 _ => Q.InnerJoin
             });
             ctx.Append(' ');
-            RenderTableSource(join.Table, ctx);
+            RenderTableSource(join.Table, ref ctx);
             ctx.Append(' ');
             ctx.Append(Q.On);
             ctx.Append(' ');
-            RenderConditionGroup(join.OnCondition, ctx);
+            RenderConditionGroup(join.OnCondition, ref ctx);
         }
 
         // WHERE
@@ -94,7 +94,7 @@ internal static partial class PgSqlRenderer
             ctx.Append(' ');
             ctx.Append(Q.Where);
             ctx.Append(' ');
-            RenderConditionNodes(whereGroup.Nodes, ctx);
+            RenderConditionNodes(whereGroup.Nodes, ref ctx);
         }
 
         // GROUP BY
@@ -106,7 +106,7 @@ internal static partial class PgSqlRenderer
             for (int i = 0; i < builder.GroupByItems.Count; i++)
             {
                 if (i > 0) ctx.Append(", ");
-                RenderExpr(builder.GroupByItems[i], ctx);
+                RenderExpr(builder.GroupByItems[i], ref ctx);
             }
         }
 
@@ -117,7 +117,7 @@ internal static partial class PgSqlRenderer
             ctx.Append(' ');
             ctx.Append(Q.Having);
             ctx.Append(' ');
-            RenderConditionNodes(havingGroup.Nodes, ctx);
+            RenderConditionNodes(havingGroup.Nodes, ref ctx);
         }
 
         // ORDER BY
@@ -129,7 +129,7 @@ internal static partial class PgSqlRenderer
             for (int i = 0; i < builder.OrderByItems.Count; i++)
             {
                 if (i > 0) ctx.Append(", ");
-                RenderExpr(builder.OrderByItems[i].Expression, ctx);
+                RenderExpr(builder.OrderByItems[i].Expression, ref ctx);
                 ctx.Append(builder.OrderByItems[i].Descending ? " DESC" : " ASC");
             }
         }
@@ -153,13 +153,13 @@ internal static partial class PgSqlRenderer
         }
     }
 
-    private static void RenderInsertCore(PgSqlInsertBuilder builder, RenderContext ctx)
+    private static void RenderInsertCore(PgSqlInsertBuilder builder, ref RenderContext ctx)
     {
         ctx.Append(Q.Insert);
         ctx.Append(' ');
         ctx.Append(Q.Into);
         ctx.Append(' ');
-        RenderTableName(builder.Table, ctx);
+        RenderTableName(builder.Table, ref ctx);
 
         // Columns
         ctx.Append(" (");
@@ -177,19 +177,19 @@ internal static partial class PgSqlRenderer
         for (int i = 0; i < builder.Assignments.Count; i++)
         {
             if (i > 0) ctx.Append(", ");
-            RenderExpr(builder.Assignments[i].Value, ctx);
+            RenderExpr(builder.Assignments[i].Value, ref ctx);
         }
         ctx.Append(')');
 
         // RETURNING
-        RenderReturning(builder.ReturningItems, ctx);
+        RenderReturning(builder.ReturningItems, ref ctx);
     }
 
-    private static void RenderUpdateCore(PgSqlUpdateBuilder builder, RenderContext ctx)
+    private static void RenderUpdateCore(PgSqlUpdateBuilder builder, ref RenderContext ctx)
     {
         ctx.Append(Q.Update);
         ctx.Append(' ');
-        RenderTableSourceForUpdate(builder.Table, ctx);
+        RenderTableSourceForUpdate(builder.Table, ref ctx);
 
         // SET
         ctx.Append(' ');
@@ -200,7 +200,7 @@ internal static partial class PgSqlRenderer
             if (i > 0) ctx.Append(", ");
             ctx.Append(SqlIdentifier.Escape(builder.Assignments[i].Column.Column.Name));
             ctx.Append(" = ");
-            RenderExpr(builder.Assignments[i].Value, ctx);
+            RenderExpr(builder.Assignments[i].Value, ref ctx);
         }
 
         // WHERE
@@ -210,20 +210,20 @@ internal static partial class PgSqlRenderer
             ctx.Append(' ');
             ctx.Append(Q.Where);
             ctx.Append(' ');
-            RenderConditionNodes(whereGroup.Nodes, ctx);
+            RenderConditionNodes(whereGroup.Nodes, ref ctx);
         }
 
         // RETURNING
-        RenderReturning(builder.ReturningItems, ctx);
+        RenderReturning(builder.ReturningItems, ref ctx);
     }
 
-    private static void RenderDeleteCore(PgSqlDeleteBuilder builder, RenderContext ctx)
+    private static void RenderDeleteCore(PgSqlDeleteBuilder builder, ref RenderContext ctx)
     {
         ctx.Append(Q.Delete);
         ctx.Append(' ');
         ctx.Append(Q.From);
         ctx.Append(' ');
-        RenderTableSourceForUpdate(builder.Table, ctx);
+        RenderTableSourceForUpdate(builder.Table, ref ctx);
 
         // WHERE
         var whereGroup = builder.WhereBuilder.Build();
@@ -232,19 +232,19 @@ internal static partial class PgSqlRenderer
             ctx.Append(' ');
             ctx.Append(Q.Where);
             ctx.Append(' ');
-            RenderConditionNodes(whereGroup.Nodes, ctx);
+            RenderConditionNodes(whereGroup.Nodes, ref ctx);
         }
 
         // RETURNING
-        RenderReturning(builder.ReturningItems, ctx);
+        RenderReturning(builder.ReturningItems, ref ctx);
     }
 
-    private static void RenderSelectItems(IReadOnlyList<SqlSelectItem> items, RenderContext ctx)
+    private static void RenderSelectItems(IReadOnlyList<SqlSelectItem> items, ref RenderContext ctx)
     {
         for (int i = 0; i < items.Count; i++)
         {
             if (i > 0) ctx.Append(", ");
-            RenderExpr(items[i].Expression, ctx);
+            RenderExpr(items[i].Expression, ref ctx);
             if (items[i].Alias is not null)
             {
                 ctx.Append(' ');
@@ -255,16 +255,16 @@ internal static partial class PgSqlRenderer
         }
     }
 
-    private static void RenderReturning(IReadOnlyList<SqlSelectItem> items, RenderContext ctx)
+    private static void RenderReturning(IReadOnlyList<SqlSelectItem> items, ref RenderContext ctx)
     {
         if (items.Count == 0) return;
         ctx.Append(' ');
         ctx.Append(Q.Returning);
         ctx.Append(' ');
-        RenderSelectItems(items, ctx);
+        RenderSelectItems(items, ref ctx);
     }
 
-    private static void RenderTableSource(SqlTableSource source, RenderContext ctx)
+    private static void RenderTableSource(SqlTableSource source, ref RenderContext ctx)
     {
         ctx.Append(SqlIdentifier.EscapeQualified(source.Table.Schema, source.Table.Name));
         ctx.Append(' ');
@@ -273,12 +273,12 @@ internal static partial class PgSqlRenderer
         ctx.Append(SqlIdentifier.Escape(source.Alias));
     }
 
-    private static void RenderTableName(SqlTableSource source, RenderContext ctx)
+    private static void RenderTableName(SqlTableSource source, ref RenderContext ctx)
     {
         ctx.Append(SqlIdentifier.EscapeQualified(source.Table.Schema, source.Table.Name));
     }
 
-    private static void RenderTableSourceForUpdate(SqlTableSource source, RenderContext ctx)
+    private static void RenderTableSourceForUpdate(SqlTableSource source, ref RenderContext ctx)
     {
         ctx.Append(SqlIdentifier.EscapeQualified(source.Table.Schema, source.Table.Name));
         ctx.Append(' ');
@@ -287,7 +287,7 @@ internal static partial class PgSqlRenderer
         ctx.Append(SqlIdentifier.Escape(source.Alias));
     }
 
-    private static void RenderExpr(SqlExpr expr, RenderContext ctx)
+    private static void RenderExpr(SqlExpr expr, ref RenderContext ctx)
     {
         switch (expr)
         {
@@ -324,7 +324,7 @@ internal static partial class PgSqlRenderer
                 for (int i = 0; i < func.Arguments.Length; i++)
                 {
                     if (i > 0) ctx.Append(", ");
-                    RenderExpr(func.Arguments[i], ctx);
+                    RenderExpr(func.Arguments[i], ref ctx);
                 }
                 ctx.Append(')');
                 break;
@@ -343,12 +343,12 @@ internal static partial class PgSqlRenderer
 
             case SubQueryExpr sub:
                 ctx.Append('(');
-                RenderSubQuery(sub, ctx);
+                RenderSubQuery(sub, ref ctx);
                 ctx.Append(')');
                 break;
 
             case CaseExpr caseExpr:
-                RenderCaseExpr(caseExpr, ctx);
+                RenderCaseExpr(caseExpr, ref ctx);
                 break;
 
             case RawExpr raw:
@@ -357,7 +357,7 @@ internal static partial class PgSqlRenderer
         }
     }
 
-    private static void RenderSubQuery(SubQueryExpr sub, RenderContext ctx)
+    private static void RenderSubQuery(SubQueryExpr sub, ref RenderContext ctx)
     {
         if (ctx.Mode == PgSqlRenderMode.DebugSql)
         {
@@ -390,7 +390,7 @@ internal static partial class PgSqlRenderer
         }
     }
 
-    private static void RenderCaseExpr(CaseExpr caseExpr, RenderContext ctx)
+    private static void RenderCaseExpr(CaseExpr caseExpr, ref RenderContext ctx)
     {
         ctx.Append(Q.Case);
         foreach (var (condition, result) in caseExpr.WhenClauses)
@@ -398,29 +398,29 @@ internal static partial class PgSqlRenderer
             ctx.Append(' ');
             ctx.Append(Q.When);
             ctx.Append(' ');
-            RenderConditionGroup(condition, ctx);
+            RenderConditionGroup(condition, ref ctx);
             ctx.Append(' ');
             ctx.Append(Q.Then);
             ctx.Append(' ');
-            RenderExpr(result, ctx);
+            RenderExpr(result, ref ctx);
         }
         if (caseExpr.ElseResult is not null)
         {
             ctx.Append(' ');
             ctx.Append(Q.Else);
             ctx.Append(' ');
-            RenderExpr(caseExpr.ElseResult, ctx);
+            RenderExpr(caseExpr.ElseResult, ref ctx);
         }
         ctx.Append(' ');
         ctx.Append(Q.End);
     }
 
-    private static void RenderConditionGroup(SqlConditionGroup group, RenderContext ctx)
+    private static void RenderConditionGroup(SqlConditionGroup group, ref RenderContext ctx)
     {
-        RenderConditionNodes(group.Nodes, ctx);
+        RenderConditionNodes(group.Nodes, ref ctx);
     }
 
-    private static void RenderConditionNodes(List<SqlConditionNode> nodes, RenderContext ctx)
+    private static void RenderConditionNodes(List<SqlConditionNode> nodes, ref RenderContext ctx)
     {
         for (int i = 0; i < nodes.Count; i++)
         {
@@ -428,16 +428,16 @@ internal static partial class PgSqlRenderer
             {
                 ctx.Append(nodes[i].LogicalOperator == SqlLogicalOperator.Or ? " OR " : " AND ");
             }
-            RenderConditionNode(nodes[i], ctx);
+            RenderConditionNode(nodes[i], ref ctx);
         }
     }
 
-    private static void RenderConditionNode(SqlConditionNode node, RenderContext ctx)
+    private static void RenderConditionNode(SqlConditionNode node, ref RenderContext ctx)
     {
         switch (node.NodeKind)
         {
             case SqlConditionNodeKind.SimpleCondition:
-                RenderCondition(node.Condition!, ctx);
+                RenderCondition(node.Condition!, ref ctx);
                 break;
 
             case SqlConditionNodeKind.AndGroup:
@@ -449,14 +449,14 @@ internal static partial class PgSqlRenderer
                     {
                         ctx.Append(node.Children[i].LogicalOperator == SqlLogicalOperator.Or ? " OR " : " AND ");
                     }
-                    RenderConditionNode(node.Children[i], ctx);
+                    RenderConditionNode(node.Children[i], ref ctx);
                 }
                 ctx.Append(')');
                 break;
         }
     }
 
-    private static void RenderCondition(SqlCondition condition, RenderContext ctx)
+    private static void RenderCondition(SqlCondition condition, ref RenderContext ctx)
     {
         var op = condition.Operator;
 
@@ -468,12 +468,12 @@ internal static partial class PgSqlRenderer
             if (condition.Left is SubQueryExpr sub)
             {
                 ctx.Append('(');
-                RenderSubQuery(sub, ctx);
+                RenderSubQuery(sub, ref ctx);
                 ctx.Append(')');
             }
             else
             {
-                RenderExpr(condition.Left, ctx);
+                RenderExpr(condition.Left, ref ctx);
             }
             return;
         }
@@ -486,12 +486,12 @@ internal static partial class PgSqlRenderer
             if (condition.Left is SubQueryExpr sub)
             {
                 ctx.Append('(');
-                RenderSubQuery(sub, ctx);
+                RenderSubQuery(sub, ref ctx);
                 ctx.Append(')');
             }
             else
             {
-                RenderExpr(condition.Left, ctx);
+                RenderExpr(condition.Left, ref ctx);
             }
             return;
         }
@@ -499,14 +499,14 @@ internal static partial class PgSqlRenderer
         // IS NULL / IS NOT NULL operators
         if (op == SqlComparisonOperator.IsNull)
         {
-            RenderExpr(condition.Left, ctx);
+            RenderExpr(condition.Left, ref ctx);
             ctx.Append(' ');
             ctx.Append(Q.IsNull);
             return;
         }
         if (op == SqlComparisonOperator.IsNotNull)
         {
-            RenderExpr(condition.Left, ctx);
+            RenderExpr(condition.Left, ref ctx);
             ctx.Append(' ');
             ctx.Append(Q.IsNotNull);
             return;
@@ -517,14 +517,14 @@ internal static partial class PgSqlRenderer
         {
             if (op == SqlComparisonOperator.Eq)
             {
-                RenderExpr(condition.Left, ctx);
+                RenderExpr(condition.Left, ref ctx);
                 ctx.Append(' ');
                 ctx.Append(Q.IsNull);
                 return;
             }
             if (op == SqlComparisonOperator.NotEq)
             {
-                RenderExpr(condition.Left, ctx);
+                RenderExpr(condition.Left, ref ctx);
                 ctx.Append(' ');
                 ctx.Append(Q.IsNotNull);
                 return;
@@ -534,20 +534,20 @@ internal static partial class PgSqlRenderer
         // IN / NOT IN handling
         if (op is SqlComparisonOperator.In or SqlComparisonOperator.NotIn)
         {
-            RenderInCondition(condition, op, ctx);
+            RenderInCondition(condition, op, ref ctx);
             return;
         }
 
         // Standard binary condition
-        RenderExpr(condition.Left, ctx);
+        RenderExpr(condition.Left, ref ctx);
         ctx.Append(' ');
         ctx.Append(GetOperatorSql(op));
         ctx.Append(' ');
         if (condition.Right is not null)
-            RenderExpr(condition.Right, ctx);
+            RenderExpr(condition.Right, ref ctx);
     }
 
-    private static void RenderInCondition(SqlCondition condition, SqlComparisonOperator op, RenderContext ctx)
+    private static void RenderInCondition(SqlCondition condition, SqlComparisonOperator op, ref RenderContext ctx)
     {
         bool isNotIn = op == SqlComparisonOperator.NotIn;
 
@@ -564,7 +564,7 @@ internal static partial class PgSqlRenderer
                 return;
             }
 
-            RenderExpr(condition.Left, ctx);
+            RenderExpr(condition.Left, ref ctx);
             ctx.Append(isNotIn ? " NOT IN (" : " IN (");
 
             if (ctx.Mode == PgSqlRenderMode.DebugSql)
@@ -590,10 +590,10 @@ internal static partial class PgSqlRenderer
         else
         {
             // Subquery IN or single-value IN
-            RenderExpr(condition.Left, ctx);
+            RenderExpr(condition.Left, ref ctx);
             ctx.Append(isNotIn ? " NOT IN " : " IN ");
             if (condition.Right is not null)
-                RenderExpr(condition.Right, ctx);
+                RenderExpr(condition.Right, ref ctx);
         }
     }
 
@@ -614,18 +614,19 @@ internal static partial class PgSqlRenderer
         _ => "="
     };
 
-    private sealed class RenderContext
+    private ref struct RenderContext
     {
-        private readonly System.Text.StringBuilder _sb;
-        private readonly List<PgSqlParam> _params = new();
+        private ValueStringBuilder _sb;
+        private readonly List<PgSqlParam> _params;
 
         public PgSqlRenderMode Mode { get; }
         public int ParamCount => _params.Count;
 
-        public RenderContext(PgSqlRenderMode mode)
+        public RenderContext(PgSqlRenderMode mode, Span<char> initialBuffer)
         {
             Mode = mode;
-            _sb = new System.Text.StringBuilder(256);
+            _sb = new ValueStringBuilder(initialBuffer);
+            _params = new List<PgSqlParam>();
         }
 
         public void Append(char c) => _sb.Append(c);
