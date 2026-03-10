@@ -50,7 +50,7 @@ var users = await PgAdo.QueryAsync(conn, query, reader => new {
 
 // 3. Source Generator 生成的查询可直接使用
 var typedQuery = UserQueries.GetUserById(42);
-var user = await PgAdo.QuerySingleAsync(conn, typedQuery, UserQueries.ReadGetByIdRow);
+var user = await PgAdo.QuerySingleAsync(conn, typedQuery, UserQueries.ReadGetUserByIdRow);
 ```
 
 ---
@@ -172,7 +172,7 @@ var newId = await PgAdo.ExecuteScalarAsync<int>(conn, insertCmd);
 
 // 配合 Source Generator 使用
 var typedQuery = UserQueries.GetUserById(42);
-var row = await PgAdo.QuerySingleAsync(conn, typedQuery, UserQueries.ReadGetByIdRow);
+var row = await PgAdo.QuerySingleAsync(conn, typedQuery, UserQueries.ReadGetUserByIdRow);
 // row.Id, row.Name 等属性直接可用
 ```
 

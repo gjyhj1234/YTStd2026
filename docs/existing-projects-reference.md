@@ -425,7 +425,7 @@ var result = PgSql
 
 ```csharp
 var subquery = PgSql
-    .Select(LiteralExpr.Number(1))
+    .Select(Literal.Of(1))
     .From(order)
     .Where(order["user_id"], Op.Eq, user["id"]);
 
