@@ -355,28 +355,30 @@ namespace YTStdSqlBuilder.Generator.TemplateAnalysis
             List<TemplateWhereClause> clauses,
             string logicalOp)
         {
-            // WhereIf(condition, left, op, right) - 4 args
-            if (args.Count >= 4)
+            // WhereIf(left, op, right) - 3 args (same as Where)
+            // The condition bool parameter is auto-derived from the right-side b.Param() name
+            if (args.Count >= 3)
             {
-                string? condParamName = ExtractConditionParamName(args[0].Expression);
-                // Create a new list with args[1..3]
-                var subArgs = SyntaxFactory.SeparatedList(args.Skip(1));
-                ExtractWhereClause(subArgs, tables, parameters, clauses, logicalOp, true, condParamName);
-            }
-        }
+                var leftCol = TryExtractColumnRef(args[0].Expression, tables);
+                string? opStr = ExtractOperator(args[1].Expression);
+                var rightInfo = TryExtractRightSide(args[2].Expression, tables, parameters);
 
-        private static string? ExtractConditionParamName(ExpressionSyntax expression)
-        {
-            // Match b.ConditionRef("paramName", "template")
-            if (expression is InvocationExpressionSyntax invocation &&
-                invocation.Expression is MemberAccessExpressionSyntax memberAccess &&
-                memberAccess.Name.Identifier.Text == "ConditionRef" &&
-                invocation.ArgumentList.Arguments.Count >= 1)
-            {
-                return ExtractStringLiteral(invocation.ArgumentList.Arguments[0].Expression);
+                if (leftCol != null && opStr != null)
+                {
+                    // Use the right-side param name as the condition param reference
+                    string? condParamName = rightInfo?.ParamName;
+                    clauses.Add(new TemplateWhereClause(
+                        leftCol.Value.ColumnName,
+                        leftCol.Value.TableAlias,
+                        opStr,
+                        rightInfo?.ParamName,
+                        rightInfo?.ColumnName,
+                        rightInfo?.TableAlias,
+                        logicalOp,
+                        true,
+                        condParamName));
+                }
             }
-            // Could be a simple identifier reference
-            return expression.ToString();
         }
 
         private static void ExtractJoin(
@@ -724,6 +726,9 @@ namespace YTStdSqlBuilder.Generator.TemplateAnalysis
                     "IsNotNull" => "IS NOT NULL",
                     "Between" => "BETWEEN",
                     "NotBetween" => "NOT BETWEEN",
+                    "ArrayContains" => "@>",
+                    "ArrayContainedBy" => "<@",
+                    "ArrayOverlaps" => "&&",
                     _ => null
                 };
             }
@@ -762,14 +767,14 @@ namespace YTStdSqlBuilder.Generator.TemplateAnalysis
             List<(string Name, string Type, bool IsNullable)> methodParams,
             List<TemplateParam> extractedParams)
         {
-            // Use method signature parameters, enriched with ordinals from extraction
+            // Always use method signature types as the source of truth.
+            // The extracted type from b.Param<T>() is only used if no method param exists,
+            // or if the non-generic b.Param() was used (which defaults to "object").
             var result = new List<TemplateParam>();
             int ordinal = 0;
             foreach (var mp in methodParams)
             {
-                var extracted = extractedParams.Find(p => p.ParamName == mp.Name);
-                string typeName = extracted?.TypeName ?? mp.Type;
-                result.Add(new TemplateParam(mp.Name, typeName, mp.IsNullable, ordinal++));
+                result.Add(new TemplateParam(mp.Name, mp.Type, mp.IsNullable, ordinal++));
             }
             return result.ToImmutableArray();
         }

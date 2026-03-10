@@ -130,7 +130,7 @@ using YTStdSqlBuilder.Expressions;
 public static partial class TestQueries
 {
     [PgSqlQuery]
-    public static partial PgSqlRenderResult SearchUsers(string? name, int? minAge);
+    public static partial PgSqlRenderResult SearchUsers(bool name_condition, string name, bool minAge_condition, int minAge);
 
     private static void Define_SearchUsers(PgSqlTemplateBuilder b)
     {
@@ -139,8 +139,8 @@ public static partial class TestQueries
             user.Col<int>(""id""),
             user.Col<string>(""name""))
          .From(user)
-         .WhereIf(b.ConditionRef(""name"", ""!string.IsNullOrEmpty""), user.Col(""name""), Op.ILike, b.Param<string>(""name""))
-         .AndIf(b.ConditionRef(""minAge"", "".HasValue""), user.Col(""age""), Op.Gte, b.Param<int>(""minAge""));
+         .WhereIf(user.Col(""name""), Op.ILike, b.Param<string>(""name""))
+         .AndIf(user.Col(""age""), Op.Gte, b.Param<int>(""minAge""));
     }
 }";
 
@@ -174,6 +174,28 @@ public static partial class TestQueries
             user.Col<int>(""id""),
             user.Col<string>(""name""))
          .From(user);
+    }
+}";
+
+    public const string NonGenericParamSource = @"
+using YTStdSqlBuilder;
+using YTStdSqlBuilder.Conditions;
+using YTStdSqlBuilder.Expressions;
+
+[PgSqlTemplate]
+public static partial class TestQueries
+{
+    [PgSqlQuery]
+    public static partial PgSqlRenderResult GetUserById(int userId);
+
+    private static void Define_GetUserById(PgSqlTemplateBuilder b)
+    {
+        var user = b.Table(""users"", ""u"");
+        b.Select(
+            user.Col(""id""),
+            user.Col(""name""))
+         .From(user)
+         .Where(user.Col(""id""), Op.Eq, b.Param(""userId""));
     }
 }";
 }
