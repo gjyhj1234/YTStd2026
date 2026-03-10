@@ -23,6 +23,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{A1B2
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YTStdSqlBuilder.Sample", "samples/YTStdSqlBuilder.Sample/YTStdSqlBuilder.Sample.csproj", "{B1000006-0000-0000-0000-000000000006}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{A1B2C3D4-0005-0005-0005-000000000005}"
+	ProjectSection(SolutionItems) = preProject
+		docs\architecture.md = docs\architecture.md
+		docs\prompt-authoring-guide.md = docs\prompt-authoring-guide.md
+		docs\existing-projects-reference.md = docs\existing-projects-reference.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prompts", "prompts", "{A1B2C3D4-0006-0006-0006-000000000006}"
+	ProjectSection(SolutionItems) = preProject
+		.github\prompts\README.md = .github\prompts\README.md
+		.github\prompts\sql-builder-prompt.md = .github\prompts\sql-builder-prompt.md
+		.github\prompts\ado-prompt.md = .github\prompts\ado-prompt.md
+		.github\prompts\logging-prompt.md = .github\prompts\logging-prompt.md
+	EndProjectSection
+EndProject
 Global
 GlobalSection(SolutionConfigurationPlatforms) = preSolution
 Debug|Any CPU = Debug|Any CPU
