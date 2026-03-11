@@ -650,8 +650,8 @@ catch (Exception ex)
     return new DbInsResult
     {
         Success = false,
-        // ErrorMessage 使用国际化语言，用于返回前端展示
-        ErrorMessage = I18n.T(tenantId, K.Db.InsertFailed),
+        // ErrorMessage 使用国际化语言，用于返回前端展示（按租户语言偏好）
+        ErrorMessage = K.Db.InsertFailed.Db(tenantId),
         // DebugMessage 是堆栈信息，用于开发与调试，不使用国际化
         DebugMessage = $"SQL={sql}，操作人=tenantId:{tenantId}/userId:{userId}，异常={ex}"
     };
@@ -666,7 +666,7 @@ catch (Exception ex)
 
 **ADO 层日志国际化规则**：
 - ADO 层内部日志（`Logger.Info` / `Logger.Debug` / `Logger.Error`）**不使用国际化**，直接使用中文字符串
-- 仅 CRUD 返回结果中的 `ErrorMessage` 使用 `I18n.T(tenantId, ...)` 进行国际化，用于前端展示
+- 仅 CRUD 返回结果中的 `ErrorMessage` 使用 `K.Db.InsertFailed.Db(tenantId)` 等数组索引方式进行国际化，用于前端展示
 - `DebugMessage` 包含堆栈跟踪等调试信息，不使用国际化
 
 ### 7.5 辅助方法 — `BuildDebugInfo`
