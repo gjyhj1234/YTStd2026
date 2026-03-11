@@ -27,7 +27,7 @@
 | `PgSqlParam` | YTStdSqlBuilder | SQL 参数，包含 Name、Value、DbType |
 | `ValueStringBuilder` | YTStdSqlBuilder | 零分配字符串构建器，用于动态 SQL 拼接 |
 | `DB` (静态类) | YTStdAdo | 数据库执行入口，提供 InsertAsync、UpdateAsync、DeleteAsync、GetAsync、GetListAsync、CreateTable 等方法 |
-| `Logger` (静态类) | YTStdLogger.Core | 日志入口，提供 `Debug(int tenantId, long userId, string message)`、`Info(...)`、`Error(...)` |
+| `Logger` (静态类) | YTStdLogger.Core | 日志入口，提供 `Debug(int tenantId, long userId, Func<string> message)`（延迟求值）、`Debug(int tenantId, long userId, string message)`、`Info(...)`、`Error(...)`、`Fatal(...)` |
 | `NpgsqlParameter` | Npgsql | ADO.NET 参数对象 |
 | `NpgsqlDbType` | Npgsql | PostgreSQL 数据类型枚举 |
 
@@ -47,7 +47,7 @@ var fieldsInfo = DB.GetFieldsInfor(conn, tableName);
 var indexInfo = DB.GetIndexInfor(conn, tableName);
 
 // 3. 使用 Logger 记录日志
-Logger.Debug(tenantId, userId, $"[InsertAsync] 进入方法, name={name}");
+Logger.Debug(tenantId, userId, () => $"[InsertAsync] 进入方法, name={name}");
 Logger.Info(tenantId, userId, $"[CreateTable] 创建表: {tableName}");
 Logger.Error(tenantId, userId, $"[InsertAsync] 异常: {ex}");
 ```
@@ -79,7 +79,7 @@ Logger.Error(tenantId, userId, $"[InsertAsync] 异常: {ex}");
 | AOT 兼容 | 是——**禁止**反射、dynamic、LINQ、Expression Tree |
 | 字符串构建 | 静态 SQL 使用 `const string`；动态 SQL 使用 `ValueStringBuilder` |
 | 内存分配 | 最小化——优先栈分配、`Span<T>`、`ArrayPool`、`ref struct` |
-| 日志 | 所有方法必须集成 `Logger.Debug` / `Logger.Info` / `Logger.Error` |
+| 日志 | 所有方法必须集成 `Logger.Debug`（使用 `Func<string>` 延迟求值重载） / `Logger.Info` / `Logger.Error` / `Logger.Fatal` |
 | 联合主键 | **禁止**——每表仅允许一个主键字段 |
 | i18n 就绪 | 用户可见错误消息使用常量 key，预留国际化扩展点 |
 | 依赖项目 | YTStdSqlBuilder、YTStdAdo、YTStdLogger.Core、Npgsql |
@@ -399,7 +399,7 @@ public class SysUser
 7. 【审计表】若 NeedAuditTable == true → 生成 {Entity}_Audit 表 + 触发器
 8. 调用 DB.CreateTable 执行
 9. Logger.Info → 记录创建成功
-10. 异常时 Logger.Error → 记录完整堆栈
+10. 异常时 Logger.Fatal → 记录完整堆栈 → 调用 Environment.FailFast 终止进程
 11. 返回 bool
 ```
 
@@ -498,13 +498,14 @@ Logger.Info(tenantId, userId, $"[CreateTableIfNotExists] 开始创建, 表名={t
 Logger.Info(tenantId, userId, $"[CreateTableIfNotExists] 表已存在, 跳过: {tableName}");
 
 // 生成 SQL
-Logger.Debug(tenantId, userId, $"[CreateTableIfNotExists] 建表SQL: {sql}");
+Logger.Info(tenantId, userId, $"[CreateTableIfNotExists] 建表SQL: {sql}");
 
 // 创建成功
 Logger.Info(tenantId, userId, $"[CreateTableIfNotExists] 创建成功: {tableName}");
 
 // 异常
-Logger.Error(tenantId, userId, $"[CreateTableIfNotExists] 创建失败, 表名={tableName}, SQL={sql}, 异常: {ex}");
+Logger.Fatal(tenantId, userId, $"[CreateTableIfNotExists] 创建失败, 表名={tableName}, SQL={sql}, 异常: {ex}");
+Environment.FailFast($"[CreateTableIfNotExists] 创建失败, 表名={tableName}");
 ```
 
 ### 6.2 `EnsureColumnLength(int tenantId, long userId)`
@@ -523,7 +524,7 @@ Logger.Error(tenantId, userId, $"[CreateTableIfNotExists] 创建失败, 表名={
 4. 使用 const string sql 存储 ALTER 语句
 5. 调用 DB.CreateTable 执行
 6. Logger.Info → 记录修改过程（字段名、原长度、新长度）
-7. 异常时 Logger.Error → 记录 TableName、sql、完整堆栈
+7. 异常时 Logger.Fatal → 记录 TableName、sql、完整堆栈 → 调用 Environment.FailFast 终止进程
 8. 返回 bool
 ```
 
@@ -542,7 +543,7 @@ Logger.Error(tenantId, userId, $"[CreateTableIfNotExists] 创建失败, 表名={
    - 不存在 → 根据 IndexKind（Normal/Unique）生成 const string sql
 4. 调用 DB.CreateTable 执行
 5. Logger.Info → 记录创建成功
-6. 异常时 Logger.Error → 记录 TableName、sql、完整堆栈
+6. 异常时 Logger.Fatal → 记录 TableName、sql、完整堆栈 → 调用 Environment.FailFast 终止进程
 7. 返回 bool
 ```
 
@@ -557,7 +558,7 @@ Logger.Error(tenantId, userId, $"[CreateTableIfNotExists] 创建失败, 表名={
 - 所有方法的前两个参数必须是 `int tenantId, long userId`
 - 每个操作都有 **非事务**（`XxxAsync`）和**事务**（`XxxTxAsync`）两个变体
 - 每个操作都有**打散参数**和**实体参数**两套重载
-- 所有方法必须在每个执行步骤插入 `Logger.Debug` 调用
+- 所有方法必须在每个执行步骤插入 `Logger.Debug` 调用（使用 `Func<string>` 延迟求值重载，避免不必要的字符串构建开销）
 
 ### 7.1 `InsertAsync` / `InsertTxAsync`
 
@@ -593,11 +594,11 @@ public static async Task<int> InsertAsync(
     int tenantId, long userId,
     string name, int? age = null)
 {
-    Logger.Debug(tenantId, userId, $"[SysUser.InsertAsync] 进入方法, name={name}, age={age}");
+    Logger.Debug(tenantId, userId, () => $"[SysUser.InsertAsync] 进入方法, name={name}, age={age}");
 
     const string insertSql = "INSERT INTO \"sys_user\" (\"name\", \"age\") VALUES (@name, @age)";
 
-    Logger.Debug(tenantId, userId, $"[SysUser.InsertAsync] SQL={insertSql}");
+    Logger.Debug(tenantId, userId, () => $"[SysUser.InsertAsync] SQL={insertSql}");
 
     // 构建参数
     var paramList = new List<NpgsqlParameter>(2);
@@ -605,7 +606,7 @@ public static async Task<int> InsertAsync(
     // 非空字段直接添加
     var pmName = new NpgsqlParameter("name", NpgsqlDbType.Text) { Value = name };
     paramList.Add(pmName);
-    Logger.Debug(tenantId, userId, "[SysUser.InsertAsync] 参数: name=" + name);
+    Logger.Debug(tenantId, userId, () => $"[SysUser.InsertAsync] 参数: name={name}");
 
     // 可空字段判断
     if (age != null)
@@ -618,12 +619,12 @@ public static async Task<int> InsertAsync(
         var pmAge = new NpgsqlParameter("age", NpgsqlDbType.Integer) { Value = DBNull.Value };
         paramList.Add(pmAge);
     }
-    Logger.Debug(tenantId, userId, $"[SysUser.InsertAsync] 参数: age={age}");
+    Logger.Debug(tenantId, userId, () => $"[SysUser.InsertAsync] 参数: age={age}");
 
     try
     {
         var result = await DB.InsertAsync(conn, insertSql, paramList.ToArray());
-        Logger.Debug(tenantId, userId, $"[SysUser.InsertAsync] 插入成功, 影响行数={result}");
+        Logger.Debug(tenantId, userId, () => $"[SysUser.InsertAsync] 插入成功, 影响行数={result}");
         return result;
     }
     catch (Exception ex)
@@ -674,7 +675,7 @@ public static async Task<int> UpdateAsync(
     DbNullable<string>? name = null,
     DbNullable<int>? age = null)
 {
-    Logger.Debug(tenantId, userId, $"[SysUser.UpdateAsync] 进入方法, id={id}");
+    Logger.Debug(tenantId, userId, () => $"[SysUser.UpdateAsync] 进入方法, id={id}");
 
     var sb = new ValueStringBuilder(stackalloc char[256]);
     sb.Append("UPDATE \"sys_user\" SET ");
@@ -691,7 +692,7 @@ public static async Task<int> UpdateAsync(
             Value = name.Value.Value ?? (object)DBNull.Value
         });
         hasField = true;
-        Logger.Debug(tenantId, userId, $"[SysUser.UpdateAsync] SET name={name.Value.Value}");
+        Logger.Debug(tenantId, userId, () => $"[SysUser.UpdateAsync] SET name={name.Value.Value}");
     }
 
     if (age.HasValue && age.Value.IsSet)
@@ -703,12 +704,12 @@ public static async Task<int> UpdateAsync(
             Value = age.Value.Value ?? (object)DBNull.Value
         });
         hasField = true;
-        Logger.Debug(tenantId, userId, $"[SysUser.UpdateAsync] SET age={age.Value.Value}");
+        Logger.Debug(tenantId, userId, () => $"[SysUser.UpdateAsync] SET age={age.Value.Value}");
     }
 
     if (!hasField)
     {
-        Logger.Debug(tenantId, userId, "[SysUser.UpdateAsync] 无字段需更新, 跳过");
+        Logger.Debug(tenantId, userId, () => "[SysUser.UpdateAsync] 无字段需更新, 跳过");
         return 0;
     }
 
@@ -716,12 +717,12 @@ public static async Task<int> UpdateAsync(
     paramList.Add(new NpgsqlParameter("id", NpgsqlDbType.Bigint) { Value = id });
 
     var sql = sb.ToString();
-    Logger.Debug(tenantId, userId, $"[SysUser.UpdateAsync] SQL={sql}");
+    Logger.Debug(tenantId, userId, () => $"[SysUser.UpdateAsync] SQL={sql}");
 
     try
     {
         var result = await DB.UpdateAsync(conn, sql, paramList.ToArray());
-        Logger.Debug(tenantId, userId, $"[SysUser.UpdateAsync] 更新成功, 影响行数={result}");
+        Logger.Debug(tenantId, userId, () => $"[SysUser.UpdateAsync] 更新成功, 影响行数={result}");
         return result;
     }
     catch (Exception ex)
@@ -737,18 +738,18 @@ public static async Task<int> UpdateAsync(
 ```csharp
 public static async Task<int> DeleteAsync(int tenantId, long userId, long id)
 {
-    Logger.Debug(tenantId, userId, $"[SysUser.DeleteAsync] 进入方法, id={id}");
+    Logger.Debug(tenantId, userId, () => $"[SysUser.DeleteAsync] 进入方法, id={id}");
 
     const string deleteSql = "DELETE FROM \"sys_user\" WHERE \"id\" = @id";
 
-    Logger.Debug(tenantId, userId, $"[SysUser.DeleteAsync] SQL={deleteSql}");
+    Logger.Debug(tenantId, userId, () => $"[SysUser.DeleteAsync] SQL={deleteSql}");
 
     var pm = new NpgsqlParameter("id", NpgsqlDbType.Bigint) { Value = id };
 
     try
     {
         var result = await DB.DeleteAsync(conn, deleteSql, new[] { pm });
-        Logger.Debug(tenantId, userId, $"[SysUser.DeleteAsync] 删除成功, 影响行数={result}");
+        Logger.Debug(tenantId, userId, () => $"[SysUser.DeleteAsync] 删除成功, 影响行数={result}");
         return result;
     }
     catch (Exception ex)
@@ -764,11 +765,11 @@ public static async Task<int> DeleteAsync(int tenantId, long userId, long id)
 ```csharp
 public static async Task<SysUser?> GetAsync(int tenantId, long userId, long id)
 {
-    Logger.Debug(tenantId, userId, $"[SysUser.GetAsync] 进入方法, id={id}");
+    Logger.Debug(tenantId, userId, () => $"[SysUser.GetAsync] 进入方法, id={id}");
 
     const string selectSql = "SELECT \"id\", \"name\", \"age\" FROM \"sys_user\" WHERE \"id\" = @id";
 
-    Logger.Debug(tenantId, userId, $"[SysUser.GetAsync] SQL={selectSql}");
+    Logger.Debug(tenantId, userId, () => $"[SysUser.GetAsync] SQL={selectSql}");
 
     var pm = new NpgsqlParameter("id", NpgsqlDbType.Bigint) { Value = id };
 
@@ -785,7 +786,7 @@ public static async Task<SysUser?> GetAsync(int tenantId, long userId, long id)
         });
 
         Logger.Debug(tenantId, userId,
-            $"[SysUser.GetAsync] 查询完成, 结果={(entity != null ? $"Id={entity.Id}, Name={entity.Name}" : "null")}");
+            () => $"[SysUser.GetAsync] 查询完成, 结果={(entity != null ? $"Id={entity.Id}, Name={entity.Name}" : "null")}");
 
         return entity;
     }
@@ -802,11 +803,11 @@ public static async Task<SysUser?> GetAsync(int tenantId, long userId, long id)
 ```csharp
 public static async Task<List<SysUser>> GetListAsync(int tenantId, long userId)
 {
-    Logger.Debug(tenantId, userId, "[SysUser.GetListAsync] 进入方法");
+    Logger.Debug(tenantId, userId, () => "[SysUser.GetListAsync] 进入方法");
 
     const string selectSql = "SELECT \"id\", \"name\", \"age\" FROM \"sys_user\"";
 
-    Logger.Debug(tenantId, userId, $"[SysUser.GetListAsync] SQL={selectSql}");
+    Logger.Debug(tenantId, userId, () => $"[SysUser.GetListAsync] SQL={selectSql}");
 
     try
     {
@@ -820,7 +821,7 @@ public static async Task<List<SysUser>> GetListAsync(int tenantId, long userId)
             };
         });
 
-        Logger.Debug(tenantId, userId, $"[SysUser.GetListAsync] 查询完成, 行数={list.Count}");
+        Logger.Debug(tenantId, userId, () => $"[SysUser.GetListAsync] 查询完成, 行数={list.Count}");
         return list;
     }
     catch (Exception ex)
@@ -930,7 +931,7 @@ public sealed class IncrementalBackupOptions
 7. 对 D 操作：在目标库执行批量删除
 8. 恢复目标库表的触发器
 9. 删除源 {Entity}_Log 中 logid <= max_logid 的记录
-10. 所有步骤使用 Logger.Debug 记录
+10. 所有步骤使用 Logger.Debug（`Func<string>` 延迟求值重载）记录
 ```
 
 ### 9.4 排除规则
@@ -970,7 +971,7 @@ public sealed class TenantSeparationOptions
 6. 不迁移 _Log 结尾的表
 7. 恢复目标库所有触发器
 8. Logger.Info → 迁移完成
-9. 每步使用 Logger.Debug 记录详细信息
+9. 每步使用 Logger.Debug（`Func<string>` 延迟求值重载）记录详细信息
 10. 异常时使用 Logger.Error 记录完整堆栈
 ```
 
@@ -992,32 +993,33 @@ int tenantId, long userId
 
 | 场景 | 级别 | 模式 |
 |------|------|------|
-| 方法入口 | `Logger.Debug` | `[类名.方法名] 进入方法, 参数={值}` |
-| 参数构建 | `Logger.Debug` | `[类名.方法名] 参数: 字段名={值}` |
-| SQL 生成 | `Logger.Debug` | `[类名.方法名] SQL={sql}` |
-| 执行结果 | `Logger.Debug` | `[类名.方法名] 执行完成, 影响行数={n}` |
+| 方法入口 | `Logger.Debug` | `() => $"[类名.方法名] 进入方法, 参数={值}"` |
+| 参数构建 | `Logger.Debug` | `() => $"[类名.方法名] 参数: 字段名={值}"` |
+| SQL 生成 | `Logger.Debug` | `() => $"[类名.方法名] SQL={sql}"` |
+| 执行结果 | `Logger.Debug` | `() => $"[类名.方法名] 执行完成, 影响行数={n}"` |
 | DDL 操作 | `Logger.Info` | `[类名.方法名] 创建表/修改字段/创建索引: {details}` |
-| 执行耗时 | `Logger.Debug` | `[类名.方法名] 耗时={elapsed}ms` |
+| 执行耗时 | `Logger.Debug` | `() => $"[类名.方法名] 耗时={elapsed}ms"` |
 | 异常捕获 | `Logger.Error` | `[类名.方法名] 异常: {ex}`（包含完整堆栈） |
+| DDL 异常 | `Logger.Fatal` | `[类名.方法名] 创建失败/修改失败: {ex}` → `Environment.FailFast` |
 
 ### 11.3 日志示例
 
 ```csharp
-// 方法入口——记录所有参数的即时值
+// 方法入口——记录所有参数的即时值（使用 Func<string> 延迟求值）
 Logger.Debug(tenantId, userId,
-    $"[SysUser.InsertAsync] 进入方法, name={name}, age={age}, email={email}");
+    () => $"[SysUser.InsertAsync] 进入方法, name={name}, age={age}, email={email}");
 
 // 参数构建
 Logger.Debug(tenantId, userId,
-    "[SysUser.InsertAsync] 构建参数: name=@name(Text), age=@age(Integer)");
+    () => "[SysUser.InsertAsync] 构建参数: name=@name(Text), age=@age(Integer)");
 
 // SQL 生成
 Logger.Debug(tenantId, userId,
-    $"[SysUser.InsertAsync] SQL={insertSql}");
+    () => $"[SysUser.InsertAsync] SQL={insertSql}");
 
 // 执行结果
 Logger.Debug(tenantId, userId,
-    $"[SysUser.InsertAsync] 插入成功, 影响行数={result}");
+    () => $"[SysUser.InsertAsync] 插入成功, 影响行数={result}");
 
 // DDL 操作
 Logger.Info(tenantId, userId,
@@ -1100,9 +1102,10 @@ internal static class EntityErrors
 - [ ] Insert / Delete / Get / GetList 使用 `const string sql`
 - [ ] Update 使用 `ValueStringBuilder` 动态构建
 - [ ] 所有方法前两个参数为 `int tenantId, long userId`
-- [ ] 每个方法的每个执行步骤都有 `Logger.Debug` 调用
+- [ ] 每个方法的每个执行步骤都有 `Logger.Debug` 调用（使用 `Func<string>` 延迟求值重载）
 - [ ] DDL 操作使用 `Logger.Info`
-- [ ] 异常捕获使用 `Logger.Error` 并包含完整堆栈：`$"[方法名] 异常: {ex}"`
+- [ ] DDL 异常使用 `Logger.Fatal` 并调用 `Environment.FailFast` 终止进程
+- [ ] 其他异常捕获使用 `Logger.Error` 并包含完整堆栈：`$"[方法名] 异常: {ex}"`
 - [ ] 租户表判定规则：包含 `TenantId` 属性即为租户表
 - [ ] 租户表使用分区表创建语句
 - [ ] 审计表包含 snapshot（JSONB）字段
