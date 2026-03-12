@@ -9,8 +9,8 @@ namespace YTStdEntity.Audit;
 public class MasterDetailAuditResult
 {
     /// <summary>主表审计记录列表</summary>
-    public List<AuditRecord> MasterRecords { get; set; } = new();
+    public List<AuditRecord> MasterRecords { get; init; } = new();
 
     /// <summary>查询时间范围内的总记录数（用于分页）</summary>
-    public int TotalCount { get; set; }
+    public int TotalCount { get; init; }
 }

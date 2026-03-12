@@ -356,7 +356,7 @@ internal static class AuditCrudEmitter
         foreach (var detail in model.DetailTables)
         {
             sb.AppendLine($"        /// <summary>{detail.DetailClassName} 从表审计记录</summary>");
-            sb.AppendLine($"        public List<AuditRecord> {detail.DetailClassName}Records {{ get; set; }} = new();");
+            sb.AppendLine($"        public List<AuditRecord> {detail.DetailClassName}Records {{ get; init; }} = new();");
         }
         sb.AppendLine("    }");
     }
@@ -374,24 +374,23 @@ internal static class AuditCrudEmitter
         sb.AppendLine($"            Logger.Debug(tenantId, userId, () =>");
         sb.AppendLine($"                $\"[{cn}AuditCRUD.GetMasterDetailAuditAsync] 进入方法, masterId={{masterId}}\");");
         sb.AppendLine();
-        sb.AppendLine($"            var result = new {cn}MasterDetailAuditResult();");
-        sb.AppendLine();
 
         // Query master records
         sb.AppendLine("            var masterFilter = filter ?? new AuditQueryFilter();");
         sb.AppendLine("            masterFilter.Id = masterId;");
         sb.AppendLine($"            var (masterRecords, masterTotal) = await {cn}AuditCRUD.GetAuditListAsync(tenantId, userId, masterFilter);");
-        sb.AppendLine("            result.MasterRecords = masterRecords;");
-        sb.AppendLine("            result.TotalCount = masterTotal;");
         sb.AppendLine();
 
-        // Query each detail table
-        foreach (var detail in model.DetailTables)
+        // Query each detail table into local variables
+        for (int idx = 0; idx < model.DetailTables.Count; idx++)
         {
+            var detail = model.DetailTables[idx];
             var detailAuditTable = detail.DetailTableName + "_audit";
             var fkCol = detail.ForeignKeyColumnName;
+            var varName = $"detail{idx}Records";
 
             sb.AppendLine($"            // === 从表: {detail.DetailClassName} ===");
+            sb.AppendLine($"            List<AuditRecord> {varName};");
             sb.AppendLine("            {");
             sb.AppendLine($"                var detailParams = new List<PgSqlParam>(6);");
 
@@ -435,10 +434,25 @@ internal static class AuditCrudEmitter
             }
             sb.AppendLine("                }, tenantId, userId);");
             sb.AppendLine();
-            sb.AppendLine($"                result.{detail.DetailClassName}Records = detailRecords ?? new List<AuditRecord>();");
+            sb.AppendLine($"                {varName} = detailRecords ?? new List<AuditRecord>();");
             sb.AppendLine("            }");
             sb.AppendLine();
         }
+
+        // Construct result using object initializer
+        sb.AppendLine($"            var result = new {cn}MasterDetailAuditResult");
+        sb.AppendLine("            {");
+        sb.AppendLine("                MasterRecords = masterRecords,");
+        sb.AppendLine("                TotalCount = masterTotal,");
+        for (int idx = 0; idx < model.DetailTables.Count; idx++)
+        {
+            var detail = model.DetailTables[idx];
+            var varName = $"detail{idx}Records";
+            var comma = idx < model.DetailTables.Count - 1 ? "," : "";
+            sb.AppendLine($"                {detail.DetailClassName}Records = {varName}{comma}");
+        }
+        sb.AppendLine("            };");
+        sb.AppendLine();
 
         sb.AppendLine($"            Logger.Debug(tenantId, userId, () =>");
         sb.AppendLine($"                $\"[{cn}AuditCRUD.GetMasterDetailAuditAsync] 完成, 主表={{result.MasterRecords.Count}}\");");
