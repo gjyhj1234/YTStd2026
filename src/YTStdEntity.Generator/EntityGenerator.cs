@@ -34,15 +34,41 @@ public sealed class EntityGenerator : IIncrementalGenerator
             .Where(static m => m != null)
             .Select(static (m, _) => m!);
 
-        context.RegisterSourceOutput(entityProvider, static (spc, model) =>
-        {
-            spc.AddSource($"{model.ClassName}DAL.g.cs", DalEmitter.Emit(model));
-            spc.AddSource($"{model.ClassName}CRUD.g.cs", CrudEmitter.Emit(model));
-            spc.AddSource($"{model.ClassName}Desc.g.cs", DescEmitter.Emit(model));
+        // Collect all entities to link master-detail relationships
+        var allEntities = entityProvider.Collect();
 
-            if (model.NeedAuditTable)
+        context.RegisterSourceOutput(allEntities, static (spc, models) =>
+        {
+            // Build lookup by class name to link DetailOf → master's DetailTables
+            var dict = new Dictionary<string, EntityModel>();
+            foreach (var m in models)
             {
-                spc.AddSource($"{model.ClassName}AuditCRUD.g.cs", AuditCrudEmitter.Emit(model));
+                dict[m.ClassName] = m;
+            }
+
+            // Link detail tables to their master entities
+            foreach (var m in models)
+            {
+                if (m.DetailRelation != null)
+                {
+                    if (dict.TryGetValue(m.DetailRelation.MasterClassName, out var master))
+                    {
+                        master.DetailTables.Add(m.DetailRelation);
+                    }
+                }
+            }
+
+            // Emit code for each entity
+            foreach (var model in models)
+            {
+                spc.AddSource($"{model.ClassName}DAL.g.cs", DalEmitter.Emit(model));
+                spc.AddSource($"{model.ClassName}CRUD.g.cs", CrudEmitter.Emit(model));
+                spc.AddSource($"{model.ClassName}Desc.g.cs", DescEmitter.Emit(model));
+
+                if (model.NeedAuditTable)
+                {
+                    spc.AddSource($"{model.ClassName}AuditCRUD.g.cs", AuditCrudEmitter.Emit(model));
+                }
             }
         });
     }

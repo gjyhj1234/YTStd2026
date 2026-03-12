@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\YTStdEntity\YTStdEntity.csproj" />
+    <ProjectReference Include="..\..\src\YTStdAdo\YTStdAdo.csproj" />
     <ProjectReference Include="..\..\src\YTStdEntity.Generator\YTStdEntity.Generator.csproj"
                       OutputItemType="Analyzer"
                       ReferenceOutputAssembly="false" />
