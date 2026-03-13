@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
-using System.Text;
 using System.Threading.Tasks;
 using Npgsql;
 using YTStdLogger.Core;
@@ -41,7 +40,15 @@ public static partial class DB
             System.Threading.Interlocked.Increment(ref _poolCount);
         }
 
-        Logger.Info(0, 0, $"[DB.Init] 连接池初始化完成，最小连接数={options.MinPoolSize}，最大连接数={options.MaxPoolSize}");
+        Logger.Info(0, 0, () =>
+        {
+            var vsb = new ValueStringBuilder(128);
+            vsb.Append("[DB.Init] 连接池初始化完成，最小连接数=");
+            vsb.Append(options.MinPoolSize);
+            vsb.Append("，最大连接数=");
+            vsb.Append(options.MaxPoolSize);
+            return vsb.ToString();
+        });
     }
 
     /// <summary>优雅关闭连接池</summary>
@@ -59,7 +66,13 @@ public static partial class DB
             }
             catch (Exception ex)
             {
-                Logger.Error(0, 0, $"[DB.ShutdownAsync] 关闭连接异常: {ex.Message}");
+                Logger.Error(0, 0, () =>
+                {
+                    var vsb = new ValueStringBuilder(128);
+                    vsb.Append("[DB.ShutdownAsync] 关闭连接异常: ");
+                    vsb.Append(ex.Message);
+                    return vsb.ToString();
+                });
             }
         }
 
@@ -91,10 +104,24 @@ public static partial class DB
             catch (Exception ex)
             {
                 if (attempt == retries)
-                    throw new InvalidOperationException(
-                        $"[DB.GetConnection] 无法创建数据库连接，已重试 {retries} 次: {ex.Message}", ex);
+                {
+                    var vsb = new ValueStringBuilder(128);
+                    vsb.Append("[DB.GetConnection] 无法创建数据库连接，已重试 ");
+                    vsb.Append(retries);
+                    vsb.Append(" 次: ");
+                    vsb.Append(ex.Message);
+                    throw new InvalidOperationException(vsb.ToString(), ex);
+                }
 
-                Logger.Warn(0, 0, $"[DB.GetConnection] 创建连接失败，第 {attempt + 1} 次重试: {ex.Message}");
+                Logger.Warn(0, 0, () =>
+                {
+                    var vsb = new ValueStringBuilder(128);
+                    vsb.Append("[DB.GetConnection] 创建连接失败，第 ");
+                    vsb.Append(attempt + 1);
+                    vsb.Append(" 次重试: ");
+                    vsb.Append(ex.Message);
+                    return vsb.ToString();
+                });
                 System.Threading.Thread.Sleep(100 * (attempt + 1));
             }
         }
@@ -139,7 +166,13 @@ public static partial class DB
         {
             sw.Stop();
             Logger.Debug(tenantId, userId, () =>
-                $"[DB.GetBatchAsync] 批处理创建完成，耗时={sw.ElapsedMilliseconds}ms");
+            {
+                var vsb = new ValueStringBuilder(64);
+                vsb.Append("[DB.GetBatchAsync] 批处理创建完成，耗时=");
+                vsb.Append(sw.ElapsedMilliseconds);
+                vsb.Append("ms");
+                return vsb.ToString();
+            });
         }
 
         return batch;
@@ -166,7 +199,13 @@ public static partial class DB
             if (sw is not null)
             {
                 sw.Stop();
-                debugMsg = $"[DB.BatchCommitAsync] 批处理提交完成，影响行数={rowsAffected}，耗时={sw.ElapsedMilliseconds}ms";
+                var vsb = new ValueStringBuilder(stackalloc char[128]);
+                vsb.Append("[DB.BatchCommitAsync] 批处理提交完成，影响行数=");
+                vsb.Append(rowsAffected);
+                vsb.Append("，耗时=");
+                vsb.Append(sw.ElapsedMilliseconds);
+                vsb.Append("ms");
+                debugMsg = vsb.ToString();
                 Logger.Debug(tenantId, userId, () => debugMsg);
             }
 
@@ -174,7 +213,13 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(tenantId, userId, $"[DB.BatchCommitAsync] 批处理提交异常: {ex.Message}");
+            Logger.Error(tenantId, userId, () =>
+            {
+                var vsb = new ValueStringBuilder(128);
+                vsb.Append("[DB.BatchCommitAsync] 批处理提交异常: ");
+                vsb.Append(ex.Message);
+                return vsb.ToString();
+            });
 
             try
             {
@@ -184,7 +229,13 @@ public static partial class DB
             }
             catch (Exception rbEx)
             {
-                Logger.Error(tenantId, userId, $"[DB.BatchCommitAsync] 回滚异常: {rbEx.Message}");
+                Logger.Error(tenantId, userId, () =>
+                {
+                    var vsb = new ValueStringBuilder(128);
+                    vsb.Append("[DB.BatchCommitAsync] 回滚异常: ");
+                    vsb.Append(rbEx.Message);
+                    return vsb.ToString();
+                });
             }
 
             return new DbUdqResult { Success = false, ErrorMessage = ex.Message };
@@ -247,14 +298,26 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(tenantId, userId, $"[DB.InsertAsync] 插入异常: {ex.Message}");
+            Logger.Error(tenantId, userId, () =>
+            {
+                var vsb = new ValueStringBuilder(128);
+                vsb.Append("[DB.InsertAsync] 插入异常: ");
+                vsb.Append(ex.Message);
+                return vsb.ToString();
+            });
 
             if (batch?.Transaction is not null)
             {
                 try { await batch.Transaction.RollbackAsync().ConfigureAwait(false); }
                 catch (Exception rbEx)
                 {
-                    Logger.Error(tenantId, userId, $"[DB.InsertAsync] 回滚异常: {rbEx.Message}");
+                    Logger.Error(tenantId, userId, () =>
+                    {
+                        var vsb = new ValueStringBuilder(128);
+                        vsb.Append("[DB.InsertAsync] 回滚异常: ");
+                        vsb.Append(rbEx.Message);
+                        return vsb.ToString();
+                    });
                 }
             }
 
@@ -328,14 +391,26 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(tenantId, userId, $"[DB.UpdateAsync] 更新异常: {ex.Message}");
+            Logger.Error(tenantId, userId, () =>
+            {
+                var vsb = new ValueStringBuilder(128);
+                vsb.Append("[DB.UpdateAsync] 更新异常: ");
+                vsb.Append(ex.Message);
+                return vsb.ToString();
+            });
 
             if (batch?.Transaction is not null)
             {
                 try { await batch.Transaction.RollbackAsync().ConfigureAwait(false); }
                 catch (Exception rbEx)
                 {
-                    Logger.Error(tenantId, userId, $"[DB.UpdateAsync] 回滚异常: {rbEx.Message}");
+                    Logger.Error(tenantId, userId, () =>
+                    {
+                        var vsb = new ValueStringBuilder(128);
+                        vsb.Append("[DB.UpdateAsync] 回滚异常: ");
+                        vsb.Append(rbEx.Message);
+                        return vsb.ToString();
+                    });
                 }
             }
 
@@ -407,14 +482,26 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(tenantId, userId, $"[DB.DeleteAsync] 删除异常: {ex.Message}");
+            Logger.Error(tenantId, userId, () =>
+            {
+                var vsb = new ValueStringBuilder(128);
+                vsb.Append("[DB.DeleteAsync] 删除异常: ");
+                vsb.Append(ex.Message);
+                return vsb.ToString();
+            });
 
             if (batch?.Transaction is not null)
             {
                 try { await batch.Transaction.RollbackAsync().ConfigureAwait(false); }
                 catch (Exception rbEx)
                 {
-                    Logger.Error(tenantId, userId, $"[DB.DeleteAsync] 回滚异常: {rbEx.Message}");
+                    Logger.Error(tenantId, userId, () =>
+                    {
+                        var vsb = new ValueStringBuilder(128);
+                        vsb.Append("[DB.DeleteAsync] 回滚异常: ");
+                        vsb.Append(rbEx.Message);
+                        return vsb.ToString();
+                    });
                 }
             }
 
@@ -484,7 +571,13 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(tenantId, userId, $"[DB.GetListAsync] 查询异常: {ex.Message}");
+            Logger.Error(tenantId, userId, () =>
+            {
+                var vsb = new ValueStringBuilder(128);
+                vsb.Append("[DB.GetListAsync] 查询异常: ");
+                vsb.Append(ex.Message);
+                return vsb.ToString();
+            });
             return (new DbUdqResult { Success = false, ErrorMessage = ex.Message }, null);
         }
         finally
@@ -534,7 +627,13 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(tenantId, userId, $"[DB.GetListTxAsync] 查询异常: {ex.Message}");
+            Logger.Error(tenantId, userId, () =>
+            {
+                var vsb = new ValueStringBuilder(128);
+                vsb.Append("[DB.GetListTxAsync] 查询异常: ");
+                vsb.Append(ex.Message);
+                return vsb.ToString();
+            });
             return (new DbUdqResult { Success = false, ErrorMessage = ex.Message }, null);
         }
     }
@@ -574,7 +673,13 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(tenantId, userId, $"[DB.GetListAsync(JSON)] 查询异常: {ex.Message}");
+            Logger.Error(tenantId, userId, () =>
+            {
+                var vsb = new ValueStringBuilder(128);
+                vsb.Append("[DB.GetListAsync(JSON)] 查询异常: ");
+                vsb.Append(ex.Message);
+                return vsb.ToString();
+            });
             return new DbUdqResult { Success = false, ErrorMessage = ex.Message };
         }
         finally
@@ -619,7 +724,13 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(tenantId, userId, $"[DB.GetScalarAsync] 标量查询异常: {ex.Message}");
+            Logger.Error(tenantId, userId, () =>
+            {
+                var vsb = new ValueStringBuilder(128);
+                vsb.Append("[DB.GetScalarAsync] 标量查询异常: ");
+                vsb.Append(ex.Message);
+                return vsb.ToString();
+            });
             return new DbScalarResult<T> { Success = false, ErrorMessage = ex.Message };
         }
         finally
@@ -670,7 +781,13 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(tenantId, userId, $"[DB.GetScalarTxAsync] 标量查询异常: {ex.Message}");
+            Logger.Error(tenantId, userId, () =>
+            {
+                var vsb = new ValueStringBuilder(128);
+                vsb.Append("[DB.GetScalarTxAsync] 标量查询异常: ");
+                vsb.Append(ex.Message);
+                return vsb.ToString();
+            });
             return new DbScalarResult<T> { Success = false, ErrorMessage = ex.Message };
         }
     }
@@ -683,17 +800,21 @@ public static partial class DB
     public static async ValueTask<DbUdqResult> GetTableInfor(string tableName)
     {
         const string sql = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = @tableName";
-        var parameters = new PgSqlParam[]
-        {
-            new PgSqlParam("tableName", tableName)
-        };
 
         NpgsqlConnection? conn = null;
         try
         {
             conn = GetConnection();
             await using var cmd = new NpgsqlCommand(sql, conn);
-            AddParameters(cmd, parameters, 0, 0, "GetTableInfor");
+            // 直接构建 NpgsqlParameter，省去 PgSqlParam 中间数组分配
+            cmd.Parameters.AddWithValue("tableName", tableName);
+            Logger.Debug(0, 0, () =>
+            {
+                var vsb = new ValueStringBuilder(64);
+                vsb.Append("[DB.GetTableInfor] 参数[0]: Name=tableName, Value=");
+                vsb.Append(tableName);
+                return vsb.ToString();
+            });
 
             await using var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false);
             int rowCount = 0;
@@ -702,13 +823,29 @@ public static partial class DB
                 rowCount++;
             }
 
-            Logger.Info(0, 0, $"[DB.GetTableInfor] 查询表 {tableName} 完成，结果行数={rowCount}");
+            Logger.Info(0, 0, () =>
+            {
+                var vsb = new ValueStringBuilder(64);
+                vsb.Append("[DB.GetTableInfor] 查询表 ");
+                vsb.Append(tableName);
+                vsb.Append(" 完成，结果行数=");
+                vsb.Append(rowCount);
+                return vsb.ToString();
+            });
 
             return new DbUdqResult { Success = true, RowsAffected = rowCount };
         }
         catch (Exception ex)
         {
-            Logger.Error(0, 0, $"[DB.GetTableInfor] 查询表 {tableName} 异常: {ex.Message}");
+            Logger.Error(0, 0, () =>
+            {
+                var vsb = new ValueStringBuilder(128);
+                vsb.Append("[DB.GetTableInfor] 查询表 ");
+                vsb.Append(tableName);
+                vsb.Append(" 异常: ");
+                vsb.Append(ex.Message);
+                return vsb.ToString();
+            });
             return new DbUdqResult { Success = false, ErrorMessage = ex.Message };
         }
         finally
@@ -734,17 +871,19 @@ public static partial class DB
             "WHERE c.table_schema = 'public' AND c.table_name = @tableName " +
             "ORDER BY c.ordinal_position";
 
-        var parameters = new PgSqlParam[]
-        {
-            new PgSqlParam("tableName", tableName)
-        };
-
         NpgsqlConnection? conn = null;
         try
         {
             conn = GetConnection();
             await using var cmd = new NpgsqlCommand(sql, conn);
-            AddParameters(cmd, parameters, 0, 0, "GetFieldsInfor");
+            cmd.Parameters.AddWithValue("tableName", tableName);
+            Logger.Debug(0, 0, () =>
+            {
+                var vsb = new ValueStringBuilder(64);
+                vsb.Append("[DB.GetFieldsInfor] 参数[0]: Name=tableName, Value=");
+                vsb.Append(tableName);
+                return vsb.ToString();
+            });
 
             await using var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false);
             var list = new List<DbField>();
@@ -753,13 +892,29 @@ public static partial class DB
                 list.Add(mapper(reader));
             }
 
-            Logger.Info(0, 0, $"[DB.GetFieldsInfor] 查询表 {tableName} 字段完成，字段数={list.Count}");
+            Logger.Info(0, 0, () =>
+            {
+                var vsb = new ValueStringBuilder(64);
+                vsb.Append("[DB.GetFieldsInfor] 查询表 ");
+                vsb.Append(tableName);
+                vsb.Append(" 字段完成，字段数=");
+                vsb.Append(list.Count);
+                return vsb.ToString();
+            });
 
             return (new DbUdqResult { Success = true, RowsAffected = list.Count }, list);
         }
         catch (Exception ex)
         {
-            Logger.Error(0, 0, $"[DB.GetFieldsInfor] 查询表 {tableName} 字段异常: {ex.Message}");
+            Logger.Error(0, 0, () =>
+            {
+                var vsb = new ValueStringBuilder(128);
+                vsb.Append("[DB.GetFieldsInfor] 查询表 ");
+                vsb.Append(tableName);
+                vsb.Append(" 字段异常: ");
+                vsb.Append(ex.Message);
+                return vsb.ToString();
+            });
             return (new DbUdqResult { Success = false, ErrorMessage = ex.Message }, null);
         }
         finally
@@ -777,17 +932,19 @@ public static partial class DB
             "SELECT indexname, tablename, indexdef FROM pg_indexes " +
             "WHERE schemaname = 'public' AND tablename = @tableName";
 
-        var parameters = new PgSqlParam[]
-        {
-            new PgSqlParam("tableName", tableName)
-        };
-
         NpgsqlConnection? conn = null;
         try
         {
             conn = GetConnection();
             await using var cmd = new NpgsqlCommand(sql, conn);
-            AddParameters(cmd, parameters, 0, 0, "GetIndexesInfor");
+            cmd.Parameters.AddWithValue("tableName", tableName);
+            Logger.Debug(0, 0, () =>
+            {
+                var vsb = new ValueStringBuilder(64);
+                vsb.Append("[DB.GetIndexesInfor] 参数[0]: Name=tableName, Value=");
+                vsb.Append(tableName);
+                return vsb.ToString();
+            });
 
             await using var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false);
             var list = new List<DbIndex>();
@@ -796,13 +953,29 @@ public static partial class DB
                 list.Add(mapper(reader));
             }
 
-            Logger.Info(0, 0, $"[DB.GetIndexesInfor] 查询表 {tableName} 索引完成，索引数={list.Count}");
+            Logger.Info(0, 0, () =>
+            {
+                var vsb = new ValueStringBuilder(64);
+                vsb.Append("[DB.GetIndexesInfor] 查询表 ");
+                vsb.Append(tableName);
+                vsb.Append(" 索引完成，索引数=");
+                vsb.Append(list.Count);
+                return vsb.ToString();
+            });
 
             return (new DbUdqResult { Success = true, RowsAffected = list.Count }, list);
         }
         catch (Exception ex)
         {
-            Logger.Error(0, 0, $"[DB.GetIndexesInfor] 查询表 {tableName} 索引异常: {ex.Message}");
+            Logger.Error(0, 0, () =>
+            {
+                var vsb = new ValueStringBuilder(128);
+                vsb.Append("[DB.GetIndexesInfor] 查询表 ");
+                vsb.Append(tableName);
+                vsb.Append(" 索引异常: ");
+                vsb.Append(ex.Message);
+                return vsb.ToString();
+            });
             return (new DbUdqResult { Success = false, ErrorMessage = ex.Message }, null);
         }
         finally
@@ -818,7 +991,14 @@ public static partial class DB
         var tableResult = await GetTableInfor(tableName).ConfigureAwait(false);
         if (tableResult.Success && tableResult.RowsAffected > 0)
         {
-            Logger.Info(0, 0, $"[DB.CreateTable] 表 {tableName} 已存在");
+            Logger.Info(0, 0, () =>
+            {
+                var vsb = new ValueStringBuilder(64);
+                vsb.Append("[DB.CreateTable] 表 ");
+                vsb.Append(tableName);
+                vsb.Append(" 已存在");
+                return vsb.ToString();
+            });
             return DDLStatus.Existed;
         }
 
@@ -829,13 +1009,26 @@ public static partial class DB
             await using var cmd = new NpgsqlCommand(sql, conn);
             await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
 
-            Logger.Info(0, 0, $"[DB.CreateTable] 表 {tableName} 创建成功");
+            Logger.Info(0, 0, () =>
+            {
+                var vsb = new ValueStringBuilder(64);
+                vsb.Append("[DB.CreateTable] 表 ");
+                vsb.Append(tableName);
+                vsb.Append(" 创建成功");
+                return vsb.ToString();
+            });
             return DDLStatus.Success;
         }
         catch (Exception ex)
         {
-            Logger.Fatal(0, 0, $"[DB.CreateTable] 创建表 {tableName} 失败: {ex.Message}");
-            Environment.FailFast($"[DB.CreateTable] 创建表 {tableName} 失败: {ex.Message}");
+            var vsb = new ValueStringBuilder(256);
+            vsb.Append("[DB.CreateTable] 创建表 ");
+            vsb.Append(tableName);
+            vsb.Append(" 失败: ");
+            vsb.Append(ex.Message);
+            string errMsg = vsb.ToString();
+            Logger.Fatal(0, 0, errMsg);
+            Environment.FailFast(errMsg);
             return DDLStatus.Failed;
         }
         finally
@@ -884,19 +1077,37 @@ public static partial class DB
                 // 添加字段
                 var typeSpec = BuildTypeSpec(dataType, length, precision);
                 var nullSpec = nullable ? "NULL" : "NOT NULL";
-                var sql = $"ALTER TABLE \"{tableName}\" ADD COLUMN \"{fieldName}\" {typeSpec} {nullSpec}";
+                var vsbAdd = new ValueStringBuilder(stackalloc char[256]);
+                vsbAdd.Append("ALTER TABLE \"");
+                vsbAdd.Append(tableName);
+                vsbAdd.Append("\" ADD COLUMN \"");
+                vsbAdd.Append(fieldName);
+                vsbAdd.Append("\" ");
+                vsbAdd.Append(typeSpec);
+                vsbAdd.Append(' ');
+                vsbAdd.Append(nullSpec);
+                string sql = vsbAdd.ToString();
 
                 await using var cmd = new NpgsqlCommand(sql, conn);
                 await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
 
-                Logger.Info(0, 0, $"[DB.AlterTable] 表 {tableName} 添加字段 {fieldName} 成功");
+                Logger.Info(0, 0, () =>
+                {
+                    var vsb = new ValueStringBuilder(64);
+                    vsb.Append("[DB.AlterTable] 表 ");
+                    vsb.Append(tableName);
+                    vsb.Append(" 添加字段 ");
+                    vsb.Append(fieldName);
+                    vsb.Append(" 成功");
+                    return vsb.ToString();
+                });
                 return DDLStatus.Success;
             }
             else
             {
                 // 修改字段 - 仅扩展长度
                 bool changed = false;
-                var sb = new StringBuilder();
+                var vsbSql = new ValueStringBuilder(stackalloc char[256]);
 
                 if (!string.IsNullOrEmpty(length))
                 {
@@ -904,38 +1115,75 @@ public static partial class DB
                         (existingField.MaxLength is null || newLength > existingField.MaxLength.Value))
                     {
                         var typeSpec = BuildTypeSpec(dataType, length, precision);
-                        sb.Append($"ALTER TABLE \"{tableName}\" ALTER COLUMN \"{fieldName}\" TYPE {typeSpec}");
+                        vsbSql.Append("ALTER TABLE \"");
+                        vsbSql.Append(tableName);
+                        vsbSql.Append("\" ALTER COLUMN \"");
+                        vsbSql.Append(fieldName);
+                        vsbSql.Append("\" TYPE ");
+                        vsbSql.Append(typeSpec);
                         changed = true;
                     }
                 }
 
                 if (nullable != existingField.IsNullable)
                 {
-                    if (changed) sb.Append("; ");
+                    if (changed) vsbSql.Append("; ");
+                    vsbSql.Append("ALTER TABLE \"");
+                    vsbSql.Append(tableName);
+                    vsbSql.Append("\" ALTER COLUMN \"");
+                    vsbSql.Append(fieldName);
                     if (nullable)
-                        sb.Append($"ALTER TABLE \"{tableName}\" ALTER COLUMN \"{fieldName}\" DROP NOT NULL");
+                        vsbSql.Append("\" DROP NOT NULL");
                     else
-                        sb.Append($"ALTER TABLE \"{tableName}\" ALTER COLUMN \"{fieldName}\" SET NOT NULL");
+                        vsbSql.Append("\" SET NOT NULL");
                     changed = true;
                 }
 
                 if (!changed)
                 {
-                    Logger.Info(0, 0, $"[DB.AlterTable] 表 {tableName} 字段 {fieldName} 无需修改");
+                    vsbSql.Dispose();
+                    Logger.Info(0, 0, () =>
+                    {
+                        var vsb = new ValueStringBuilder(64);
+                        vsb.Append("[DB.AlterTable] 表 ");
+                        vsb.Append(tableName);
+                        vsb.Append(" 字段 ");
+                        vsb.Append(fieldName);
+                        vsb.Append(" 无需修改");
+                        return vsb.ToString();
+                    });
                     return DDLStatus.Existed;
                 }
 
-                await using var cmd = new NpgsqlCommand(sb.ToString(), conn);
+                string alterSql = vsbSql.ToString();
+                await using var cmd = new NpgsqlCommand(alterSql, conn);
                 await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
 
-                Logger.Info(0, 0, $"[DB.AlterTable] 表 {tableName} 修改字段 {fieldName} 成功");
+                Logger.Info(0, 0, () =>
+                {
+                    var vsb = new ValueStringBuilder(64);
+                    vsb.Append("[DB.AlterTable] 表 ");
+                    vsb.Append(tableName);
+                    vsb.Append(" 修改字段 ");
+                    vsb.Append(fieldName);
+                    vsb.Append(" 成功");
+                    return vsb.ToString();
+                });
                 return DDLStatus.Success;
             }
         }
         catch (Exception ex)
         {
-            Logger.Fatal(0, 0, $"[DB.AlterTable] 修改表 {tableName} 字段 {fieldName} 失败: {ex.Message}");
-            Environment.FailFast($"[DB.AlterTable] 修改表 {tableName} 字段 {fieldName} 失败: {ex.Message}");
+            var vsbErr = new ValueStringBuilder(256);
+            vsbErr.Append("[DB.AlterTable] 修改表 ");
+            vsbErr.Append(tableName);
+            vsbErr.Append(" 字段 ");
+            vsbErr.Append(fieldName);
+            vsbErr.Append(" 失败: ");
+            vsbErr.Append(ex.Message);
+            string errMsg = vsbErr.ToString();
+            Logger.Fatal(0, 0, errMsg);
+            Environment.FailFast(errMsg);
             return DDLStatus.Failed;
         }
         finally
@@ -961,7 +1209,14 @@ public static partial class DB
             {
                 if (string.Equals(indexesResult.Data[i].IndexName, indexName, StringComparison.OrdinalIgnoreCase))
                 {
-                    Logger.Info(0, 0, $"[DB.CreateIndex] 索引 {indexName} 已存在");
+                    Logger.Info(0, 0, () =>
+                    {
+                        var vsb = new ValueStringBuilder(64);
+                        vsb.Append("[DB.CreateIndex] 索引 ");
+                        vsb.Append(indexName);
+                        vsb.Append(" 已存在");
+                        return vsb.ToString();
+                    });
                     return DDLStatus.Existed;
                 }
             }
@@ -971,19 +1226,39 @@ public static partial class DB
         try
         {
             conn = GetConnection();
-            var uniqueStr = unique ? "UNIQUE " : "";
-            var sql = $"CREATE {uniqueStr}INDEX \"{indexName}\" ON \"{tableName}\" ({fieldNames})";
+            var vsbIdx = new ValueStringBuilder(stackalloc char[256]);
+            vsbIdx.Append(unique ? "CREATE UNIQUE INDEX \"" : "CREATE INDEX \"");
+            vsbIdx.Append(indexName);
+            vsbIdx.Append("\" ON \"");
+            vsbIdx.Append(tableName);
+            vsbIdx.Append("\" (");
+            vsbIdx.Append(fieldNames);
+            vsbIdx.Append(')');
+            string sql = vsbIdx.ToString();
 
             await using var cmd = new NpgsqlCommand(sql, conn);
             await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
 
-            Logger.Info(0, 0, $"[DB.CreateIndex] 索引 {indexName} 创建成功");
+            Logger.Info(0, 0, () =>
+            {
+                var vsb = new ValueStringBuilder(64);
+                vsb.Append("[DB.CreateIndex] 索引 ");
+                vsb.Append(indexName);
+                vsb.Append(" 创建成功");
+                return vsb.ToString();
+            });
             return DDLStatus.Success;
         }
         catch (Exception ex)
         {
-            Logger.Fatal(0, 0, $"[DB.CreateIndex] 创建索引 {indexName} 失败: {ex.Message}");
-            Environment.FailFast($"[DB.CreateIndex] 创建索引 {indexName} 失败: {ex.Message}");
+            var vsbErr = new ValueStringBuilder(256);
+            vsbErr.Append("[DB.CreateIndex] 创建索引 ");
+            vsbErr.Append(indexName);
+            vsbErr.Append(" 失败: ");
+            vsbErr.Append(ex.Message);
+            string errMsg = vsbErr.ToString();
+            Logger.Fatal(0, 0, errMsg);
+            Environment.FailFast(errMsg);
             return DDLStatus.Failed;
         }
         finally
@@ -1003,8 +1278,23 @@ public static partial class DB
         for (int i = 0; i < parameters.Length; i++)
         {
             var p = parameters[i];
+            // 捕获局部变量以避免闭包捕获循环变量
+            int idx = i;
             Logger.Debug(tenantId, userId, () =>
-                $"[{methodName}] 参数[{i}]: Name={p.Name}, Value={p.Value}, DbType={p.DbType}");
+            {
+                var vsb = new ValueStringBuilder(128);
+                vsb.Append('[');
+                vsb.Append(methodName);
+                vsb.Append("] 参数[");
+                vsb.Append(idx);
+                vsb.Append("]: Name=");
+                vsb.Append(p.Name);
+                vsb.Append(", Value=");
+                vsb.Append(p.Value?.ToString());
+                vsb.Append(", DbType=");
+                vsb.Append(p.DbType?.ToString());
+                return vsb.ToString();
+            });
             if (p.DbType.HasValue)
                 cmd.Parameters.AddWithValue(p.Name, p.DbType.Value, p.Value ?? DBNull.Value);
             else
@@ -1018,8 +1308,22 @@ public static partial class DB
         for (int i = 0; i < parameters.Length; i++)
         {
             var p = parameters[i];
+            int idx = i;
             Logger.Debug(tenantId, userId, () =>
-                $"[{methodName}] 参数[{i}]: Name={p.Name}, Value={p.Value}, DbType={p.DbType}");
+            {
+                var vsb = new ValueStringBuilder(128);
+                vsb.Append('[');
+                vsb.Append(methodName);
+                vsb.Append("] 参数[");
+                vsb.Append(idx);
+                vsb.Append("]: Name=");
+                vsb.Append(p.Name);
+                vsb.Append(", Value=");
+                vsb.Append(p.Value?.ToString());
+                vsb.Append(", DbType=");
+                vsb.Append(p.DbType?.ToString());
+                return vsb.ToString();
+            });
             if (p.DbType.HasValue)
                 cmd.Parameters.AddWithValue(p.Name, p.DbType.Value, p.Value ?? DBNull.Value);
             else
@@ -1028,43 +1332,101 @@ public static partial class DB
     }
 
     /// <summary>格式化参数值用于调试SQL</summary>
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private static string FormatParamValue(object? value)
     {
         if (value is null || value is DBNull)
             return "NULL";
         if (value is string s)
-            return $"'{s}'";
+        {
+            var vsb = new ValueStringBuilder(stackalloc char[64]);
+            vsb.Append('\'');
+            vsb.Append(s);
+            vsb.Append('\'');
+            return vsb.ToString();
+        }
         if (value is DateTime dt)
-            return $"'{dt:yyyy-MM-dd HH:mm:ss}'";
+        {
+            var vsb = new ValueStringBuilder(stackalloc char[32]);
+            vsb.Append('\'');
+            vsb.Append(dt.ToString("yyyy-MM-dd HH:mm:ss"));
+            vsb.Append('\'');
+            return vsb.ToString();
+        }
         if (value is bool b)
             return b ? "true" : "false";
         if (value is byte[] bytes)
-            return $"'\\x{BitConverter.ToString(bytes).Replace("-", "")}'";
+        {
+            var hex = BitConverter.ToString(bytes).Replace("-", "");
+            var vsb = new ValueStringBuilder(stackalloc char[64]);
+            vsb.Append("'\\x");
+            vsb.Append(hex);
+            vsb.Append('\'');
+            return vsb.ToString();
+        }
         return value.ToString() ?? "NULL";
     }
 
     /// <summary>构建可执行的调试SQL（参数替换）</summary>
     private static string BuildDebugInfo(string sql, PgSqlParam[] parameters, int tenantId, long userId, long elapsedMs)
     {
-        var sb = new StringBuilder(sql);
+        // 先完成参数替换（Replace 会创建新字符串，但无法避免）
+        string result = sql;
         for (int i = 0; i < parameters.Length; i++)
         {
             var p = parameters[i];
-            var paramName = p.Name.StartsWith("@") ? p.Name : "@" + p.Name;
-            sb.Replace(paramName, FormatParamValue(p.Value));
+            string paramName;
+            if (p.Name.StartsWith("@"))
+            {
+                paramName = p.Name;
+            }
+            else
+            {
+                var vsb2 = new ValueStringBuilder(64);
+                vsb2.Append('@');
+                vsb2.Append(p.Name);
+                paramName = vsb2.ToString();
+            }
+            result = result.Replace(paramName, FormatParamValue(p.Value));
         }
 
-        sb.Append($" -- tenantId={tenantId}, userId={userId}, elapsed={elapsedMs}ms");
-        return sb.ToString();
+        // 使用 ValueStringBuilder 拼接后缀
+        var vsb = new ValueStringBuilder(stackalloc char[256]);
+        vsb.Append(result);
+        vsb.Append(" -- tenantId=");
+        vsb.Append(tenantId);
+        vsb.Append(", userId=");
+        vsb.Append(userId);
+        vsb.Append(", elapsed=");
+        vsb.Append(elapsedMs);
+        vsb.Append("ms");
+        return vsb.ToString();
     }
 
     /// <summary>构建字段类型规范</summary>
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private static string BuildTypeSpec(string dataType, string length, string precision)
     {
         if (!string.IsNullOrEmpty(precision))
-            return $"{dataType}({length},{precision})";
+        {
+            var vsb = new ValueStringBuilder(stackalloc char[32]);
+            vsb.Append(dataType);
+            vsb.Append('(');
+            vsb.Append(length);
+            vsb.Append(',');
+            vsb.Append(precision);
+            vsb.Append(')');
+            return vsb.ToString();
+        }
         if (!string.IsNullOrEmpty(length))
-            return $"{dataType}({length})";
+        {
+            var vsb = new ValueStringBuilder(stackalloc char[32]);
+            vsb.Append(dataType);
+            vsb.Append('(');
+            vsb.Append(length);
+            vsb.Append(')');
+            return vsb.ToString();
+        }
         return dataType;
     }
 

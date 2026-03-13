@@ -2,6 +2,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 using YTStdLogger.Logging;
 
@@ -140,7 +141,17 @@ public sealed class BatchedFileWriter : IDisposable
     private WriterState GetOrCreateState(DateTime ts, int tenantId, LogLevel level)
     {
         DateTime day = new DateTime(ts.Year, ts.Month, ts.Day);
-        string key = tenantId.ToString() + "|" + day.Year.ToString("0000") + day.Month.ToString("00") + day.Day.ToString("00") + "|" + (int)level;
+        // 使用 stackalloc + Span 构建字典键，避免多次 ToString + 字符串拼接
+        Span<char> keyBuf = stackalloc char[32];
+        int kp = 0;
+        tenantId.TryFormat(keyBuf.Slice(kp), out int w1); kp += w1;
+        keyBuf[kp++] = '|';
+        day.Year.TryFormat(keyBuf.Slice(kp), out int w2); kp += w2;
+        WriteFixed2(day.Month, keyBuf, ref kp);
+        WriteFixed2(day.Day, keyBuf, ref kp);
+        keyBuf[kp++] = '|';
+        ((int)level).TryFormat(keyBuf.Slice(kp), out int w3); kp += w3;
+        string key = keyBuf.Slice(0, kp).ToString();
 
         lock (_gate)
         {
@@ -180,6 +191,16 @@ public sealed class BatchedFileWriter : IDisposable
                 pair.Value.Stream?.Flush(flushToDisk: false);
             }
         }
+    }
+
+    /// <summary>
+    /// 写入两位固定宽度整数（前导零填充），用于日期格式化。
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void WriteFixed2(int value, Span<char> buf, ref int pos)
+    {
+        buf[pos++] = (char)('0' + ((value / 10) % 10));
+        buf[pos++] = (char)('0' + (value % 10));
     }
 
     /// <inheritdoc/>

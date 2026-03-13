@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace YTStdLogger.Logging;
 
@@ -40,6 +41,7 @@ public sealed class DefaultLogFormatter : ILogFormatter
         return p;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int WriteLevel(LogLevel level, Span<char> destination)
     {
         ReadOnlySpan<char> text = level switch
@@ -81,12 +83,14 @@ public sealed class DefaultLogFormatter : ILogFormatter
         Write3(ms, destination, ref p);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void Write2(int value, Span<char> destination, ref int p)
     {
         destination[p++] = (char)('0' + ((value / 10) % 10));
         destination[p++] = (char)('0' + (value % 10));
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void Write3(int value, Span<char> destination, ref int p)
     {
         destination[p++] = (char)('0' + ((value / 100) % 10));

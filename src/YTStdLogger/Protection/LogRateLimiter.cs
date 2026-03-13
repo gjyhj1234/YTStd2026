@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace YTStdLogger.Protection;
@@ -54,6 +55,7 @@ public sealed class LogRateLimiter
     /// <summary>
     /// 记录队列满导致的丢弃。
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void MarkDroppedByQueue()
     {
         Interlocked.Increment(ref _droppedTotal);

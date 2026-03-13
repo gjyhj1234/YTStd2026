@@ -11,6 +11,10 @@
 
 - [YTStdSqlBuilder（SQL 构建器）](#ytstdsqlbuildersql-构建器)
 - [YTStdSqlBuilder.Generator（源代码生成器）](#ytstdsqlbuildergenerator源代码生成器)
+- [YTStdLogger（日志系统）](#ytstdlogger日志系统)
+- [YTStdAdo（数据库访问层）](#ytstdado数据库访问层)
+- [YTStdEntity（实体框架）](#ytstdentity实体框架)
+- [YTStdI18n（国际化）](#ytstdi18n国际化)
 
 ---
 
@@ -543,3 +547,180 @@ public static partial class UserQueries
 4. **参数化**：默认使用 `@p0, @p1, ...` 参数占位符，防止 SQL 注入
 5. **高性能**：渲染器使用 `ref struct RenderContext` + `ValueStringBuilder` + `ArrayPool`，零分配
 6. **AOT 友好**：所有关键路径无反射，Source Generator 编译期解析
+
+---
+
+## YTStdLogger（日志系统）
+
+### 项目信息
+
+| 属性 | 值 |
+|------|-----|
+| 路径 | `src/YTStdLogger/` |
+| 目标框架 | net10.0 |
+| NativeAOT | 完全兼容 |
+
+### 核心类型
+
+#### `Logger` (静态门面)
+
+```csharp
+public static class Logger
+{
+    static void Init(LogOptions options);
+    static ValueTask ShutdownAsync();
+    static void Log(int tenantId, long userId, LogLevel level, string message);
+    static void Log(int tenantId, long userId, LogLevel level, Func<string> messageFactory);
+    static void Fatal/Error/Warn/Info/Debug(int tenantId, long userId, string message);
+    static void Fatal/Error/Warn/Info/Debug(int tenantId, long userId, Func<string> messageFactory);
+    static void EnableTenantDebug(int tenantId);
+    static bool DisableTenantDebug(int tenantId);
+    static bool IsTenantDebugEnabled(int tenantId);
+}
+```
+
+#### `LoggerEngine`
+
+- 使用 `ImmutableHashSet<int>` 管理租户 Debug 开关（读多写少优化）
+- MPMC RingBuffer 无锁队列
+- 批量文件写入 + ArrayPool 零分配格式化
+
+#### `LogLevel`
+
+```csharp
+public enum LogLevel { Fatal = 0, Error = 1, Warn = 2, Infor = 3, Debug = 4 }
+```
+
+---
+
+## YTStdAdo（数据库访问层）
+
+### 项目信息
+
+| 属性 | 值 |
+|------|-----|
+| 路径 | `src/YTStdAdo/` |
+| 目标框架 | net10.0 |
+| 依赖 | Npgsql, YTStdSqlBuilder, YTStdLogger |
+
+### 核心类型
+
+#### `DB` (静态入口)
+
+```csharp
+public static partial class DB
+{
+    // 连接池
+    static void Init(DbOptions options);
+    static ValueTask ShutdownAsync();
+    static NpgsqlConnection GetConnection();
+    static void ReturnConnection(NpgsqlConnection conn);
+
+    // 事务
+    static ValueTask<NpgsqlBatch> GetBatchAsync(int tenantId, long userId);
+    static ValueTask<DbUdqResult> BatchCommitAsync(NpgsqlBatch batch, int tenantId, long userId);
+
+    // CRUD
+    static ValueTask<DbInsResult> InsertAsync(string sql, PgSqlParam[] parameters, int tenantId, long userId);
+    static ValueTask<DbInsResult> InsertTxAsync(NpgsqlBatch batch, string sql, PgSqlParam[] parameters, int tenantId, long userId);
+    static ValueTask<DbUdqResult> UpdateAsync/DeleteAsync(...);
+    static ValueTask UpdateTxAsync/DeleteTxAsync(...);
+    static ValueTask<(DbUdqResult, List<T>?)> GetListAsync<T>(...);
+    static ValueTask<DbScalarResult<T>> GetScalarAsync<T>(...);
+
+    // DDL
+    static ValueTask<DbUdqResult> GetTableInfor(string tableName);
+    static ValueTask<DDLStatus> CreateTable(string tableName, string sql);
+    static ValueTask<DDLStatus> AlterTable(...);
+    static ValueTask<DDLStatus> CreateIndex(...);
+}
+```
+
+#### 返回类型
+
+- `DbInsResult` — `Success`, `Id`, `ErrorMessage`, `DebugMessage`
+- `DbUdqResult` — `Success`, `RowsAffected`, `ErrorMessage`, `DebugMessage`
+- `DbScalarResult<T>` — `Success`, `Value`, `ErrorMessage`, `DebugMessage`
+- `DDLStatus` — `Success`, `Failed`, `Existed`
+
+---
+
+## YTStdEntity（实体框架）
+
+### 项目信息
+
+| 属性 | 值 |
+|------|-----|
+| 路径 | `src/YTStdEntity/` |
+| 目标框架 | net10.0 |
+| 依赖 | YTStdAdo, YTStdLogger, Npgsql |
+
+### 核心类型
+
+#### `DbNullable<T>` — 三态可空结构体
+
+```csharp
+public readonly struct DbNullable<T>
+{
+    bool IsSet { get; }
+    T? Value { get; }
+    static DbNullable<T> NullValue;  // 显式 NULL
+    static DbNullable<T> Unset;      // 未设置
+}
+```
+
+#### `IncrementalBackupService` — 增量备份服务
+
+```csharp
+public sealed class IncrementalBackupService : IAsyncDisposable, IDisposable
+{
+    IncrementalBackupService(IncrementalBackupOptions options);
+    ValueTask<int> SyncOnceAsync(string sourceConnectionString, string tableName, int tenantId, long userId);
+}
+```
+
+排除规则：不备份 `_Log` 和 `_Audit` 结尾的表。
+
+#### `TenantSeparationService` — 租户分离服务
+
+```csharp
+public sealed class TenantSeparationService
+{
+    TenantSeparationService(TenantSeparationOptions options);
+    ValueTask<int> MigrateAsync(string sourceConnectionString, int tenantId, long userId);
+}
+```
+
+排除规则：不迁移 `_Log` 结尾的表。
+
+---
+
+## YTStdI18n（国际化）
+
+### 项目信息
+
+| 属性 | 值 |
+|------|-----|
+| 路径 | `src/YTStdI18n/` |
+| 目标框架 | net10.0 |
+| 依赖 | YTStdLogger |
+
+### 核心类型
+
+#### `I18nCore` (内部实现)
+
+```csharp
+public static class I18nCore
+{
+    static Lang DefaultLang { get; set; }
+    static void Init(Lang defaultLang = Lang.ZhCn);
+    static void SetTenantLang(int tenantId, Lang lang);
+    static Lang GetTenantLang(int tenantId);
+}
+```
+
+#### `Lang` 枚举
+
+```csharp
+public enum Lang { ZhCn = 0, En = 1, Ja = 2, ZhTw = 3 }
+```
