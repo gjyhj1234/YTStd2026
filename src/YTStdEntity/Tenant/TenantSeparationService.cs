@@ -324,17 +324,14 @@ public sealed class TenantSeparationService
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static string BuildColumnList(List<string> columns)
     {
-        Span<char> buf = stackalloc char[2048];
-        int p = 0;
+        // 非热路径操作，使用字符串拼接确保任意列数安全
+        string result = "";
         for (int i = 0; i < columns.Count; i++)
         {
-            if (i > 0) buf[p++] = ',';
-            buf[p++] = '"';
-            columns[i].AsSpan().CopyTo(buf.Slice(p));
-            p += columns[i].Length;
-            buf[p++] = '"';
+            if (i > 0) result += ",";
+            result += "\"" + columns[i] + "\"";
         }
-        return buf.Slice(0, p).ToString();
+        return result;
     }
 
     /// <summary>
@@ -343,16 +340,13 @@ public sealed class TenantSeparationService
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static string BuildParamList(int count)
     {
-        Span<char> buf = stackalloc char[256];
-        int p = 0;
+        string result = "";
         for (int i = 0; i < count; i++)
         {
-            if (i > 0) buf[p++] = ',';
-            buf[p++] = '@';
-            buf[p++] = 'p';
-            i.TryFormat(buf.Slice(p), out int w); p += w;
+            if (i > 0) result += ",";
+            result += "@p" + i.ToString();
         }
-        return buf.Slice(0, p).ToString();
+        return result;
     }
 
     /// <summary>
@@ -361,22 +355,12 @@ public sealed class TenantSeparationService
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static string BuildUpdateList(List<string> columns)
     {
-        Span<char> buf = stackalloc char[2048];
-        int p = 0;
+        string result = "";
         for (int i = 1; i < columns.Count; i++)
         {
-            if (i > 1) buf[p++] = ',';
-            buf[p++] = '"';
-            columns[i].AsSpan().CopyTo(buf.Slice(p));
-            p += columns[i].Length;
-            buf[p++] = '"';
-            buf[p++] = '=';
-            "EXCLUDED.\"".AsSpan().CopyTo(buf.Slice(p));
-            p += 10;
-            columns[i].AsSpan().CopyTo(buf.Slice(p));
-            p += columns[i].Length;
-            buf[p++] = '"';
+            if (i > 1) result += ",";
+            result += "\"" + columns[i] + "\"=EXCLUDED.\"" + columns[i] + "\"";
         }
-        return buf.Slice(0, p).ToString();
+        return result;
     }
 }

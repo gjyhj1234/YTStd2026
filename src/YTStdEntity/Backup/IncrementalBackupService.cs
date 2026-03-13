@@ -205,53 +205,15 @@ public sealed class IncrementalBackupService : IAsyncDisposable, IDisposable
         string tableName, List<string> columns, List<long> ids,
         int tenantId, long userId)
     {
-        // 构建列列表
-        Span<char> colBuf = stackalloc char[2048];
-        int cp = 0;
-        for (int i = 0; i < columns.Count; i++)
-        {
-            if (i > 0) colBuf[cp++] = ',';
-            colBuf[cp++] = '"';
-            columns[i].AsSpan().CopyTo(colBuf.Slice(cp));
-            cp += columns[i].Length;
-            colBuf[cp++] = '"';
-        }
-        string columnList = colBuf.Slice(0, cp).ToString();
+        // 构建列列表、参数列表和更新列表（使用 string 拼接确保安全无越界）
+        string columnList = BuildQuotedColumnList(columns);
+        string paramList = BuildParamPlaceholders(columns.Count);
+        string updateList = BuildConflictUpdateList(columns);
 
         // 从源表读取数据
         string selectSql = "SELECT " + columnList + " FROM \"" + tableName + "\" WHERE id = ANY(@ids)";
         await using var selectCmd = new NpgsqlCommand(selectSql, srcConn);
         selectCmd.Parameters.AddWithValue("ids", ids.ToArray());
-
-        // 预构建 UPSERT SQL 模板（在循环外构建，避免 stackalloc-in-loop）
-        Span<char> valBuf = stackalloc char[256];
-        int vp = 0;
-        for (int i = 0; i < columns.Count; i++)
-        {
-            if (i > 0) valBuf[vp++] = ',';
-            valBuf[vp++] = '@';
-            valBuf[vp++] = 'p';
-            i.TryFormat(valBuf.Slice(vp), out int w); vp += w;
-        }
-        string paramList = valBuf.Slice(0, vp).ToString();
-
-        Span<char> updBuf = stackalloc char[2048];
-        int up = 0;
-        for (int i = 1; i < columns.Count; i++)
-        {
-            if (i > 1) updBuf[up++] = ',';
-            updBuf[up++] = '"';
-            columns[i].AsSpan().CopyTo(updBuf.Slice(up));
-            up += columns[i].Length;
-            updBuf[up++] = '"';
-            updBuf[up++] = '=';
-            "EXCLUDED.\"".AsSpan().CopyTo(updBuf.Slice(up));
-            up += 10;
-            columns[i].AsSpan().CopyTo(updBuf.Slice(up));
-            up += columns[i].Length;
-            updBuf[up++] = '"';
-        }
-        string updateList = updBuf.Slice(0, up).ToString();
 
         string upsertSql = "INSERT INTO \"" + tableName + "\" (" + columnList + ") VALUES (" + paramList +
             ") ON CONFLICT (id) DO UPDATE SET " + updateList;
@@ -271,6 +233,46 @@ public sealed class IncrementalBackupService : IAsyncDisposable, IDisposable
 
         Logger.Debug(tenantId, userId, () => "[IncrementalBackupService] UPSERT " + synced.ToString() + " 条记录到 " + tableName);
         return synced;
+    }
+
+    /// <summary>构建带引号的列名列表。</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static string BuildQuotedColumnList(List<string> columns)
+    {
+        // 非热路径操作，使用字符串拼接确保任意列数安全
+        string result = "";
+        for (int i = 0; i < columns.Count; i++)
+        {
+            if (i > 0) result += ",";
+            result += "\"" + columns[i] + "\"";
+        }
+        return result;
+    }
+
+    /// <summary>构建参数占位符列表（@p0,@p1,...）。</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static string BuildParamPlaceholders(int count)
+    {
+        string result = "";
+        for (int i = 0; i < count; i++)
+        {
+            if (i > 0) result += ",";
+            result += "@p" + i.ToString();
+        }
+        return result;
+    }
+
+    /// <summary>构建 ON CONFLICT UPDATE 子句（跳过第一列 id）。</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static string BuildConflictUpdateList(List<string> columns)
+    {
+        string result = "";
+        for (int i = 1; i < columns.Count; i++)
+        {
+            if (i > 1) result += ",";
+            result += "\"" + columns[i] + "\"=EXCLUDED.\"" + columns[i] + "\"";
+        }
+        return result;
     }
 
     private void OnTimerCallback(object? state)

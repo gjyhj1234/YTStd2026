@@ -871,20 +871,11 @@ public static partial class DB
 
             if (existingField is null)
             {
-                // 添加字段 - 使用 stackalloc 替代字符串插值
+                // 添加字段
                 var typeSpec = BuildTypeSpec(dataType, length, precision);
                 var nullSpec = nullable ? "NULL" : "NOT NULL";
-                Span<char> addBuf = stackalloc char[256];
-                int ap = 0;
-                AppendSpan(addBuf, ref ap, "ALTER TABLE \"");
-                AppendSpan(addBuf, ref ap, tableName);
-                AppendSpan(addBuf, ref ap, "\" ADD COLUMN \"");
-                AppendSpan(addBuf, ref ap, fieldName);
-                AppendSpan(addBuf, ref ap, "\" ");
-                AppendSpan(addBuf, ref ap, typeSpec);
-                addBuf[ap++] = ' ';
-                AppendSpan(addBuf, ref ap, nullSpec);
-                string sql = addBuf.Slice(0, ap).ToString();
+                // DDL 操作非热路径，使用字符串拼接确保安全无越界
+                string sql = "ALTER TABLE \"" + tableName + "\" ADD COLUMN \"" + fieldName + "\" " + typeSpec + " " + nullSpec;
 
                 await using var cmd = new NpgsqlCommand(sql, conn);
                 await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
@@ -894,10 +885,9 @@ public static partial class DB
             }
             else
             {
-                // 修改字段 - 仅扩展长度。使用 stackalloc + Span 替代 StringBuilder
+                // 修改字段 - 仅扩展长度。DDL 操作非热路径，使用字符串拼接确保安全无越界
                 bool changed = false;
-                Span<char> sqlBuf = stackalloc char[512];
-                int sp = 0;
+                string alterSql = "";
 
                 if (!string.IsNullOrEmpty(length))
                 {
@@ -905,27 +895,18 @@ public static partial class DB
                         (existingField.MaxLength is null || newLength > existingField.MaxLength.Value))
                     {
                         var typeSpec = BuildTypeSpec(dataType, length, precision);
-                        AppendSpan(sqlBuf, ref sp, "ALTER TABLE \"");
-                        AppendSpan(sqlBuf, ref sp, tableName);
-                        AppendSpan(sqlBuf, ref sp, "\" ALTER COLUMN \"");
-                        AppendSpan(sqlBuf, ref sp, fieldName);
-                        AppendSpan(sqlBuf, ref sp, "\" TYPE ");
-                        AppendSpan(sqlBuf, ref sp, typeSpec);
+                        alterSql = "ALTER TABLE \"" + tableName + "\" ALTER COLUMN \"" + fieldName + "\" TYPE " + typeSpec;
                         changed = true;
                     }
                 }
 
                 if (nullable != existingField.IsNullable)
                 {
-                    if (changed) AppendSpan(sqlBuf, ref sp, "; ");
-                    AppendSpan(sqlBuf, ref sp, "ALTER TABLE \"");
-                    AppendSpan(sqlBuf, ref sp, tableName);
-                    AppendSpan(sqlBuf, ref sp, "\" ALTER COLUMN \"");
-                    AppendSpan(sqlBuf, ref sp, fieldName);
+                    if (changed) alterSql += "; ";
                     if (nullable)
-                        AppendSpan(sqlBuf, ref sp, "\" DROP NOT NULL");
+                        alterSql += "ALTER TABLE \"" + tableName + "\" ALTER COLUMN \"" + fieldName + "\" DROP NOT NULL";
                     else
-                        AppendSpan(sqlBuf, ref sp, "\" SET NOT NULL");
+                        alterSql += "ALTER TABLE \"" + tableName + "\" ALTER COLUMN \"" + fieldName + "\" SET NOT NULL";
                     changed = true;
                 }
 
@@ -935,7 +916,6 @@ public static partial class DB
                     return DDLStatus.Existed;
                 }
 
-                string alterSql = sqlBuf.Slice(0, sp).ToString();
                 await using var cmd = new NpgsqlCommand(alterSql, conn);
                 await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
 
@@ -983,19 +963,9 @@ public static partial class DB
         try
         {
             conn = GetConnection();
-            // 使用 stackalloc 替代字符串插值构建 CREATE INDEX SQL
-            Span<char> idxBuf = stackalloc char[256];
-            int ip = 0;
-            AppendSpan(idxBuf, ref ip, "CREATE ");
-            if (unique) AppendSpan(idxBuf, ref ip, "UNIQUE ");
-            AppendSpan(idxBuf, ref ip, "INDEX \"");
-            AppendSpan(idxBuf, ref ip, indexName);
-            AppendSpan(idxBuf, ref ip, "\" ON \"");
-            AppendSpan(idxBuf, ref ip, tableName);
-            AppendSpan(idxBuf, ref ip, "\" (");
-            AppendSpan(idxBuf, ref ip, fieldNames);
-            idxBuf[ip++] = ')';
-            string sql = idxBuf.Slice(0, ip).ToString();
+            // DDL 操作非热路径，使用字符串拼接确保安全无越界
+            string prefix = unique ? "CREATE UNIQUE INDEX \"" : "CREATE INDEX \"";
+            string sql = prefix + indexName + "\" ON \"" + tableName + "\" (" + fieldNames + ")";
 
             await using var cmd = new NpgsqlCommand(sql, conn);
             await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
@@ -1095,14 +1065,6 @@ public static partial class DB
         if (!string.IsNullOrEmpty(length))
             return dataType + "(" + length + ")";
         return dataType;
-    }
-
-    /// <summary>向 Span 追加字符串片段，用于零分配 SQL 拼装</summary>
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    private static void AppendSpan(Span<char> buf, ref int pos, string value)
-    {
-        value.AsSpan().CopyTo(buf.Slice(pos));
-        pos += value.Length;
     }
 
     #endregion
