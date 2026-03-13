@@ -38,7 +38,14 @@ public sealed class IncrementalBackupService : IAsyncDisposable, IDisposable
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _timer = new Timer(OnTimerCallback, null, _options.Interval, _options.Interval);
-        Logger.Info(0, 0, "[IncrementalBackupService] 增量备份服务已启动，间隔=" + _options.Interval.TotalSeconds.ToString() + "秒");
+        Logger.Info(0, 0, () =>
+        {
+            var vsb = new ValueStringBuilder(64);
+            vsb.Append("[IncrementalBackupService] 增量备份服务已启动，间隔=");
+            vsb.Append((int)_options.Interval.TotalSeconds);
+            vsb.Append("秒");
+            return vsb.ToString();
+        });
     }
 
     /// <summary>
@@ -51,23 +58,43 @@ public sealed class IncrementalBackupService : IAsyncDisposable, IDisposable
     /// <returns>同步到目标库的记录数</returns>
     public async ValueTask<int> SyncOnceAsync(string sourceConnectionString, string tableName, int tenantId, long userId)
     {
-        Logger.Debug(tenantId, userId, () => "[IncrementalBackupService.SyncOnceAsync] 开始同步表 " + tableName);
+        Logger.Debug(tenantId, userId, () =>
+        {
+            var vsb = new ValueStringBuilder(64);
+            vsb.Append("[IncrementalBackupService.SyncOnceAsync] 开始同步表 ");
+            vsb.Append(tableName);
+            return vsb.ToString();
+        });
 
         // 排除规则：不备份 _Log 和 _Audit 结尾的表
         if (tableName.EndsWith("_Log", StringComparison.Ordinal) ||
             tableName.EndsWith("_Audit", StringComparison.Ordinal))
         {
-            Logger.Debug(tenantId, userId, () => "[IncrementalBackupService.SyncOnceAsync] 跳过 Log/Audit 表: " + tableName);
+            Logger.Debug(tenantId, userId, () =>
+            {
+                var vsb = new ValueStringBuilder(64);
+                vsb.Append("[IncrementalBackupService.SyncOnceAsync] 跳过 Log/Audit 表: ");
+                vsb.Append(tableName);
+                return vsb.ToString();
+            });
             return 0;
         }
 
-        string logTable = "\"" + tableName + "_Log\"";
+        var vsbLogTable = new ValueStringBuilder(stackalloc char[64]);
+        vsbLogTable.Append('"');
+        vsbLogTable.Append(tableName);
+        vsbLogTable.Append("_Log\"");
+        string logTable = vsbLogTable.ToString();
         int totalSynced = 0;
 
         // Step 1: 从源库 _Log 表查询变更记录
-        string querySql = "SELECT id, MAX(logid) AS max_logid, " +
-            "(ARRAY_AGG(opt ORDER BY logid DESC))[1] AS opt " +
-            "FROM " + logTable + " GROUP BY id";
+        var vsbQuery = new ValueStringBuilder(stackalloc char[256]);
+        vsbQuery.Append("SELECT id, MAX(logid) AS max_logid, ");
+        vsbQuery.Append("(ARRAY_AGG(opt ORDER BY logid DESC))[1] AS opt ");
+        vsbQuery.Append("FROM ");
+        vsbQuery.Append(logTable);
+        vsbQuery.Append(" GROUP BY id");
+        string querySql = vsbQuery.ToString();
 
         await using var srcConn = new NpgsqlConnection(sourceConnectionString);
         await srcConn.OpenAsync().ConfigureAwait(false);
@@ -91,11 +118,24 @@ public sealed class IncrementalBackupService : IAsyncDisposable, IDisposable
 
         if (changes.Count == 0)
         {
-            Logger.Debug(tenantId, userId, () => "[IncrementalBackupService.SyncOnceAsync] 无变更记录: " + tableName);
+            Logger.Debug(tenantId, userId, () =>
+            {
+                var vsb = new ValueStringBuilder(64);
+                vsb.Append("[IncrementalBackupService.SyncOnceAsync] 无变更记录: ");
+                vsb.Append(tableName);
+                return vsb.ToString();
+            });
             return 0;
         }
 
-        Logger.Debug(tenantId, userId, () => "[IncrementalBackupService.SyncOnceAsync] 发现 " + changes.Count.ToString() + " 条变更");
+        Logger.Debug(tenantId, userId, () =>
+        {
+            var vsb = new ValueStringBuilder(64);
+            vsb.Append("[IncrementalBackupService.SyncOnceAsync] 发现 ");
+            vsb.Append(changes.Count);
+            vsb.Append(" 条变更");
+            return vsb.ToString();
+        });
 
         // Step 2: 对每个目标库执行同步
         for (int t = 0; t < _options.TargetConnectionStrings.Length; t++)
@@ -105,8 +145,13 @@ public sealed class IncrementalBackupService : IAsyncDisposable, IDisposable
             await targetConn.OpenAsync().ConfigureAwait(false);
 
             // Step 3: 关闭目标库表触发器
-            await using (var disableCmd = new NpgsqlCommand(
-                "ALTER TABLE \"" + tableName + "\" DISABLE TRIGGER ALL", targetConn))
+            var vsbDisable = new ValueStringBuilder(128);
+            vsbDisable.Append("ALTER TABLE \"");
+            vsbDisable.Append(tableName);
+            vsbDisable.Append("\" DISABLE TRIGGER ALL");
+            string disableSql = vsbDisable.ToString();
+
+            await using (var disableCmd = new NpgsqlCommand(disableSql, targetConn))
             {
                 try
                 {
@@ -114,7 +159,13 @@ public sealed class IncrementalBackupService : IAsyncDisposable, IDisposable
                 }
                 catch (Exception ex)
                 {
-                    Logger.Debug(tenantId, userId, () => "[IncrementalBackupService] 关闭触发器失败（表可能不存在）: " + ex.Message);
+                    Logger.Debug(tenantId, userId, () =>
+                    {
+                        var vsb = new ValueStringBuilder(128);
+                        vsb.Append("[IncrementalBackupService] 关闭触发器失败（表可能不存在）: ");
+                        vsb.Append(ex.Message);
+                        return vsb.ToString();
+                    });
                 }
             }
 
@@ -160,40 +211,82 @@ public sealed class IncrementalBackupService : IAsyncDisposable, IDisposable
                 // DELETE 操作
                 if (deleteIds.Count > 0)
                 {
-                    string deleteSql = "DELETE FROM \"" + tableName + "\" WHERE id = ANY(@ids)";
+                    var vsbDelete = new ValueStringBuilder(128);
+                    vsbDelete.Append("DELETE FROM \"");
+                    vsbDelete.Append(tableName);
+                    vsbDelete.Append("\" WHERE id = ANY(@ids)");
+                    string deleteSql = vsbDelete.ToString();
                     await using var delCmd = new NpgsqlCommand(deleteSql, targetConn);
                     delCmd.Parameters.AddWithValue("ids", deleteIds.ToArray());
                     int deleted = await delCmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                     totalSynced += deleted;
-                    Logger.Debug(tenantId, userId, () => "[IncrementalBackupService] 删除 " + deleted.ToString() + " 条记录");
+                    Logger.Debug(tenantId, userId, () =>
+                    {
+                        var vsb = new ValueStringBuilder(64);
+                        vsb.Append("[IncrementalBackupService] 删除 ");
+                        vsb.Append(deleted);
+                        vsb.Append(" 条记录");
+                        return vsb.ToString();
+                    });
                 }
             }
             finally
             {
                 // Step 5: 恢复目标库触发器
-                await using var enableCmd = new NpgsqlCommand(
-                    "ALTER TABLE \"" + tableName + "\" ENABLE TRIGGER ALL", targetConn);
+                var vsbEnable = new ValueStringBuilder(128);
+                vsbEnable.Append("ALTER TABLE \"");
+                vsbEnable.Append(tableName);
+                vsbEnable.Append("\" ENABLE TRIGGER ALL");
+                string enableSql = vsbEnable.ToString();
+
+                await using var enableCmd = new NpgsqlCommand(enableSql, targetConn);
                 try
                 {
                     await enableCmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
-                    Logger.Debug(tenantId, userId, () => "[IncrementalBackupService] 恢复触发器失败: " + ex.Message);
+                    Logger.Debug(tenantId, userId, () =>
+                    {
+                        var vsb = new ValueStringBuilder(64);
+                        vsb.Append("[IncrementalBackupService] 恢复触发器失败: ");
+                        vsb.Append(ex.Message);
+                        return vsb.ToString();
+                    });
                 }
             }
         }
 
         // Step 6: 清理源 _Log 表中已处理记录
-        string cleanSql = "DELETE FROM " + logTable + " WHERE logid <= @maxLogId";
+        var vsbClean = new ValueStringBuilder(stackalloc char[128]);
+        vsbClean.Append("DELETE FROM ");
+        vsbClean.Append(logTable);
+        vsbClean.Append(" WHERE logid <= @maxLogId");
+        string cleanSql = vsbClean.ToString();
         await using (var cleanCmd = new NpgsqlCommand(cleanSql, srcConn))
         {
             cleanCmd.Parameters.AddWithValue("maxLogId", globalMaxLogId);
             int cleaned = await cleanCmd.ExecuteNonQueryAsync().ConfigureAwait(false);
-            Logger.Debug(tenantId, userId, () => "[IncrementalBackupService] 清理 _Log 记录 " + cleaned.ToString() + " 条");
+            Logger.Debug(tenantId, userId, () =>
+            {
+                var vsb = new ValueStringBuilder(64);
+                vsb.Append("[IncrementalBackupService] 清理 _Log 记录 ");
+                vsb.Append(cleaned);
+                vsb.Append(" 条");
+                return vsb.ToString();
+            });
         }
 
-        Logger.Debug(tenantId, userId, () => "[IncrementalBackupService.SyncOnceAsync] 同步完成: " + tableName + "，共 " + totalSynced.ToString() + " 条");
+        Logger.Debug(tenantId, userId, () =>
+        {
+            var vsb = new ValueStringBuilder(128);
+            vsb.Append("[IncrementalBackupService.SyncOnceAsync] 同步完成: ");
+            vsb.Append(tableName);
+            vsb.Append("，共 ");
+            vsb.Append(totalSynced);
+            vsb.Append(" 条");
+            return vsb.ToString();
+        });
         return totalSynced;
     }
 
@@ -211,12 +304,26 @@ public sealed class IncrementalBackupService : IAsyncDisposable, IDisposable
         string updateList = BuildConflictUpdateList(columns);
 
         // 从源表读取数据
-        string selectSql = "SELECT " + columnList + " FROM \"" + tableName + "\" WHERE id = ANY(@ids)";
+        var vsbSelect = new ValueStringBuilder(stackalloc char[256]);
+        vsbSelect.Append("SELECT ");
+        vsbSelect.Append(columnList);
+        vsbSelect.Append(" FROM \"");
+        vsbSelect.Append(tableName);
+        vsbSelect.Append("\" WHERE id = ANY(@ids)");
+        string selectSql = vsbSelect.ToString();
         await using var selectCmd = new NpgsqlCommand(selectSql, srcConn);
         selectCmd.Parameters.AddWithValue("ids", ids.ToArray());
 
-        string upsertSql = "INSERT INTO \"" + tableName + "\" (" + columnList + ") VALUES (" + paramList +
-            ") ON CONFLICT (id) DO UPDATE SET " + updateList;
+        var vsbUpsert = new ValueStringBuilder(stackalloc char[512]);
+        vsbUpsert.Append("INSERT INTO \"");
+        vsbUpsert.Append(tableName);
+        vsbUpsert.Append("\" (");
+        vsbUpsert.Append(columnList);
+        vsbUpsert.Append(") VALUES (");
+        vsbUpsert.Append(paramList);
+        vsbUpsert.Append(") ON CONFLICT (id) DO UPDATE SET ");
+        vsbUpsert.Append(updateList);
+        string upsertSql = vsbUpsert.ToString();
 
         int synced = 0;
         await using var reader = await selectCmd.ExecuteReaderAsync().ConfigureAwait(false);
@@ -225,13 +332,24 @@ public sealed class IncrementalBackupService : IAsyncDisposable, IDisposable
             await using var upsertCmd = new NpgsqlCommand(upsertSql, targetConn);
             for (int i = 0; i < columns.Count; i++)
             {
-                upsertCmd.Parameters.AddWithValue("p" + i.ToString(), reader.GetValue(i) ?? DBNull.Value);
+                var vsbParam = new ValueStringBuilder(8);
+                vsbParam.Append('p');
+                vsbParam.Append(i);
+                upsertCmd.Parameters.AddWithValue(vsbParam.ToString(), reader.GetValue(i) ?? DBNull.Value);
             }
             await upsertCmd.ExecuteNonQueryAsync().ConfigureAwait(false);
             synced++;
         }
 
-        Logger.Debug(tenantId, userId, () => "[IncrementalBackupService] UPSERT " + synced.ToString() + " 条记录到 " + tableName);
+        Logger.Debug(tenantId, userId, () =>
+        {
+            var vsb = new ValueStringBuilder(64);
+            vsb.Append("[IncrementalBackupService] UPSERT ");
+            vsb.Append(synced);
+            vsb.Append(" 条记录到 ");
+            vsb.Append(tableName);
+            return vsb.ToString();
+        });
         return synced;
     }
 
@@ -239,40 +357,47 @@ public sealed class IncrementalBackupService : IAsyncDisposable, IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static string BuildQuotedColumnList(List<string> columns)
     {
-        // 非热路径操作，使用字符串拼接确保任意列数安全
-        string result = "";
+        // 非热路径操作，使用 ValueStringBuilder 确保任意列数安全
+        var vsb = new ValueStringBuilder(stackalloc char[256]);
         for (int i = 0; i < columns.Count; i++)
         {
-            if (i > 0) result += ",";
-            result += "\"" + columns[i] + "\"";
+            if (i > 0) vsb.Append(',');
+            vsb.Append('"');
+            vsb.Append(columns[i]);
+            vsb.Append('"');
         }
-        return result;
+        return vsb.ToString();
     }
 
     /// <summary>构建参数占位符列表（@p0,@p1,...）。</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static string BuildParamPlaceholders(int count)
     {
-        string result = "";
+        var vsb = new ValueStringBuilder(stackalloc char[128]);
         for (int i = 0; i < count; i++)
         {
-            if (i > 0) result += ",";
-            result += "@p" + i.ToString();
+            if (i > 0) vsb.Append(',');
+            vsb.Append("@p");
+            vsb.Append(i);
         }
-        return result;
+        return vsb.ToString();
     }
 
     /// <summary>构建 ON CONFLICT UPDATE 子句（跳过第一列 id）。</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static string BuildConflictUpdateList(List<string> columns)
     {
-        string result = "";
+        var vsb = new ValueStringBuilder(stackalloc char[512]);
         for (int i = 1; i < columns.Count; i++)
         {
-            if (i > 1) result += ",";
-            result += "\"" + columns[i] + "\"=EXCLUDED.\"" + columns[i] + "\"";
+            if (i > 1) vsb.Append(',');
+            vsb.Append('"');
+            vsb.Append(columns[i]);
+            vsb.Append("\"=EXCLUDED.\"");
+            vsb.Append(columns[i]);
+            vsb.Append('"');
         }
-        return result;
+        return vsb.ToString();
     }
 
     private void OnTimerCallback(object? state)

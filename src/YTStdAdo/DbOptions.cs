@@ -43,7 +43,21 @@ public sealed class DbOptions
     /// </summary>
     public string BuildConnectionString()
     {
-        return $"Host={Host};Port={Port};Database={Database};Username={Username};Password={Password};" +
-               $"Timeout={ConnectionTimeoutSeconds};Command Timeout={ConnectionTimeoutSeconds}";
+        var vsb = new ValueStringBuilder(stackalloc char[256]);
+        vsb.Append("Host=");
+        vsb.Append(Host);
+        vsb.Append(";Port=");
+        vsb.Append(Port);
+        vsb.Append(";Database=");
+        vsb.Append(Database);
+        vsb.Append(";Username=");
+        vsb.Append(Username);
+        vsb.Append(";Password=");
+        vsb.Append(Password);
+        vsb.Append(";Timeout=");
+        vsb.Append(ConnectionTimeoutSeconds);
+        vsb.Append(";Command Timeout=");
+        vsb.Append(ConnectionTimeoutSeconds);
+        return vsb.ToString();
     }
 }
