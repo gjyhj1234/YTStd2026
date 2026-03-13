@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
-using System.Text;
 using System.Threading.Tasks;
 using Npgsql;
 using YTStdLogger.Core;
@@ -41,7 +40,7 @@ public static partial class DB
             System.Threading.Interlocked.Increment(ref _poolCount);
         }
 
-        Logger.Info(0, 0, $"[DB.Init] 连接池初始化完成，最小连接数={options.MinPoolSize}，最大连接数={options.MaxPoolSize}");
+        Logger.Info(0, 0, "[DB.Init] 连接池初始化完成，最小连接数=" + options.MinPoolSize.ToString() + "，最大连接数=" + options.MaxPoolSize.ToString());
     }
 
     /// <summary>优雅关闭连接池</summary>
@@ -59,7 +58,7 @@ public static partial class DB
             }
             catch (Exception ex)
             {
-                Logger.Error(0, 0, $"[DB.ShutdownAsync] 关闭连接异常: {ex.Message}");
+                Logger.Error(0, 0, "[DB.ShutdownAsync] 关闭连接异常: " + ex.Message);
             }
         }
 
@@ -92,9 +91,9 @@ public static partial class DB
             {
                 if (attempt == retries)
                     throw new InvalidOperationException(
-                        $"[DB.GetConnection] 无法创建数据库连接，已重试 {retries} 次: {ex.Message}", ex);
+                        "[DB.GetConnection] 无法创建数据库连接，已重试 " + retries.ToString() + " 次: " + ex.Message, ex);
 
-                Logger.Warn(0, 0, $"[DB.GetConnection] 创建连接失败，第 {attempt + 1} 次重试: {ex.Message}");
+                Logger.Warn(0, 0, "[DB.GetConnection] 创建连接失败，第 " + (attempt + 1).ToString() + " 次重试: " + ex.Message);
                 System.Threading.Thread.Sleep(100 * (attempt + 1));
             }
         }
@@ -139,7 +138,7 @@ public static partial class DB
         {
             sw.Stop();
             Logger.Debug(tenantId, userId, () =>
-                $"[DB.GetBatchAsync] 批处理创建完成，耗时={sw.ElapsedMilliseconds}ms");
+                "[DB.GetBatchAsync] 批处理创建完成，耗时=" + sw.ElapsedMilliseconds.ToString() + "ms");
         }
 
         return batch;
@@ -166,7 +165,7 @@ public static partial class DB
             if (sw is not null)
             {
                 sw.Stop();
-                debugMsg = $"[DB.BatchCommitAsync] 批处理提交完成，影响行数={rowsAffected}，耗时={sw.ElapsedMilliseconds}ms";
+                debugMsg = "[DB.BatchCommitAsync] 批处理提交完成，影响行数=" + rowsAffected.ToString() + "，耗时=" + sw.ElapsedMilliseconds.ToString() + "ms";
                 Logger.Debug(tenantId, userId, () => debugMsg);
             }
 
@@ -174,7 +173,7 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(tenantId, userId, $"[DB.BatchCommitAsync] 批处理提交异常: {ex.Message}");
+            Logger.Error(tenantId, userId, "[DB.BatchCommitAsync] 批处理提交异常: " + ex.Message);
 
             try
             {
@@ -184,7 +183,7 @@ public static partial class DB
             }
             catch (Exception rbEx)
             {
-                Logger.Error(tenantId, userId, $"[DB.BatchCommitAsync] 回滚异常: {rbEx.Message}");
+                Logger.Error(tenantId, userId, "[DB.BatchCommitAsync] 回滚异常: " + rbEx.Message);
             }
 
             return new DbUdqResult { Success = false, ErrorMessage = ex.Message };
@@ -247,14 +246,14 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(tenantId, userId, $"[DB.InsertAsync] 插入异常: {ex.Message}");
+            Logger.Error(tenantId, userId, "[DB.InsertAsync] 插入异常: " + ex.Message);
 
             if (batch?.Transaction is not null)
             {
                 try { await batch.Transaction.RollbackAsync().ConfigureAwait(false); }
                 catch (Exception rbEx)
                 {
-                    Logger.Error(tenantId, userId, $"[DB.InsertAsync] 回滚异常: {rbEx.Message}");
+                    Logger.Error(tenantId, userId, "[DB.InsertAsync] 回滚异常: " + rbEx.Message);
                 }
             }
 
@@ -328,14 +327,14 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(tenantId, userId, $"[DB.UpdateAsync] 更新异常: {ex.Message}");
+            Logger.Error(tenantId, userId, "[DB.UpdateAsync] 更新异常: " + ex.Message);
 
             if (batch?.Transaction is not null)
             {
                 try { await batch.Transaction.RollbackAsync().ConfigureAwait(false); }
                 catch (Exception rbEx)
                 {
-                    Logger.Error(tenantId, userId, $"[DB.UpdateAsync] 回滚异常: {rbEx.Message}");
+                    Logger.Error(tenantId, userId, "[DB.UpdateAsync] 回滚异常: " + rbEx.Message);
                 }
             }
 
@@ -407,14 +406,14 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(tenantId, userId, $"[DB.DeleteAsync] 删除异常: {ex.Message}");
+            Logger.Error(tenantId, userId, "[DB.DeleteAsync] 删除异常: " + ex.Message);
 
             if (batch?.Transaction is not null)
             {
                 try { await batch.Transaction.RollbackAsync().ConfigureAwait(false); }
                 catch (Exception rbEx)
                 {
-                    Logger.Error(tenantId, userId, $"[DB.DeleteAsync] 回滚异常: {rbEx.Message}");
+                    Logger.Error(tenantId, userId, "[DB.DeleteAsync] 回滚异常: " + rbEx.Message);
                 }
             }
 
@@ -484,7 +483,7 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(tenantId, userId, $"[DB.GetListAsync] 查询异常: {ex.Message}");
+            Logger.Error(tenantId, userId, "[DB.GetListAsync] 查询异常: " + ex.Message);
             return (new DbUdqResult { Success = false, ErrorMessage = ex.Message }, null);
         }
         finally
@@ -534,7 +533,7 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(tenantId, userId, $"[DB.GetListTxAsync] 查询异常: {ex.Message}");
+            Logger.Error(tenantId, userId, "[DB.GetListTxAsync] 查询异常: " + ex.Message);
             return (new DbUdqResult { Success = false, ErrorMessage = ex.Message }, null);
         }
     }
@@ -574,7 +573,7 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(tenantId, userId, $"[DB.GetListAsync(JSON)] 查询异常: {ex.Message}");
+            Logger.Error(tenantId, userId, "[DB.GetListAsync(JSON)] 查询异常: " + ex.Message);
             return new DbUdqResult { Success = false, ErrorMessage = ex.Message };
         }
         finally
@@ -619,7 +618,7 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(tenantId, userId, $"[DB.GetScalarAsync] 标量查询异常: {ex.Message}");
+            Logger.Error(tenantId, userId, "[DB.GetScalarAsync] 标量查询异常: " + ex.Message);
             return new DbScalarResult<T> { Success = false, ErrorMessage = ex.Message };
         }
         finally
@@ -670,7 +669,7 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(tenantId, userId, $"[DB.GetScalarTxAsync] 标量查询异常: {ex.Message}");
+            Logger.Error(tenantId, userId, "[DB.GetScalarTxAsync] 标量查询异常: " + ex.Message);
             return new DbScalarResult<T> { Success = false, ErrorMessage = ex.Message };
         }
     }
@@ -683,17 +682,15 @@ public static partial class DB
     public static async ValueTask<DbUdqResult> GetTableInfor(string tableName)
     {
         const string sql = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = @tableName";
-        var parameters = new PgSqlParam[]
-        {
-            new PgSqlParam("tableName", tableName)
-        };
 
         NpgsqlConnection? conn = null;
         try
         {
             conn = GetConnection();
             await using var cmd = new NpgsqlCommand(sql, conn);
-            AddParameters(cmd, parameters, 0, 0, "GetTableInfor");
+            // 直接构建 NpgsqlParameter，省去 PgSqlParam 中间数组分配
+            cmd.Parameters.AddWithValue("tableName", tableName);
+            Logger.Debug(0, 0, () => "[DB.GetTableInfor] 参数[0]: Name=tableName, Value=" + tableName);
 
             await using var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false);
             int rowCount = 0;
@@ -702,13 +699,13 @@ public static partial class DB
                 rowCount++;
             }
 
-            Logger.Info(0, 0, $"[DB.GetTableInfor] 查询表 {tableName} 完成，结果行数={rowCount}");
+            Logger.Info(0, 0, () => "[DB.GetTableInfor] 查询表 " + tableName + " 完成，结果行数=" + rowCount.ToString());
 
             return new DbUdqResult { Success = true, RowsAffected = rowCount };
         }
         catch (Exception ex)
         {
-            Logger.Error(0, 0, $"[DB.GetTableInfor] 查询表 {tableName} 异常: {ex.Message}");
+            Logger.Error(0, 0, "[DB.GetTableInfor] 查询表 " + tableName + " 异常: " + ex.Message);
             return new DbUdqResult { Success = false, ErrorMessage = ex.Message };
         }
         finally
@@ -734,17 +731,13 @@ public static partial class DB
             "WHERE c.table_schema = 'public' AND c.table_name = @tableName " +
             "ORDER BY c.ordinal_position";
 
-        var parameters = new PgSqlParam[]
-        {
-            new PgSqlParam("tableName", tableName)
-        };
-
         NpgsqlConnection? conn = null;
         try
         {
             conn = GetConnection();
             await using var cmd = new NpgsqlCommand(sql, conn);
-            AddParameters(cmd, parameters, 0, 0, "GetFieldsInfor");
+            cmd.Parameters.AddWithValue("tableName", tableName);
+            Logger.Debug(0, 0, () => "[DB.GetFieldsInfor] 参数[0]: Name=tableName, Value=" + tableName);
 
             await using var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false);
             var list = new List<DbField>();
@@ -753,13 +746,13 @@ public static partial class DB
                 list.Add(mapper(reader));
             }
 
-            Logger.Info(0, 0, $"[DB.GetFieldsInfor] 查询表 {tableName} 字段完成，字段数={list.Count}");
+            Logger.Info(0, 0, () => "[DB.GetFieldsInfor] 查询表 " + tableName + " 字段完成，字段数=" + list.Count.ToString());
 
             return (new DbUdqResult { Success = true, RowsAffected = list.Count }, list);
         }
         catch (Exception ex)
         {
-            Logger.Error(0, 0, $"[DB.GetFieldsInfor] 查询表 {tableName} 字段异常: {ex.Message}");
+            Logger.Error(0, 0, "[DB.GetFieldsInfor] 查询表 " + tableName + " 字段异常: " + ex.Message);
             return (new DbUdqResult { Success = false, ErrorMessage = ex.Message }, null);
         }
         finally
@@ -777,17 +770,13 @@ public static partial class DB
             "SELECT indexname, tablename, indexdef FROM pg_indexes " +
             "WHERE schemaname = 'public' AND tablename = @tableName";
 
-        var parameters = new PgSqlParam[]
-        {
-            new PgSqlParam("tableName", tableName)
-        };
-
         NpgsqlConnection? conn = null;
         try
         {
             conn = GetConnection();
             await using var cmd = new NpgsqlCommand(sql, conn);
-            AddParameters(cmd, parameters, 0, 0, "GetIndexesInfor");
+            cmd.Parameters.AddWithValue("tableName", tableName);
+            Logger.Debug(0, 0, () => "[DB.GetIndexesInfor] 参数[0]: Name=tableName, Value=" + tableName);
 
             await using var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false);
             var list = new List<DbIndex>();
@@ -796,13 +785,13 @@ public static partial class DB
                 list.Add(mapper(reader));
             }
 
-            Logger.Info(0, 0, $"[DB.GetIndexesInfor] 查询表 {tableName} 索引完成，索引数={list.Count}");
+            Logger.Info(0, 0, () => "[DB.GetIndexesInfor] 查询表 " + tableName + " 索引完成，索引数=" + list.Count.ToString());
 
             return (new DbUdqResult { Success = true, RowsAffected = list.Count }, list);
         }
         catch (Exception ex)
         {
-            Logger.Error(0, 0, $"[DB.GetIndexesInfor] 查询表 {tableName} 索引异常: {ex.Message}");
+            Logger.Error(0, 0, "[DB.GetIndexesInfor] 查询表 " + tableName + " 索引异常: " + ex.Message);
             return (new DbUdqResult { Success = false, ErrorMessage = ex.Message }, null);
         }
         finally
@@ -818,7 +807,7 @@ public static partial class DB
         var tableResult = await GetTableInfor(tableName).ConfigureAwait(false);
         if (tableResult.Success && tableResult.RowsAffected > 0)
         {
-            Logger.Info(0, 0, $"[DB.CreateTable] 表 {tableName} 已存在");
+            Logger.Info(0, 0, () => "[DB.CreateTable] 表 " + tableName + " 已存在");
             return DDLStatus.Existed;
         }
 
@@ -829,13 +818,14 @@ public static partial class DB
             await using var cmd = new NpgsqlCommand(sql, conn);
             await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
 
-            Logger.Info(0, 0, $"[DB.CreateTable] 表 {tableName} 创建成功");
+            Logger.Info(0, 0, () => "[DB.CreateTable] 表 " + tableName + " 创建成功");
             return DDLStatus.Success;
         }
         catch (Exception ex)
         {
-            Logger.Fatal(0, 0, $"[DB.CreateTable] 创建表 {tableName} 失败: {ex.Message}");
-            Environment.FailFast($"[DB.CreateTable] 创建表 {tableName} 失败: {ex.Message}");
+            string errMsg = "[DB.CreateTable] 创建表 " + tableName + " 失败: " + ex.Message;
+            Logger.Fatal(0, 0, errMsg);
+            Environment.FailFast(errMsg);
             return DDLStatus.Failed;
         }
         finally
@@ -881,22 +871,33 @@ public static partial class DB
 
             if (existingField is null)
             {
-                // 添加字段
+                // 添加字段 - 使用 stackalloc 替代字符串插值
                 var typeSpec = BuildTypeSpec(dataType, length, precision);
                 var nullSpec = nullable ? "NULL" : "NOT NULL";
-                var sql = $"ALTER TABLE \"{tableName}\" ADD COLUMN \"{fieldName}\" {typeSpec} {nullSpec}";
+                Span<char> addBuf = stackalloc char[256];
+                int ap = 0;
+                AppendSpan(addBuf, ref ap, "ALTER TABLE \"");
+                AppendSpan(addBuf, ref ap, tableName);
+                AppendSpan(addBuf, ref ap, "\" ADD COLUMN \"");
+                AppendSpan(addBuf, ref ap, fieldName);
+                AppendSpan(addBuf, ref ap, "\" ");
+                AppendSpan(addBuf, ref ap, typeSpec);
+                addBuf[ap++] = ' ';
+                AppendSpan(addBuf, ref ap, nullSpec);
+                string sql = addBuf.Slice(0, ap).ToString();
 
                 await using var cmd = new NpgsqlCommand(sql, conn);
                 await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
 
-                Logger.Info(0, 0, $"[DB.AlterTable] 表 {tableName} 添加字段 {fieldName} 成功");
+                Logger.Info(0, 0, () => "[DB.AlterTable] 表 " + tableName + " 添加字段 " + fieldName + " 成功");
                 return DDLStatus.Success;
             }
             else
             {
-                // 修改字段 - 仅扩展长度
+                // 修改字段 - 仅扩展长度。使用 stackalloc + Span 替代 StringBuilder
                 bool changed = false;
-                var sb = new StringBuilder();
+                Span<char> sqlBuf = stackalloc char[512];
+                int sp = 0;
 
                 if (!string.IsNullOrEmpty(length))
                 {
@@ -904,38 +905,49 @@ public static partial class DB
                         (existingField.MaxLength is null || newLength > existingField.MaxLength.Value))
                     {
                         var typeSpec = BuildTypeSpec(dataType, length, precision);
-                        sb.Append($"ALTER TABLE \"{tableName}\" ALTER COLUMN \"{fieldName}\" TYPE {typeSpec}");
+                        AppendSpan(sqlBuf, ref sp, "ALTER TABLE \"");
+                        AppendSpan(sqlBuf, ref sp, tableName);
+                        AppendSpan(sqlBuf, ref sp, "\" ALTER COLUMN \"");
+                        AppendSpan(sqlBuf, ref sp, fieldName);
+                        AppendSpan(sqlBuf, ref sp, "\" TYPE ");
+                        AppendSpan(sqlBuf, ref sp, typeSpec);
                         changed = true;
                     }
                 }
 
                 if (nullable != existingField.IsNullable)
                 {
-                    if (changed) sb.Append("; ");
+                    if (changed) AppendSpan(sqlBuf, ref sp, "; ");
+                    AppendSpan(sqlBuf, ref sp, "ALTER TABLE \"");
+                    AppendSpan(sqlBuf, ref sp, tableName);
+                    AppendSpan(sqlBuf, ref sp, "\" ALTER COLUMN \"");
+                    AppendSpan(sqlBuf, ref sp, fieldName);
                     if (nullable)
-                        sb.Append($"ALTER TABLE \"{tableName}\" ALTER COLUMN \"{fieldName}\" DROP NOT NULL");
+                        AppendSpan(sqlBuf, ref sp, "\" DROP NOT NULL");
                     else
-                        sb.Append($"ALTER TABLE \"{tableName}\" ALTER COLUMN \"{fieldName}\" SET NOT NULL");
+                        AppendSpan(sqlBuf, ref sp, "\" SET NOT NULL");
                     changed = true;
                 }
 
                 if (!changed)
                 {
-                    Logger.Info(0, 0, $"[DB.AlterTable] 表 {tableName} 字段 {fieldName} 无需修改");
+                    Logger.Info(0, 0, () => "[DB.AlterTable] 表 " + tableName + " 字段 " + fieldName + " 无需修改");
                     return DDLStatus.Existed;
                 }
 
-                await using var cmd = new NpgsqlCommand(sb.ToString(), conn);
+                string alterSql = sqlBuf.Slice(0, sp).ToString();
+                await using var cmd = new NpgsqlCommand(alterSql, conn);
                 await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
 
-                Logger.Info(0, 0, $"[DB.AlterTable] 表 {tableName} 修改字段 {fieldName} 成功");
+                Logger.Info(0, 0, () => "[DB.AlterTable] 表 " + tableName + " 修改字段 " + fieldName + " 成功");
                 return DDLStatus.Success;
             }
         }
         catch (Exception ex)
         {
-            Logger.Fatal(0, 0, $"[DB.AlterTable] 修改表 {tableName} 字段 {fieldName} 失败: {ex.Message}");
-            Environment.FailFast($"[DB.AlterTable] 修改表 {tableName} 字段 {fieldName} 失败: {ex.Message}");
+            string errMsg = "[DB.AlterTable] 修改表 " + tableName + " 字段 " + fieldName + " 失败: " + ex.Message;
+            Logger.Fatal(0, 0, errMsg);
+            Environment.FailFast(errMsg);
             return DDLStatus.Failed;
         }
         finally
@@ -961,7 +973,7 @@ public static partial class DB
             {
                 if (string.Equals(indexesResult.Data[i].IndexName, indexName, StringComparison.OrdinalIgnoreCase))
                 {
-                    Logger.Info(0, 0, $"[DB.CreateIndex] 索引 {indexName} 已存在");
+                    Logger.Info(0, 0, () => "[DB.CreateIndex] 索引 " + indexName + " 已存在");
                     return DDLStatus.Existed;
                 }
             }
@@ -971,19 +983,31 @@ public static partial class DB
         try
         {
             conn = GetConnection();
-            var uniqueStr = unique ? "UNIQUE " : "";
-            var sql = $"CREATE {uniqueStr}INDEX \"{indexName}\" ON \"{tableName}\" ({fieldNames})";
+            // 使用 stackalloc 替代字符串插值构建 CREATE INDEX SQL
+            Span<char> idxBuf = stackalloc char[256];
+            int ip = 0;
+            AppendSpan(idxBuf, ref ip, "CREATE ");
+            if (unique) AppendSpan(idxBuf, ref ip, "UNIQUE ");
+            AppendSpan(idxBuf, ref ip, "INDEX \"");
+            AppendSpan(idxBuf, ref ip, indexName);
+            AppendSpan(idxBuf, ref ip, "\" ON \"");
+            AppendSpan(idxBuf, ref ip, tableName);
+            AppendSpan(idxBuf, ref ip, "\" (");
+            AppendSpan(idxBuf, ref ip, fieldNames);
+            idxBuf[ip++] = ')';
+            string sql = idxBuf.Slice(0, ip).ToString();
 
             await using var cmd = new NpgsqlCommand(sql, conn);
             await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
 
-            Logger.Info(0, 0, $"[DB.CreateIndex] 索引 {indexName} 创建成功");
+            Logger.Info(0, 0, () => "[DB.CreateIndex] 索引 " + indexName + " 创建成功");
             return DDLStatus.Success;
         }
         catch (Exception ex)
         {
-            Logger.Fatal(0, 0, $"[DB.CreateIndex] 创建索引 {indexName} 失败: {ex.Message}");
-            Environment.FailFast($"[DB.CreateIndex] 创建索引 {indexName} 失败: {ex.Message}");
+            string errMsg = "[DB.CreateIndex] 创建索引 " + indexName + " 失败: " + ex.Message;
+            Logger.Fatal(0, 0, errMsg);
+            Environment.FailFast(errMsg);
             return DDLStatus.Failed;
         }
         finally
@@ -1003,8 +1027,10 @@ public static partial class DB
         for (int i = 0; i < parameters.Length; i++)
         {
             var p = parameters[i];
+            // 捕获局部变量以避免闭包捕获循环变量
+            int idx = i;
             Logger.Debug(tenantId, userId, () =>
-                $"[{methodName}] 参数[{i}]: Name={p.Name}, Value={p.Value}, DbType={p.DbType}");
+                "[" + methodName + "] 参数[" + idx.ToString() + "]: Name=" + p.Name + ", Value=" + p.Value + ", DbType=" + p.DbType);
             if (p.DbType.HasValue)
                 cmd.Parameters.AddWithValue(p.Name, p.DbType.Value, p.Value ?? DBNull.Value);
             else
@@ -1018,8 +1044,9 @@ public static partial class DB
         for (int i = 0; i < parameters.Length; i++)
         {
             var p = parameters[i];
+            int idx = i;
             Logger.Debug(tenantId, userId, () =>
-                $"[{methodName}] 参数[{i}]: Name={p.Name}, Value={p.Value}, DbType={p.DbType}");
+                "[" + methodName + "] 参数[" + idx.ToString() + "]: Name=" + p.Name + ", Value=" + p.Value + ", DbType=" + p.DbType);
             if (p.DbType.HasValue)
                 cmd.Parameters.AddWithValue(p.Name, p.DbType.Value, p.Value ?? DBNull.Value);
             else
@@ -1028,44 +1055,54 @@ public static partial class DB
     }
 
     /// <summary>格式化参数值用于调试SQL</summary>
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private static string FormatParamValue(object? value)
     {
         if (value is null || value is DBNull)
             return "NULL";
         if (value is string s)
-            return $"'{s}'";
+            return "'" + s + "'";
         if (value is DateTime dt)
-            return $"'{dt:yyyy-MM-dd HH:mm:ss}'";
+            return "'" + dt.ToString("yyyy-MM-dd HH:mm:ss") + "'";
         if (value is bool b)
             return b ? "true" : "false";
         if (value is byte[] bytes)
-            return $"'\\x{BitConverter.ToString(bytes).Replace("-", "")}'";
+            return "'\\x" + BitConverter.ToString(bytes).Replace("-", "") + "'";
         return value.ToString() ?? "NULL";
     }
 
     /// <summary>构建可执行的调试SQL（参数替换）</summary>
     private static string BuildDebugInfo(string sql, PgSqlParam[] parameters, int tenantId, long userId, long elapsedMs)
     {
-        var sb = new StringBuilder(sql);
+        // 使用 string.Create / Span 逻辑替代 StringBuilder
+        string result = sql;
         for (int i = 0; i < parameters.Length; i++)
         {
             var p = parameters[i];
             var paramName = p.Name.StartsWith("@") ? p.Name : "@" + p.Name;
-            sb.Replace(paramName, FormatParamValue(p.Value));
+            result = result.Replace(paramName, FormatParamValue(p.Value));
         }
 
-        sb.Append($" -- tenantId={tenantId}, userId={userId}, elapsed={elapsedMs}ms");
-        return sb.ToString();
+        return result + " -- tenantId=" + tenantId.ToString() + ", userId=" + userId.ToString() + ", elapsed=" + elapsedMs.ToString() + "ms";
     }
 
     /// <summary>构建字段类型规范</summary>
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private static string BuildTypeSpec(string dataType, string length, string precision)
     {
         if (!string.IsNullOrEmpty(precision))
-            return $"{dataType}({length},{precision})";
+            return dataType + "(" + length + "," + precision + ")";
         if (!string.IsNullOrEmpty(length))
-            return $"{dataType}({length})";
+            return dataType + "(" + length + ")";
         return dataType;
+    }
+
+    /// <summary>向 Span 追加字符串片段，用于零分配 SQL 拼装</summary>
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private static void AppendSpan(Span<char> buf, ref int pos, string value)
+    {
+        value.AsSpan().CopyTo(buf.Slice(pos));
+        pos += value.Length;
     }
 
     #endregion

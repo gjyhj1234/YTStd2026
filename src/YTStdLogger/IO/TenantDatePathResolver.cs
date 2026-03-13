@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using YTStdLogger.Logging;
 
 namespace YTStdLogger.IO;
@@ -22,16 +23,27 @@ public sealed class TenantDatePathResolver
     /// <summary>
     /// 获取租户日期目录。
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public string GetTenantDirectory(DateTime ts, int tenantId)
     {
-        string month = ts.Year.ToString("0000") + ts.Month.ToString("00");
-        string day = month + ts.Day.ToString("00");
-        return Path.Combine(_rootPath, month, day, tenantId.ToString());
+        // 使用 stackalloc 构建 yyyyMM 和 yyyyMMdd，避免多次 ToString + 字符串拼接
+        Span<char> month = stackalloc char[6];
+        int mp = 0;
+        WriteFixed4(ts.Year, month, ref mp);
+        WriteFixed2(ts.Month, month, ref mp);
+
+        Span<char> day = stackalloc char[8];
+        month.CopyTo(day);
+        int dp = 6;
+        WriteFixed2(ts.Day, day, ref dp);
+
+        return Path.Combine(_rootPath, month.ToString(), day.ToString(), tenantId.ToString());
     }
 
     /// <summary>
     /// 获取日志文件路径。
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public string GetLogFilePath(DateTime ts, int tenantId, LogLevel level)
     {
         string dir = GetTenantDirectory(ts, tenantId);
@@ -41,6 +53,7 @@ public sealed class TenantDatePathResolver
     /// <summary>
     /// 获取等级文件名。
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string GetFileName(LogLevel level)
     {
         return level switch
@@ -51,5 +64,21 @@ public sealed class TenantDatePathResolver
             LogLevel.Infor => "infor.txt",
             _ => "debug.txt"
         };
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void WriteFixed2(int value, Span<char> buf, ref int pos)
+    {
+        buf[pos++] = (char)('0' + ((value / 10) % 10));
+        buf[pos++] = (char)('0' + (value % 10));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void WriteFixed4(int value, Span<char> buf, ref int pos)
+    {
+        buf[pos++] = (char)('0' + ((value / 1000) % 10));
+        buf[pos++] = (char)('0' + ((value / 100) % 10));
+        buf[pos++] = (char)('0' + ((value / 10) % 10));
+        buf[pos++] = (char)('0' + (value % 10));
     }
 }

@@ -1,5 +1,6 @@
 using System;
-using System.Collections.Concurrent;
+using System.Collections.Immutable;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using YTStdLogger.Buffer;
@@ -23,7 +24,12 @@ public sealed class LoggerEngine : IDisposable, IAsyncDisposable
     private readonly LogRateLimiter _rateLimiter;
     private readonly BatchedFileWriter _writer;
     private readonly LogRetentionCleaner _cleaner;
-    private readonly ConcurrentDictionary<int, byte> _tenantDebugOverrides;
+    /// <remarks>
+    /// 使用 ImmutableHashSet 替代 ConcurrentDictionary，
+    /// 读路径 O(1) 无锁无装箱，写路径通过 ImmutableInterlocked.Update 保证线程安全，
+    /// 在租户 Debug 开关读多写少场景下内存占用和 CPU cache 命中率均优于 ConcurrentDictionary。
+    /// </remarks>
+    private ImmutableHashSet<int> _tenantDebugOverrides = ImmutableHashSet<int>.Empty;
     private readonly Thread _consumerThread;
     private readonly CancellationTokenSource _cts;
     private volatile bool _accepting;
@@ -60,7 +66,7 @@ public sealed class LoggerEngine : IDisposable, IAsyncDisposable
         _rateLimiter = new LogRateLimiter(_options.MaxLogsPerSecond, _options.DropSummaryIntervalSeconds);
         _writer = new BatchedFileWriter(new TenantDatePathResolver(_options.RootPath), new DefaultLogFormatter(), _options.FlushEveryBatch);
         _cleaner = new LogRetentionCleaner(_options.RootPath, _options.RetentionMonths);
-        _tenantDebugOverrides = new ConcurrentDictionary<int, byte>();
+        // _tenantDebugOverrides 已在字段初始化器中设置为 ImmutableHashSet<int>.Empty
         _cts = new CancellationTokenSource();
         _accepting = true;
         _consumerThread = new Thread(ConsumeLoop)
@@ -74,6 +80,7 @@ public sealed class LoggerEngine : IDisposable, IAsyncDisposable
     /// <summary>
     /// 判断指定等级是否可记录。
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsEnabled(LogLevel level)
     {
         return level <= _options.MinimumLevel;
@@ -83,6 +90,7 @@ public sealed class LoggerEngine : IDisposable, IAsyncDisposable
     /// 判断指定租户与等级是否可记录。
     /// 当租户被显式开启 Debug 时，将忽略全局等级限制。
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsEnabled(int tenantId, LogLevel level)
     {
         if (IsEnabled(level))
@@ -99,7 +107,7 @@ public sealed class LoggerEngine : IDisposable, IAsyncDisposable
     /// </summary>
     public void EnableTenantDebug(int tenantId)
     {
-        _tenantDebugOverrides[tenantId] = 1;
+        ImmutableInterlocked.Update(ref _tenantDebugOverrides, s => s.Add(tenantId));
     }
 
     /// <summary>
@@ -108,15 +116,22 @@ public sealed class LoggerEngine : IDisposable, IAsyncDisposable
     /// <returns>若原本存在开关则返回 <c>true</c>。</returns>
     public bool DisableTenantDebug(int tenantId)
     {
-        return _tenantDebugOverrides.TryRemove(tenantId, out _);
+        bool removed = false;
+        ImmutableInterlocked.Update(ref _tenantDebugOverrides, s =>
+        {
+            removed = s.Contains(tenantId);
+            return s.Remove(tenantId);
+        });
+        return removed;
     }
 
     /// <summary>
     /// 判断指定租户是否已开启 Debug 覆盖。
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsTenantDebugEnabled(int tenantId)
     {
-        return _tenantDebugOverrides.ContainsKey(tenantId);
+        return _tenantDebugOverrides.Contains(tenantId);
     }
 
     /// <summary>
@@ -297,6 +312,8 @@ public sealed class LoggerEngine : IDisposable, IAsyncDisposable
     private void ConsumeLoop()
     {
         LogMessage[] batch = new LogMessage[_options.BatchSize];
+        // 预分配汇总缓冲区，避免在循环内 stackalloc（CA2014）
+        Span<char> summaryBuf = stackalloc char[128];
         DateTime lastFlushTime = DateTime.UtcNow;
         int idleSpin = 0;
 
@@ -339,7 +356,13 @@ public sealed class LoggerEngine : IDisposable, IAsyncDisposable
 
                 if (_rateLimiter.TryBuildSummary(out long dropped) && dropped > 0)
                 {
-                    string summary = "过去 " + _options.DropSummaryIntervalSeconds.ToString() + " 秒丢弃 " + dropped.ToString() + " 条日志。";
+                    int pos = 0;
+                    "过去 ".AsSpan().CopyTo(summaryBuf.Slice(pos)); pos += 3;
+                    _options.DropSummaryIntervalSeconds.TryFormat(summaryBuf.Slice(pos), out int w1); pos += w1;
+                    " 秒丢弃 ".AsSpan().CopyTo(summaryBuf.Slice(pos)); pos += 4;
+                    dropped.TryFormat(summaryBuf.Slice(pos), out int w2); pos += w2;
+                    " 条日志。".AsSpan().CopyTo(summaryBuf.Slice(pos)); pos += 4;
+                    string summary = summaryBuf.Slice(0, pos).ToString();
                     _writer.WriteInternalWarning(_options.UseUtcTimestamp ? DateTime.UtcNow : DateTime.Now, summary);
                 }
 
