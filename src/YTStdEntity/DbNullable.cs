@@ -22,6 +22,7 @@ public readonly struct DbNullable<T>
     }
 
     /// <summary>公开构造函数：传入值即表示"设置"</summary>
+    /// <param name="value">要设置的值，可为 null</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public DbNullable(T? value)
     {
