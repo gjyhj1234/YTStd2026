@@ -372,16 +372,26 @@ internal static partial class PgSqlRenderer
             if (sub.Params.Length > 0)
             {
                 // Replace @pN with @p(N+offset) - process in reverse order to avoid conflicts
+                // 使用 ArrayPool 分配避免循环内 stackalloc（CA2014）
                 for (int i = sub.Params.Length - 1; i >= 0; i--)
                 {
-                    string oldName = $"@p{i}";
-                    string newName = $"@p{i + offset}";
+                    var vsbOld = new ValueStringBuilder(16);
+                    vsbOld.Append("@p");
+                    vsbOld.Append(i.ToString());
+                    string oldName = vsbOld.ToString();
+                    var vsbNew = new ValueStringBuilder(16);
+                    vsbNew.Append("@p");
+                    vsbNew.Append((i + offset).ToString());
+                    string newName = vsbNew.ToString();
                     sql = sql.Replace(oldName, newName);
                 }
 
                 foreach (var p in sub.Params)
                 {
-                    ctx.AddParamDirect($"@p{offset}", p.Value, p.DbType);
+                    var vsbParam = new ValueStringBuilder(16);
+                    vsbParam.Append("@p");
+                    vsbParam.Append(offset.ToString());
+                    ctx.AddParamDirect(vsbParam.ToString(), p.Value, p.DbType);
                     offset++;
                 }
             }
@@ -637,7 +647,10 @@ internal static partial class PgSqlRenderer
 
         public string AddParam(object? value, NpgsqlTypes.NpgsqlDbType? dbType)
         {
-            var name = $"@p{_params.Count}";
+            var vsb = new ValueStringBuilder(stackalloc char[16]);
+            vsb.Append("@p");
+            vsb.Append(_params.Count.ToString());
+            var name = vsb.ToString();
             _params.Add(new PgSqlParam(name, value, dbType));
             return name;
         }

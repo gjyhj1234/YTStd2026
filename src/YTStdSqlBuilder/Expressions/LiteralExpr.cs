@@ -21,6 +21,13 @@ public sealed class LiteralExpr : SqlExpr
     public static LiteralExpr Number(long value) => new(value.ToString(), value);
     public static LiteralExpr Number(decimal value) => new(value.ToString(), value);
     public static LiteralExpr Number(double value) => new(value.ToString(), value);
-    public static LiteralExpr String(string value) => new($"'{value.Replace("'", "''")}'", value);
+    public static LiteralExpr String(string value)
+    {
+        var vsb = new ValueStringBuilder(stackalloc char[64]);
+        vsb.Append('\'');
+        vsb.Append(value.Replace("'", "''"));
+        vsb.Append('\'');
+        return new(vsb.ToString(), value);
+    }
     public static LiteralExpr Raw(string sqlText) => new(sqlText);
 }
