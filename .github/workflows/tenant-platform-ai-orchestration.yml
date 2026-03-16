@@ -112,7 +112,7 @@ jobs:
           repo = Path(".")
           packet_dir = repo / "artifacts" / "tenant-platform-ai"
           packet_dir.mkdir(parents=True, exist_ok=True)
-          repository_name = os.environ.get("GITHUB_REPOSITORY_NAME") or os.environ.get("GITHUB_REPOSITORY", "")
+          repository_name = os.environ.get("GITHUB_REPOSITORY", "")
           target_ref = os.environ.get("TARGET_REF", "main")
 
           def read_text(path: str) -> str:
