@@ -99,7 +99,7 @@ jobs:
           RUN_INITDATA: ${{ github.event.inputs.run_initdata }}
           RUN_FRONTEND: ${{ github.event.inputs.run_frontend }}
           TARGET_REF: ${{ github.event.inputs.target_ref }}
-          GITHUB_REPOSITORY_NAME: ${{ github.repository }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
           set -euo pipefail
           packet_dir="artifacts/tenant-platform-ai"
@@ -112,6 +112,8 @@ jobs:
           repo = Path(".")
           packet_dir = repo / "artifacts" / "tenant-platform-ai"
           packet_dir.mkdir(parents=True, exist_ok=True)
+          repository_name = os.environ.get("GITHUB_REPOSITORY_NAME") or os.environ.get("GITHUB_REPOSITORY", "")
+          target_ref = os.environ.get("TARGET_REF", "main")
 
           def read_text(path: str) -> str:
             return (repo / path).read_text(encoding="utf-8")
@@ -203,8 +205,8 @@ jobs:
           ]
 
           manifest = {
-            "repository": os.environ["GITHUB_REPOSITORY_NAME"],
-            "target_ref": os.environ["TARGET_REF"],
+            "repository": repository_name,
+            "target_ref": target_ref,
             "execution_mode": os.environ["EXECUTION_MODE"],
             "stages": packets,
           }
@@ -258,7 +260,7 @@ jobs:
               f"# GitHub Agent 执行提示词：{packet['title']}",
               "",
               "```text",
-              f"你正在处理仓库 {os.environ['GITHUB_REPOSITORY_NAME']}，目标 ref 为 {os.environ['TARGET_REF']}。",
+              f"你正在处理仓库 {repository_name}，目标 ref 为 {target_ref}。",
               f"请执行“{packet['title']}”阶段，只完成当前阶段以及其交付物，不要提前实现后续阶段内容。",
               "",
               f"阶段依赖：{', '.join(packet['depends_on']) if packet['depends_on'] else '无'}。",
@@ -330,7 +332,7 @@ jobs:
         env:
           AI_RUNNER_URL: ${{ vars.TENANT_PLATFORM_AI_RUNNER_URL }}
           AI_RUNNER_TOKEN: ${{ secrets.TENANT_PLATFORM_AI_RUNNER_TOKEN }}
-          GITHUB_REPOSITORY_NAME: ${{ github.repository }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
           TARGET_REF: ${{ github.event.inputs.target_ref }}
         run: |
           set -euo pipefail
@@ -343,7 +345,7 @@ jobs:
             exit 1
           fi
           jq -n \
-            --arg repo "$GITHUB_REPOSITORY_NAME" \
+            --arg repo "$GITHUB_REPOSITORY" \
             --arg ref "$TARGET_REF" \
             --arg stage "backend" \
             --rawfile prompt artifacts/tenant-platform-ai/02-backend-packet.md \
@@ -399,7 +401,7 @@ jobs:
         env:
           AI_RUNNER_URL: ${{ vars.TENANT_PLATFORM_AI_RUNNER_URL }}
           AI_RUNNER_TOKEN: ${{ secrets.TENANT_PLATFORM_AI_RUNNER_TOKEN }}
-          GITHUB_REPOSITORY_NAME: ${{ github.repository }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
           TARGET_REF: ${{ github.event.inputs.target_ref }}
         run: |
           set -euo pipefail
@@ -412,7 +414,7 @@ jobs:
             exit 1
           fi
           jq -n \
-            --arg repo "$GITHUB_REPOSITORY_NAME" \
+            --arg repo "$GITHUB_REPOSITORY" \
             --arg ref "$TARGET_REF" \
             --arg stage "initdata" \
             --rawfile prompt artifacts/tenant-platform-ai/03-initdata-packet.md \
@@ -469,7 +471,7 @@ jobs:
         env:
           AI_RUNNER_URL: ${{ vars.TENANT_PLATFORM_AI_RUNNER_URL }}
           AI_RUNNER_TOKEN: ${{ secrets.TENANT_PLATFORM_AI_RUNNER_TOKEN }}
-          GITHUB_REPOSITORY_NAME: ${{ github.repository }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
           TARGET_REF: ${{ github.event.inputs.target_ref }}
         run: |
           set -euo pipefail
@@ -482,7 +484,7 @@ jobs:
             exit 1
           fi
           jq -n \
-            --arg repo "$GITHUB_REPOSITORY_NAME" \
+            --arg repo "$GITHUB_REPOSITORY" \
             --arg ref "$TARGET_REF" \
             --arg stage "frontend" \
             --rawfile prompt artifacts/tenant-platform-ai/04-frontend-packet.md \
