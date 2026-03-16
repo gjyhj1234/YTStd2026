@@ -1,4 +1,4 @@
-# SaaS Tenant 平台实体数据字典
+# 租户平台实体数据字典
 
 > 本文档是 **AI 编程优先** 的数据库字典，不是建表 SQL。
 
@@ -21,10 +21,9 @@
 | 金额 | `DECIMAL(18,2)` / `DECIMAL(18,4)` -> `decimal` / `BigDecimal` |
 | JSON 配置 | `JSONB` -> `JsonNode` / 值对象，不直接暴露松散字典字段给外部 API |
 | 审计字段 | 多数业务表包含 `created_at`、`updated_at`，建议抽取统一实体基类或公共属性片段 |
-| 平台表租户关联 | **禁止**在租户平台实体中使用裸 `TenantId` 属性、`tenant_id` / `tenantid` 字段名；这会触发现有框架的租户分区/分区表语义 |
-| 平台表关联命名 | 如需引用租户主档，统一使用具备业务语义的名称，如 `tenant_ref_id`、`owner_tenant_ref_id`、`source_tenant_ref_id`、`target_tenant_ref_id`，避免使用裸 `tenant_id` |
+| 平台表租户关联 | **禁止**在租户平台实体中使用裸 `TenantId` 属性、`tenant_id` / `tenantid` 字段名；如需引用租户主档，统一使用具备业务语义的名称，如 `tenant_ref_id`、`owner_tenant_ref_id`、`source_tenant_ref_id`、`target_tenant_ref_id`，避免触发现有框架的租户分区/分区表语义 |
 | 安全字段 | 密码、密钥、密文类字段只保存摘要或密文，不应生成明文字段逻辑 |
-| 部署假设 | 后端采用单体主程序，不使用微服务与分布式缓存；权限判断相关高频数据使用 Local Cache |
+| 部署假设 | 后端采用单体主程序，不使用微服务与分布式缓存；权限判断相关高频数据使用 Local Cache（本地缓存） |
 
 ## 3. 实体生成与数据初始化约定
 
@@ -32,7 +31,7 @@
 - 对中间关系表（如 `platform_role_permissions`、`tenant_tag_bindings`）可直接生成轻量关系实体，不建议引入复杂领域行为。
 - `*_logs`、`*_stats`、`*_items`、`*_events`、`*_changes` 这类实体按追加型或统计型实体处理，通常不做强更新。
 - 平台基础数据（管理员、角色、权限、默认安全策略、默认套餐、通知模板等）应通过**实体列表 + 幂等初始化服务**生成，不应依赖一次性 SQL 文件。
-- 涉及权限、菜单、角色成员、功能开关的实体，在应用层默认需要配套 Local Cache 刷新/失效机制。
+- 涉及权限、菜单、角色成员、功能开关的实体，在应用层默认需要配套 Local Cache（本地缓存）刷新/失效机制。
 
 ## 4. 模块总览
 
@@ -1187,6 +1186,7 @@
 
 - **建议实体名**：`DataIsolationPolicy`
 - **业务用途**：定义租户数据隔离、访问控制和安全策略。
+- **建模说明**：`isolation_type` 表示隔离策略类别，而不是具体字段名。为避免与平台表禁用裸 `tenant_id` 命名的约束冲突，这里统一使用 `tenant_isolation` 表示“按租户维度隔离”。
 - **主要关系**：`tenant_ref_id` -> `tenants`
 - **表级约束**：无额外表级约束。
 - **索引说明**：未在当前字典中定义额外索引。
@@ -1195,7 +1195,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | `id` | `BIGSERIAL PRIMARY KEY` | `Long` | 否 | - | PK / NOT NULL | 主键 ID。建议实体类型使用 Long。 |
 | `tenant_ref_id` | `BIGINT` | `Long` | 是 | - | FK->tenants | 关联 `tenants` 表主键。 |
-| `isolation_type` | `VARCHAR(32)` | `String` | 否 | - | NOT NULL / CHECK(isolation_type IN ('tenant_ref_id', 'access_control', 'security_policy')) | 隔离策略类型。 |
+| `isolation_type` | `VARCHAR(32)` | `String` | 否 | - | NOT NULL / CHECK(isolation_type IN ('tenant_isolation', 'access_control', 'security_policy')) | 隔离策略类型，建议枚举值使用 `tenant_isolation`、`access_control`、`security_policy`。 |
 | `policy_name` | `VARCHAR(128)` | `String` | 否 | - | NOT NULL | 策略名称。 |
 | `policy_config` | `JSONB` | `JsonNode/Map<String,Object>` | 否 | - | NOT NULL | 策略配置 JSON。 |
 | `status` | `VARCHAR(32)` | `String` | 否 | 'active' | NOT NULL / CHECK(status IN ('active', 'disabled')) | 业务状态字段。应根据 CHECK 约束生成枚举。 |
