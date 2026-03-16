@@ -163,7 +163,7 @@ src/YTStdTenantPlatform/
 
 ### 4.1.1 自动化执行顺序
 
-在 workflow 或 AI 自动执行链中，后端阶段必须严格按以下顺序推进：
+在 `.github/workflows/tenant-platform-ai-orchestration.yml` 或等效 AI 自动执行链中，后端阶段必须严格按以下顺序推进：
 
 1. **整体分析**：先通读 `docs/TenantPlatform/architecture.md`、`docs/TenantPlatform/database_dictionary.md`、`entity-prompt.md`，输出模块拆分、实体清单、接口清单、中间件清单、测试清单。
 2. **实体建模**：先落地 `src/YTStdTenantPlatform/entity/TenantPlatform/*.cs` 下的实体文件，再补充枚举、值对象、DTO。

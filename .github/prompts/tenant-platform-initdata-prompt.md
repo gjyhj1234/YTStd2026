@@ -48,6 +48,7 @@
 
 - 初始化数据实体来源必须严格对应 `docs/TenantPlatform/database_dictionary.md`。
 - 遇到租户主档关联字段时，**禁止**使用裸 `TenantId` / `tenant_id` 命名。
+- 推荐使用具备业务语义的名称，例如：`tenant_ref_id`、`owner_tenant_ref_id`、`source_tenant_ref_id`。
 - 初始化数据对象应直接使用实体类、枚举和值对象，不构造魔法字符串字典。
 
 ---
@@ -125,7 +126,7 @@ Infrastructure/Initialization/
 - 每个 Contributor 负责一类数据的幂等初始化。
 - `SeedRunner` 负责排序、执行和日志输出。
 - 初始化判断优先使用业务唯一键（如 `code`、`username`、`template_code`），不要依赖固定 ID。
-- workflow 执行顺序必须是：**实体建模 → 编译触发生成器 → 数据库建表 → 初始化数据填充 → 缓存预热 → 初始化测试**。
+- Workflow 执行顺序必须是：**实体建模 → 编译触发生成器 → 数据库建表 → 初始化数据填充 → 缓存预热 → 初始化测试**。
 - 初始化阶段要能够被后端启动引导器直接调用，避免生成一次性临时脚本。
 
 ---
