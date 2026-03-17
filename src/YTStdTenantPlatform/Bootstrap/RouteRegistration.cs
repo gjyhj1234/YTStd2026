@@ -53,51 +53,30 @@ namespace YTStdTenantPlatform.Bootstrap
             {
                 var result = await HealthCheck.CheckAllAsync();
                 ctx.Response.ContentType = "application/json; charset=utf-8";
-                if (result.IsHealthy)
-                {
-                    ctx.Response.StatusCode = 200;
-                }
-                else
-                {
-                    ctx.Response.StatusCode = 503;
-                }
+                ctx.Response.StatusCode = result.IsHealthy ? 200 : 503;
                 await ctx.Response.WriteAsync(
                     "{\"status\":\"" + (result.IsHealthy ? "healthy" : "unhealthy") +
-                    "\",\"message\":\"" + result.Message + "\"}");
+                    "\",\"message\":\"" + EscapeJson(result.Message) + "\"}");
             }).WithSummary("综合健康检查");
 
             group.MapGet("/db", async (HttpContext ctx) =>
             {
                 var result = await HealthCheck.CheckDatabaseAsync();
                 ctx.Response.ContentType = "application/json; charset=utf-8";
-                if (result.IsHealthy)
-                {
-                    ctx.Response.StatusCode = 200;
-                }
-                else
-                {
-                    ctx.Response.StatusCode = 503;
-                }
+                ctx.Response.StatusCode = result.IsHealthy ? 200 : 503;
                 await ctx.Response.WriteAsync(
                     "{\"status\":\"" + (result.IsHealthy ? "healthy" : "unhealthy") +
-                    "\",\"message\":\"" + result.Message + "\"}");
+                    "\",\"message\":\"" + EscapeJson(result.Message) + "\"}");
             }).WithSummary("数据库健康检查");
 
             group.MapGet("/cache", async (HttpContext ctx) =>
             {
                 var result = HealthCheck.CheckCache();
                 ctx.Response.ContentType = "application/json; charset=utf-8";
-                if (result.IsHealthy)
-                {
-                    ctx.Response.StatusCode = 200;
-                }
-                else
-                {
-                    ctx.Response.StatusCode = 503;
-                }
+                ctx.Response.StatusCode = result.IsHealthy ? 200 : 503;
                 await ctx.Response.WriteAsync(
                     "{\"status\":\"" + (result.IsHealthy ? "healthy" : "unhealthy") +
-                    "\",\"message\":\"" + result.Message + "\"}");
+                    "\",\"message\":\"" + EscapeJson(result.Message) + "\"}");
             }).WithSummary("缓存健康检查");
         }
 
@@ -139,11 +118,20 @@ namespace YTStdTenantPlatform.Bootstrap
                 await context.Response.WriteAsync(
                     "{\"success\":true,\"data\":{" +
                     "\"userId\":" + currentUser.UserId +
-                    ",\"username\":\"" + currentUser.Username +
-                    "\",\"displayName\":\"" + currentUser.DisplayName +
+                    ",\"username\":\"" + EscapeJson(currentUser.Username) +
+                    "\",\"displayName\":\"" + EscapeJson(currentUser.DisplayName) +
                     "\",\"isSuperAdmin\":" + (currentUser.IsSuperAdmin ? "true" : "false") +
                     "}}");
             }).WithSummary("获取当前登录用户信息");
+        }
+
+        /// <summary>转义 JSON 字符串中的特殊字符</summary>
+        private static string EscapeJson(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return string.Empty;
+            return value.Replace("\\", "\\\\").Replace("\"", "\\\"")
+                        .Replace("\n", "\\n").Replace("\r", "\\r")
+                        .Replace("\t", "\\t");
         }
     }
 }

@@ -18,8 +18,8 @@ namespace YTStdTenantPlatform.Infrastructure.Auth
         /// <summary>Bearer Token 前缀</summary>
         private const string BearerPrefix = "Bearer ";
 
-        /// <summary>Token 签名密钥（生产环境应从配置读取）</summary>
-        private static volatile string _tokenSecret = "YTStdTenantPlatform_Default_Secret_Key_Please_Change_In_Production";
+        /// <summary>Token 签名密钥（必须在启动时通过配置设置）</summary>
+        private static volatile string _tokenSecret = string.Empty;
 
         /// <summary>Token 有效时长（秒）</summary>
         private static volatile int _tokenExpirySeconds = 7200;
@@ -143,24 +143,33 @@ namespace YTStdTenantPlatform.Infrastructure.Auth
         private static IReadOnlyList<string> GetUserPermissions(long userId, IReadOnlyList<string> roles)
         {
             var rolePermCache = PlatformCacheWarmer.RolePermissionCache;
+            if (rolePermCache.Count == 0 || roles.Count == 0)
+            {
+                return Array.Empty<string>();
+            }
+
+            // 需要从 RoleCode → RoleId 反查以获取精确的角色权限
+            // 骨架阶段：获取所有角色的 Id，然后匹配用户拥有的角色
             var permSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            // 需要从 RoleCode → RoleId 反查
-            // 简化实现：遍历所有角色权限映射
-            foreach (var kvp in rolePermCache)
+            // 从 UserRoleCache 中获取用户的 RoleId 列表
+            var userRoleCache = PlatformCacheWarmer.UserRoleCache;
+            if (!userRoleCache.TryGetValue(userId, out var userRoleCodes))
             {
-                // kvp.Key = RoleId, kvp.Value = PermissionCode list
-                permSet.UnionWith(kvp.Value);
+                return Array.Empty<string>();
             }
 
-            // 实际应仅取当前用户角色对应的权限
-            // 此处为骨架实现，后续阶段细化
-            var result = new List<string>(permSet.Count);
-            foreach (var code in permSet)
+            // 通过角色编码查找角色 ID，再查找对应权限
+            // 此处需要 RoleCode → RoleId 映射（后续阶段优化为独立缓存）
+            foreach (var kvp in rolePermCache)
             {
-                result.Add(code);
+                // 目前 rolePermCache 以 RoleId 为 Key
+                // 需要判断该 RoleId 是否属于用户的角色之一
+                // 骨架阶段暂不精确匹配，后续阶段细化
+                // 此处不添加任何权限，等待后续阶段实现精确匹配
             }
-            return result;
+
+            return Array.Empty<string>();
         }
 
         /// <summary>计算 HMAC-SHA256 签名</summary>

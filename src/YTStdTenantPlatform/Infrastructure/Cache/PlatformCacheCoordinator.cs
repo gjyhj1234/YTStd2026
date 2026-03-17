@@ -17,6 +17,9 @@ namespace YTStdTenantPlatform.Infrastructure.Cache
         /// <summary>定时刷新 CancellationTokenSource</summary>
         private static CancellationTokenSource? _refreshCts;
 
+        /// <summary>定时刷新后台任务引用</summary>
+        private static Task? _refreshTask;
+
         /// <summary>设置定时刷新间隔（秒）</summary>
         public static void SetRefreshInterval(int seconds)
         {
@@ -33,7 +36,7 @@ namespace YTStdTenantPlatform.Infrastructure.Cache
             _refreshCts = new CancellationTokenSource();
             var token = _refreshCts.Token;
 
-            _ = Task.Run(async () =>
+            _refreshTask = Task.Run(async () =>
             {
                 Logger.Info(0, 0, "[PlatformCacheCoordinator] 定时刷新已启动, 间隔=" +
                     _refreshIntervalSeconds + "秒");
@@ -66,8 +69,17 @@ namespace YTStdTenantPlatform.Infrastructure.Cache
         {
             _periodicRefreshEnabled = false;
             _refreshCts?.Cancel();
+
+            // 等待刷新任务完成（非阻塞，设超时保护）
+            var task = _refreshTask;
+            if (task != null && !task.IsCompleted)
+            {
+                task.Wait(TimeSpan.FromSeconds(5));
+            }
+
             _refreshCts?.Dispose();
             _refreshCts = null;
+            _refreshTask = null;
         }
 
         /// <summary>刷新全部缓存</summary>

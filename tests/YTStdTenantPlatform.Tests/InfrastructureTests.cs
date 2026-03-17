@@ -82,6 +82,7 @@ namespace YTStdTenantPlatform.Tests
         [Fact]
         public void PlatformAuthHandler_GenerateToken_ReturnsNonEmpty()
         {
+            PlatformAuthHandler.SetTokenSecret("test-secret-key-for-unit-tests");
             var token = PlatformAuthHandler.GenerateToken(1, "admin");
             Assert.False(string.IsNullOrEmpty(token));
 
@@ -95,6 +96,7 @@ namespace YTStdTenantPlatform.Tests
         [Fact]
         public void PlatformAuthHandler_GenerateToken_DifferentUsersProduceDifferentTokens()
         {
+            PlatformAuthHandler.SetTokenSecret("test-secret-key-for-unit-tests");
             var token1 = PlatformAuthHandler.GenerateToken(1, "admin");
             var token2 = PlatformAuthHandler.GenerateToken(2, "operator");
             Assert.NotEqual(token1, token2);
