@@ -13,6 +13,8 @@ export const PLATFORM_ROLE_VIEW = 'platform:role:view'
 export const PLATFORM_ROLE_CREATE = 'platform:role:create'
 export const PLATFORM_ROLE_UPDATE = 'platform:role:update'
 export const PLATFORM_ROLE_DELETE = 'platform:role:delete'
+export const PLATFORM_ROLE_ENABLE = 'platform:role:enable'
+export const PLATFORM_ROLE_DISABLE = 'platform:role:disable'
 export const PLATFORM_ROLE_ASSIGN_PERMISSION = 'platform:role:assign_permission'
 export const PLATFORM_ROLE_ASSIGN_MEMBER = 'platform:role:assign_member'
 
@@ -41,12 +43,18 @@ export const TENANT_TAG_VIEW = 'tenant:tag:view'
 export const TENANT_TAG_CREATE = 'tenant:tag:create'
 export const TENANT_TAG_UPDATE = 'tenant:tag:update'
 export const TENANT_TAG_DELETE = 'tenant:tag:delete'
+export const TENANT_TAG_BIND = 'tenant:tag:bind'
 
 export const TENANT_DOMAIN_VIEW = 'tenant:domain:view'
 export const TENANT_DOMAIN_CREATE = 'tenant:domain:create'
 export const TENANT_DOMAIN_UPDATE = 'tenant:domain:update'
 export const TENANT_DOMAIN_DELETE = 'tenant:domain:delete'
 export const TENANT_DOMAIN_VERIFY = 'tenant:domain:verify'
+
+export const TENANT_RESOURCE_VIEW = 'tenant:resource:view'
+export const TENANT_RESOURCE_CREATE = 'tenant:resource:create'
+export const TENANT_RESOURCE_UPDATE = 'tenant:resource:update'
+export const TENANT_RESOURCE_DELETE = 'tenant:resource:delete'
 
 export const TENANT_CONFIG_VIEW = 'tenant:config:view'
 export const TENANT_CONFIG_CREATE = 'tenant:config:create'
@@ -102,6 +110,27 @@ export const LOG_OPERATION_EXPORT = 'log:operation:export'
 export const LOG_AUDIT_VIEW = 'log:audit:view'
 export const LOG_AUDIT_EXPORT = 'log:audit:export'
 export const LOG_SYSTEM_VIEW = 'log:system:view'
+
+// ── API 与集成 ──
+export const INFRA_APIKEY_VIEW = 'infra:apikey:view'
+export const INFRA_APIKEY_CREATE = 'infra:apikey:create'
+export const INFRA_APIKEY_DISABLE = 'infra:apikey:disable'
+
+export const INFRA_WEBHOOK_VIEW = 'infra:webhook:view'
+export const INFRA_WEBHOOK_CREATE = 'infra:webhook:create'
+export const INFRA_WEBHOOK_UPDATE = 'infra:webhook:update'
+export const INFRA_WEBHOOK_ENABLE = 'infra:webhook:enable'
+export const INFRA_WEBHOOK_DISABLE = 'infra:webhook:disable'
+
+// ── 平台运营 ──
+export const OPS_STAT_VIEW = 'ops:stat:view'
+export const OPS_MONITOR_VIEW = 'ops:monitor:view'
+
+// ── 文件与存储 ──
+export const INFRA_STORAGE_VIEW = 'infra:storage:view'
+export const INFRA_STORAGE_CREATE = 'infra:storage:create'
+export const INFRA_STORAGE_UPDATE = 'infra:storage:update'
+export const INFRA_STORAGE_DELETE = 'infra:storage:delete'
 
 // ── 基础设施 ──
 export const INFRA_RATELIMIT_VIEW = 'infra:ratelimit:view'
