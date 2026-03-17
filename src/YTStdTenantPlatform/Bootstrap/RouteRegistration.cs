@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using YTStdTenantPlatform.Endpoints;
 using YTStdTenantPlatform.Infrastructure.Auth;
 using YTStdTenantPlatform.Infrastructure.Persistence;
 
@@ -21,26 +22,44 @@ namespace YTStdTenantPlatform.Bootstrap
             MapAuthEndpoints(app);
 
             // ──────────────────────────────────────────────
-            // 以下路由组为后续阶段实现的挂载点
-            // 每个模块的具体 Endpoint 将在阶段 05/06 实现
+            // 模块 1：平台管理体系
+            // ──────────────────────────────────────────────
+            PlatformUserEndpoints.Map(app);
+            PlatformRoleEndpoints.Map(app);
+            PlatformPermissionEndpoints.Map(app);
+
+            // ──────────────────────────────────────────────
+            // 模块 2：租户生命周期体系
+            // ──────────────────────────────────────────────
+            TenantEndpoints.Map(app);
+
+            // ──────────────────────────────────────────────
+            // 模块 3：租户信息体系（分组、域名、标签）
+            // ──────────────────────────────────────────────
+            TenantInfoEndpoints.Map(app);
+
+            // ──────────────────────────────────────────────
+            // 模块 4：租户资源管理
+            // ──────────────────────────────────────────────
+            TenantResourceEndpoints.Map(app);
+
+            // ──────────────────────────────────────────────
+            // 模块 5：租户配置中心（系统配置、功能开关、参数）
+            // ──────────────────────────────────────────────
+            TenantConfigEndpoints.Map(app);
+
+            // ──────────────────────────────────────────────
+            // 以下模块在阶段 06 实现
             // ──────────────────────────────────────────────
 
-            // 模块 1：平台管理体系
-            // MapPlatformUserEndpoints(app);
-            // MapPlatformRoleEndpoints(app);
-            // MapPlatformPermissionEndpoints(app);
-
-            // 模块 2：租户生命周期体系
-            // MapTenantEndpoints(app);
-
             // 模块 6：SaaS 套餐系统
-            // MapPackageEndpoints(app);
+            // PackageEndpoints.Map(app);
 
             // 模块 7：订阅系统
-            // MapSubscriptionEndpoints(app);
+            // SubscriptionEndpoints.Map(app);
 
             // 模块 8：计费与账单系统
-            // MapBillingEndpoints(app);
+            // BillingEndpoints.Map(app);
         }
 
         /// <summary>注册健康检查端点</summary>

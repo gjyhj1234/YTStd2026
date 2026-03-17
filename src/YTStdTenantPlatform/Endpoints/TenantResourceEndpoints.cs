@@ -1,0 +1,59 @@
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using YTStdTenantPlatform.Application.Dtos;
+using YTStdTenantPlatform.Application.Services;
+using YTStdTenantPlatform.Infrastructure.Auth;
+
+namespace YTStdTenantPlatform.Endpoints
+{
+    /// <summary>租户资源管理端点</summary>
+    public static class TenantResourceEndpoints
+    {
+        /// <summary>注册租户资源管理路由</summary>
+        public static void Map(WebApplication app)
+        {
+            var group = app.MapGroup("/api/tenant-resource-quotas")
+                .WithTags("租户资源管理");
+
+            group.MapGet("/", async (HttpContext ctx, int? page, int? pageSize, string? keyword, long? tenantRefId) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var req = new PagedRequest { Page = page ?? 1, PageSize = pageSize ?? 20, Keyword = keyword };
+                var result = await TenantResourceAppService.GetListAsync(0, user.UserId, req, tenantRefId);
+                await WriteJsonAsync(ctx, ApiResult<PagedResult<TenantResourceQuotaDto>>.Ok(result));
+            }).WithSummary("获取资源配额列表");
+
+            group.MapGet("/{id:long}", async (HttpContext ctx, long id) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await TenantResourceAppService.GetByIdAsync(0, user.UserId, id);
+                if (result == null) { ctx.Response.StatusCode = 404; return; }
+                await WriteJsonAsync(ctx, ApiResult<TenantResourceQuotaDto>.Ok(result));
+            }).WithSummary("获取配额详情");
+
+            group.MapPost("/", async (HttpContext ctx) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var req = await ctx.Request.ReadFromJsonAsync<SaveTenantResourceQuotaRequest>();
+                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail("请求体无效"), 400); return; }
+                var result = await TenantResourceAppService.SaveAsync(0, user.UserId, req);
+                if (!result.Success) { await WriteJsonAsync(ctx, ApiResult.Fail(result.Message), 400); return; }
+                ctx.Response.StatusCode = 201;
+                await WriteJsonAsync(ctx, result);
+            }).WithSummary("创建/更新资源配额");
+        }
+
+        private static CurrentUser GetCurrentUser(HttpContext ctx) =>
+            ctx.Items.TryGetValue(CurrentUser.HttpContextKey, out var u) && u is CurrentUser cu ? cu : CurrentUser.Anonymous;
+
+        private static async Task WriteJsonAsync<T>(HttpContext ctx, T data, int statusCode = 200)
+        {
+            ctx.Response.StatusCode = statusCode;
+            ctx.Response.ContentType = "application/json; charset=utf-8";
+            await System.Text.Json.JsonSerializer.SerializeAsync(ctx.Response.Body, data);
+        }
+    }
+}
