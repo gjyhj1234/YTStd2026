@@ -42,34 +42,30 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.Contributors
                 context.PermissionIdMap[kvp.Key] = kvp.Value;
             }
 
-            var allPermissions = DefaultPermissions.GetDefaultPermissions();
+            var allSeeds = DefaultPermissions.GetDefaultPermissions();
 
-            // 按层级插入：先处理无父级的，再处理有父级的
-            // Resource 字段临时存放父级 Code
-            foreach (var perm in allPermissions)
+            // 按顺序插入（列表已按层级排列：先父级后子级）
+            foreach (var seed in allSeeds)
             {
+                var perm = seed.Permission;
                 if (existingMap.ContainsKey(perm.Code))
                 {
                     context.Log("[Permission] 权限已存在，跳过: " + perm.Code);
                     continue;
                 }
 
-                // 解析父级 ID
-                string? parentCode = perm.Resource;
-                if (!string.IsNullOrEmpty(parentCode))
+                // 解析父级 ID（从 PermissionSeed.ParentCode 获取，不修改实体的 Resource 字段）
+                if (!string.IsNullOrEmpty(seed.ParentCode))
                 {
-                    if (context.PermissionIdMap.TryGetValue(parentCode, out long parentId))
+                    if (context.PermissionIdMap.TryGetValue(seed.ParentCode, out long parentId))
                     {
                         perm.ParentId = parentId;
                     }
                     else
                     {
-                        context.Log("[Permission] 警告: 父级权限未找到: " + parentCode + " (权限: " + perm.Code + ")");
+                        context.Log("[Permission] 警告: 父级权限未找到: " + seed.ParentCode + " (权限: " + perm.Code + ")");
                     }
                 }
-
-                // 清除 Resource 中临时存放的父级编码，避免写入数据库
-                perm.Resource = null;
 
                 DbInsResult ins = await PlatformPermissionCRUD.InsertAsync(tid, uid, perm);
                 if (ins.Success)
@@ -83,7 +79,7 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.Contributors
                 }
             }
 
-            context.Log("[Permission] 共处理权限: " + allPermissions.Count + ", 映射数: " + context.PermissionIdMap.Count);
+            context.Log("[Permission] 共处理权限: " + allSeeds.Count + ", 映射数: " + context.PermissionIdMap.Count);
         }
     }
 }

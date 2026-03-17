@@ -28,51 +28,54 @@ namespace YTStdTenantPlatform.Tests
             Assert.Equal("超级管理员", admin.DisplayName);
             Assert.Equal("active", admin.Status);
             Assert.False(admin.MfaEnabled);
-            // 密码不得是明文
+            // 密码使用安全随机哈希，不得是明文占位符
             Assert.NotEmpty(admin.PasswordHash);
+            Assert.NotEqual("INIT_HASH_PLACEHOLDER", admin.PasswordHash);
+            // 密码应设置为已过期，强制首次登录重置
+            Assert.NotNull(admin.PasswordExpiresAt);
         }
 
         [Fact]
         public void DefaultPermissions_HasTopLevelMenus()
         {
-            var perms = DefaultPermissions.GetDefaultPermissions();
-            Assert.NotEmpty(perms);
+            var seeds = DefaultPermissions.GetDefaultPermissions();
+            Assert.NotEmpty(seeds);
 
             // 验证顶级菜单存在
-            var topMenus = perms.Where(p =>
-                p.PermissionType == "menu" &&
-                (p.Resource == null || p.Resource == ""))
+            var topMenus = seeds.Where(s =>
+                s.Permission.PermissionType == "menu" &&
+                string.IsNullOrEmpty(s.ParentCode))
                 .ToList();
             Assert.NotEmpty(topMenus);
 
             // 验证包含平台管理和租户管理菜单
-            Assert.Contains(perms, p => p.Code == "platform:management");
-            Assert.Contains(perms, p => p.Code == "tenant:management");
-            Assert.Contains(perms, p => p.Code == "package:management");
+            Assert.Contains(seeds, s => s.Permission.Code == "platform:management");
+            Assert.Contains(seeds, s => s.Permission.Code == "tenant:management");
+            Assert.Contains(seeds, s => s.Permission.Code == "package:management");
         }
 
         [Fact]
         public void DefaultPermissions_HasApiPermissions()
         {
-            var perms = DefaultPermissions.GetDefaultPermissions();
-            var apiPerms = perms.Where(p => p.PermissionType == "api").ToList();
+            var seeds = DefaultPermissions.GetDefaultPermissions();
+            var apiPerms = seeds.Where(s => s.Permission.PermissionType == "api").ToList();
             Assert.NotEmpty(apiPerms);
 
             // API 权限应有 Path 和 Method
-            foreach (var api in apiPerms)
+            foreach (var seed in apiPerms)
             {
-                Assert.False(string.IsNullOrEmpty(api.Path),
-                    "API 权限 " + api.Code + " 应有 Path");
-                Assert.False(string.IsNullOrEmpty(api.Method),
-                    "API 权限 " + api.Code + " 应有 Method");
+                Assert.False(string.IsNullOrEmpty(seed.Permission.Path),
+                    "API 权限 " + seed.Permission.Code + " 应有 Path");
+                Assert.False(string.IsNullOrEmpty(seed.Permission.Method),
+                    "API 权限 " + seed.Permission.Code + " 应有 Method");
             }
         }
 
         [Fact]
         public void DefaultPermissions_CodesAreUnique()
         {
-            var perms = DefaultPermissions.GetDefaultPermissions();
-            var codes = perms.Select(p => p.Code).ToList();
+            var seeds = DefaultPermissions.GetDefaultPermissions();
+            var codes = seeds.Select(s => s.Permission.Code).ToList();
             var distinct = codes.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
             Assert.Equal(distinct.Count, codes.Count);
         }
@@ -80,18 +83,17 @@ namespace YTStdTenantPlatform.Tests
         [Fact]
         public void DefaultPermissions_ParentCodesReferExistingCodes()
         {
-            var perms = DefaultPermissions.GetDefaultPermissions();
+            var seeds = DefaultPermissions.GetDefaultPermissions();
             var allCodes = new HashSet<string>(
-                perms.Select(p => p.Code),
+                seeds.Select(s => s.Permission.Code),
                 StringComparer.OrdinalIgnoreCase);
 
-            foreach (var p in perms)
+            foreach (var seed in seeds)
             {
-                // Resource field holds parent code temporarily
-                if (!string.IsNullOrEmpty(p.Resource) && p.PermissionType == "menu")
+                if (!string.IsNullOrEmpty(seed.ParentCode))
                 {
-                    Assert.True(allCodes.Contains(p.Resource),
-                        "权限 " + p.Code + " 引用了不存在的父级 " + p.Resource);
+                    Assert.True(allCodes.Contains(seed.ParentCode),
+                        "权限 " + seed.Permission.Code + " 引用了不存在的父级 " + seed.ParentCode);
                 }
             }
         }

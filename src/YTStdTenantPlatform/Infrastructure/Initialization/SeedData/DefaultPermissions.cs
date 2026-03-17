@@ -4,14 +4,31 @@ using YTStdTenantPlatform.Entity.TenantPlatform;
 
 namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
 {
+    /// <summary>权限种子数据项，包含权限实体和父级编码</summary>
+    public sealed class PermissionSeed
+    {
+        /// <summary>权限实体</summary>
+        public PlatformPermission Permission { get; }
+
+        /// <summary>父级权限编码（用于树形结构解析，不会写入数据库）</summary>
+        public string? ParentCode { get; }
+
+        /// <summary>构造权限种子数据项</summary>
+        public PermissionSeed(PlatformPermission permission, string? parentCode)
+        {
+            Permission = permission;
+            ParentCode = parentCode;
+        }
+    }
+
     /// <summary>默认平台权限种子数据</summary>
     public static class DefaultPermissions
     {
-        /// <summary>获取默认权限列表</summary>
-        public static IReadOnlyList<PlatformPermission> GetDefaultPermissions()
+        /// <summary>获取默认权限列表（包含父级编码引用）</summary>
+        public static IReadOnlyList<PermissionSeed> GetDefaultPermissions()
         {
             var now = DateTime.UtcNow;
-            var list = new List<PlatformPermission>();
+            var list = new List<PermissionSeed>();
 
             // ── 1. 平台管理 ──
             list.Add(Menu("platform:management", "平台管理", null, now));
@@ -132,51 +149,54 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
         }
 
         /// <summary>创建菜单权限</summary>
-        private static PlatformPermission Menu(string code, string name, string? parentCode, DateTime now)
+        private static PermissionSeed Menu(string code, string name, string? parentCode, DateTime now)
         {
-            return new PlatformPermission
-            {
-                Code = code,
-                Name = name,
-                PermissionType = "menu",
-                Resource = parentCode,
-                CreatedAt = now,
-                UpdatedAt = now
-            };
+            return new PermissionSeed(
+                new PlatformPermission
+                {
+                    Code = code,
+                    Name = name,
+                    PermissionType = "menu",
+                    CreatedAt = now,
+                    UpdatedAt = now
+                },
+                parentCode);
         }
 
         /// <summary>创建 API 权限</summary>
-        private static PlatformPermission Api(string code, string name, string path, string method, string parentCode, DateTime now)
+        private static PermissionSeed Api(string code, string name, string path, string method, string parentCode, DateTime now)
         {
-            return new PlatformPermission
-            {
-                Code = code,
-                Name = name,
-                PermissionType = "api",
-                Path = path,
-                Method = method,
-                Resource = parentCode,
-                CreatedAt = now,
-                UpdatedAt = now
-            };
+            return new PermissionSeed(
+                new PlatformPermission
+                {
+                    Code = code,
+                    Name = name,
+                    PermissionType = "api",
+                    Path = path,
+                    Method = method,
+                    CreatedAt = now,
+                    UpdatedAt = now
+                },
+                parentCode);
         }
 
         /// <summary>创建操作权限</summary>
-        private static PlatformPermission Operation(string code, string name, string parentCode, DateTime now)
+        private static PermissionSeed Operation(string code, string name, string parentCode, DateTime now)
         {
-            return new PlatformPermission
-            {
-                Code = code,
-                Name = name,
-                PermissionType = "operation",
-                Resource = parentCode,
-                CreatedAt = now,
-                UpdatedAt = now
-            };
+            return new PermissionSeed(
+                new PlatformPermission
+                {
+                    Code = code,
+                    Name = name,
+                    PermissionType = "operation",
+                    CreatedAt = now,
+                    UpdatedAt = now
+                },
+                parentCode);
         }
 
         /// <summary>批量添加模块的 CRUD API 权限</summary>
-        private static void AddCrud(List<PlatformPermission> list, string parentCode, string moduleName, string basePath, DateTime now)
+        private static void AddCrud(List<PermissionSeed> list, string parentCode, string moduleName, string basePath, DateTime now)
         {
             list.Add(Api(parentCode + ":view", "查看" + moduleName, basePath, "GET", parentCode, now));
             list.Add(Api(parentCode + ":create", "创建" + moduleName, basePath, "POST", parentCode, now));

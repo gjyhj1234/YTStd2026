@@ -63,31 +63,31 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
         /// 获取角色与权限的绑定关系。
         /// 使用权限编码列表，由调用方在运行时解析为实际 ID。
         /// </summary>
-        public static IReadOnlyList<RolePermissionBinding> GetRolePermissionBindings(IReadOnlyList<PlatformPermission> allPermissions)
+        public static IReadOnlyList<RolePermissionBinding> GetRolePermissionBindings(IReadOnlyList<PermissionSeed> allPermissions)
         {
             var bindings = new List<RolePermissionBinding>();
 
             // 超级管理员: 拥有全部权限
-            foreach (var perm in allPermissions)
+            foreach (var seed in allPermissions)
             {
-                bindings.Add(new RolePermissionBinding { RoleCode = SuperAdminCode, PermissionCode = perm.Code });
+                bindings.Add(new RolePermissionBinding { RoleCode = SuperAdminCode, PermissionCode = seed.Permission.Code });
             }
 
             // 平台管理员: 全部权限，排除安全相关
-            foreach (var perm in allPermissions)
+            foreach (var seed in allPermissions)
             {
-                if (!IsSecurityPermission(perm.Code))
+                if (!IsSecurityPermission(seed.Permission.Code))
                 {
-                    bindings.Add(new RolePermissionBinding { RoleCode = PlatformAdminCode, PermissionCode = perm.Code });
+                    bindings.Add(new RolePermissionBinding { RoleCode = PlatformAdminCode, PermissionCode = seed.Permission.Code });
                 }
             }
 
             // 平台只读: 仅查看类 API 权限和菜单权限
-            foreach (var perm in allPermissions)
+            foreach (var seed in allPermissions)
             {
-                if (perm.PermissionType == "menu" || perm.Code.EndsWith(":view"))
+                if (seed.Permission.PermissionType == "menu" || seed.Permission.Code.EndsWith(":view"))
                 {
-                    bindings.Add(new RolePermissionBinding { RoleCode = PlatformViewerCode, PermissionCode = perm.Code });
+                    bindings.Add(new RolePermissionBinding { RoleCode = PlatformViewerCode, PermissionCode = seed.Permission.Code });
                 }
             }
 

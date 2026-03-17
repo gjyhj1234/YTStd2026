@@ -46,12 +46,6 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.Contributors
                     continue;
                 }
 
-                // 占位密码警告：生产环境应在调用前替换为真实哈希
-                if (user.PasswordHash == "INIT_HASH_PLACEHOLDER")
-                {
-                    context.Log("[PlatformUser] ⚠ 用户 " + user.Username + " 使用占位密码，首次登录必须强制重置");
-                }
-
                 DbInsResult ins = await PlatformUserCRUD.InsertAsync(tid, uid, user);
                 if (ins.Success)
                 {
