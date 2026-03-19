@@ -1,11 +1,20 @@
 using System;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using YTStdAdo;
+using YTStdLogger.Core;
 using YTStdTenantPlatform.Endpoints;
+using YTStdTenantPlatform.Entity.TenantPlatform;
 using YTStdTenantPlatform.Infrastructure.Auth;
+using YTStdTenantPlatform.Infrastructure.Cache;
 using YTStdTenantPlatform.Infrastructure.Persistence;
+using YTStdTenantPlatform.Infrastructure.Serialization;
 
 namespace YTStdTenantPlatform.Bootstrap
 {
@@ -100,9 +109,7 @@ namespace YTStdTenantPlatform.Bootstrap
                 var result = await HealthCheck.CheckAllAsync();
                 ctx.Response.ContentType = "application/json; charset=utf-8";
                 ctx.Response.StatusCode = result.IsHealthy ? 200 : 503;
-                await ctx.Response.WriteAsync(
-                    "{\"status\":\"" + (result.IsHealthy ? "healthy" : "unhealthy") +
-                    "\",\"message\":\"" + EscapeJson(result.Message) + "\"}");
+                await WriteHealthJsonAsync(ctx, result.IsHealthy, result.Message);
             }).WithSummary("综合健康检查");
 
             group.MapGet("/db", async (HttpContext ctx) =>
@@ -110,9 +117,7 @@ namespace YTStdTenantPlatform.Bootstrap
                 var result = await HealthCheck.CheckDatabaseAsync();
                 ctx.Response.ContentType = "application/json; charset=utf-8";
                 ctx.Response.StatusCode = result.IsHealthy ? 200 : 503;
-                await ctx.Response.WriteAsync(
-                    "{\"status\":\"" + (result.IsHealthy ? "healthy" : "unhealthy") +
-                    "\",\"message\":\"" + EscapeJson(result.Message) + "\"}");
+                await WriteHealthJsonAsync(ctx, result.IsHealthy, result.Message);
             }).WithSummary("数据库健康检查");
 
             group.MapGet("/cache", async (HttpContext ctx) =>
@@ -120,9 +125,7 @@ namespace YTStdTenantPlatform.Bootstrap
                 var result = HealthCheck.CheckCache();
                 ctx.Response.ContentType = "application/json; charset=utf-8";
                 ctx.Response.StatusCode = result.IsHealthy ? 200 : 503;
-                await ctx.Response.WriteAsync(
-                    "{\"status\":\"" + (result.IsHealthy ? "healthy" : "unhealthy") +
-                    "\",\"message\":\"" + EscapeJson(result.Message) + "\"}");
+                await WriteHealthJsonAsync(ctx, result.IsHealthy, result.Message);
             }).WithSummary("缓存健康检查");
         }
 
@@ -132,26 +135,137 @@ namespace YTStdTenantPlatform.Bootstrap
             var group = app.MapGroup("/api/auth")
                 .WithTags("认证");
 
-            group.MapPost("/login", async (HttpContext context) =>
+            group.MapPost("/login", async (HttpContext context, CancellationToken cancellationToken) =>
             {
-                // 骨架实现：后续阶段接入实际的用户名密码验证
-                // 1. 从请求体解析 username/password
-                // 2. 查询 PlatformUser 验证密码哈希
-                // 3. 检查用户状态（active/locked）
-                // 4. 生成 Token 返回
-                // 5. 记录登录日志
+                var request = await ReadLoginRequestAsync(context.Request, cancellationToken);
+                if (request == null || string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
+                {
+                    await WriteAuthJsonAsync(context, new AuthResponse(false, "用户名或密码不能为空", null, 0, 0, string.Empty, string.Empty, false), 400);
+                    return;
+                }
 
-                context.Response.ContentType = "application/json; charset=utf-8";
-                await context.Response.WriteAsync(
-                    "{\"success\":true,\"message\":\"登录接口骨架，后续阶段实现\",\"token\":\"\"}");
+                var username = request.Username.Trim();
+                var password = request.Password;
+                var now = DateTime.UtcNow;
+                var remoteIp = context.Connection.RemoteIpAddress?.ToString();
+                var userAgent = context.Request.Headers.UserAgent.ToString();
+                var (queryResult, users) = await PlatformUserCRUD.GetListAsync(0, 0);
+                if (!queryResult.Success || users == null)
+                {
+                    Logger.Error(0, 0, "[RouteRegistration] 查询平台用户失败: " + queryResult.ErrorMessage);
+                    await WriteAuthJsonAsync(context, new AuthResponse(false, "系统繁忙，请稍后再试", null, 0, 0, string.Empty, string.Empty, false), 500);
+                    return;
+                }
+
+                PlatformUser? matchedUser = null;
+                for (int i = 0; i < users.Count; i++)
+                {
+                    var candidate = users[i];
+                    if (candidate.DeletedAt != null)
+                    {
+                        continue;
+                    }
+
+                    if (string.Equals(candidate.Username, username, StringComparison.OrdinalIgnoreCase))
+                    {
+                        matchedUser = candidate;
+                        break;
+                    }
+                }
+
+                var policy = PlatformCacheWarmer.ConfigSnapshot?.DefaultPasswordPolicy;
+                var lockThreshold = policy?.LoginFailLockThreshold ?? 5;
+                var lockDurationMinutes = policy?.LockDurationMinutes ?? 30;
+
+                if (matchedUser == null)
+                {
+                    await RecordLoginAsync(null, username, remoteIp, userAgent, "password", "failed", "用户名或密码错误");
+                    await WriteAuthJsonAsync(context, new AuthResponse(false, "用户名或密码错误", null, 0, 0, string.Empty, string.Empty, false), 401);
+                    return;
+                }
+
+                if (string.Equals(matchedUser.Status, "disabled", StringComparison.OrdinalIgnoreCase))
+                {
+                    await RecordLoginAsync(matchedUser, username, remoteIp, userAgent, "password", "disabled", "账户已禁用");
+                    await WriteAuthJsonAsync(context, new AuthResponse(false, "账户已禁用", null, 0, matchedUser.Id, matchedUser.Username, matchedUser.DisplayName, false), 403);
+                    return;
+                }
+
+                if (matchedUser.LockedUntil.HasValue && matchedUser.LockedUntil.Value > now)
+                {
+                    matchedUser.Status = "locked";
+                    await PlatformUserCRUD.UpdateAsync(0, 0, matchedUser);
+                    await RecordLoginAsync(matchedUser, username, remoteIp, userAgent, "password", "locked", "账户已锁定");
+                    await WriteAuthJsonAsync(context, new AuthResponse(false, "账户已锁定", null, 0, matchedUser.Id, matchedUser.Username, matchedUser.DisplayName, false), 423);
+                    return;
+                }
+
+                if (string.Equals(matchedUser.Status, "locked", StringComparison.OrdinalIgnoreCase) && (!matchedUser.LockedUntil.HasValue || matchedUser.LockedUntil.Value <= now))
+                {
+                    matchedUser.Status = "active";
+                    matchedUser.LockedUntil = null;
+                }
+
+                if (!VerifyPassword(password, matchedUser.PasswordHash, matchedUser.PasswordSalt))
+                {
+                    matchedUser.FailedLoginCount = matchedUser.FailedLoginCount + 1;
+                    matchedUser.UpdatedAt = now;
+                    if (matchedUser.FailedLoginCount >= lockThreshold)
+                    {
+                        matchedUser.Status = "locked";
+                        matchedUser.LockedUntil = now.AddMinutes(lockDurationMinutes);
+                    }
+
+                    await PlatformUserCRUD.UpdateAsync(0, 0, matchedUser);
+                    await RecordLoginAsync(matchedUser, username, remoteIp, userAgent, "password", matchedUser.Status == "locked" ? "locked" : "failed", "用户名或密码错误");
+                    await WriteAuthJsonAsync(context, new AuthResponse(false, matchedUser.Status == "locked" ? "账户已锁定" : "用户名或密码错误", null, 0, matchedUser.Id, matchedUser.Username, matchedUser.DisplayName, false), matchedUser.Status == "locked" ? 423 : 401);
+                    return;
+                }
+
+                matchedUser.Status = "active";
+                matchedUser.FailedLoginCount = 0;
+                matchedUser.LockedUntil = null;
+                matchedUser.LastLoginAt = now;
+                matchedUser.LastLoginIp = remoteIp;
+                matchedUser.UpdatedAt = now;
+
+                var updateResult = await PlatformUserCRUD.UpdateAsync(0, 0, matchedUser);
+                if (!updateResult.Success)
+                {
+                    Logger.Error(0, 0, "[RouteRegistration] 更新登录状态失败: " + updateResult.ErrorMessage);
+                    await WriteAuthJsonAsync(context, new AuthResponse(false, "登录状态更新失败", null, 0, matchedUser.Id, matchedUser.Username, matchedUser.DisplayName, false), 500);
+                    return;
+                }
+
+                var token = PlatformAuthHandler.GenerateToken(matchedUser.Id, matchedUser.Username);
+                var requirePasswordReset = matchedUser.PasswordExpiresAt.HasValue && matchedUser.PasswordExpiresAt.Value <= now;
+                await RecordLoginAsync(matchedUser, username, remoteIp, userAgent, "password", "success", null);
+                await WriteAuthJsonAsync(context, new AuthResponse(true, requirePasswordReset ? "登录成功，需尽快修改密码" : "登录成功", token, PlatformAuthHandler.GetTokenExpirySeconds(), matchedUser.Id, matchedUser.Username, matchedUser.DisplayName, requirePasswordReset));
             }).WithSummary("平台用户登录");
 
-            group.MapPost("/refresh", async (HttpContext context) =>
+            group.MapPost("/refresh", async (HttpContext context, CancellationToken cancellationToken) =>
             {
-                // 骨架实现：后续阶段接入 Token 刷新逻辑
-                context.Response.ContentType = "application/json; charset=utf-8";
-                await context.Response.WriteAsync(
-                    "{\"success\":true,\"message\":\"Token刷新接口骨架，后续阶段实现\",\"token\":\"\"}");
+                var request = await ReadRefreshTokenRequestAsync(context.Request, cancellationToken);
+                var token = request?.Token;
+                if (string.IsNullOrWhiteSpace(token))
+                {
+                    var authHeader = context.Request.Headers.Authorization.ToString();
+                    const string bearerPrefix = "Bearer ";
+                    if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith(bearerPrefix, StringComparison.OrdinalIgnoreCase))
+                    {
+                        token = authHeader.Substring(bearerPrefix.Length).Trim();
+                    }
+                }
+
+                var currentUser = PlatformAuthHandler.TryResolveToken(token ?? string.Empty, context.TraceIdentifier);
+                if (currentUser == null)
+                {
+                    await WriteAuthJsonAsync(context, new AuthResponse(false, "令牌无效或已过期", null, 0, 0, string.Empty, string.Empty, false), 401);
+                    return;
+                }
+
+                var refreshedToken = PlatformAuthHandler.GenerateToken(currentUser.UserId, currentUser.Username);
+                await WriteAuthJsonAsync(context, new AuthResponse(true, "刷新成功", refreshedToken, PlatformAuthHandler.GetTokenExpirySeconds(), currentUser.UserId, currentUser.Username, currentUser.DisplayName, false));
             }).WithSummary("刷新访问令牌");
 
             group.MapGet("/me", async (HttpContext context) =>
@@ -161,13 +275,23 @@ namespace YTStdTenantPlatform.Bootstrap
                     : CurrentUser.Anonymous;
 
                 context.Response.ContentType = "application/json; charset=utf-8";
-                await context.Response.WriteAsync(
-                    "{\"success\":true,\"data\":{" +
-                    "\"userId\":" + currentUser.UserId +
-                    ",\"username\":\"" + EscapeJson(currentUser.Username) +
-                    "\",\"displayName\":\"" + EscapeJson(currentUser.DisplayName) +
-                    "\",\"isSuperAdmin\":" + (currentUser.IsSuperAdmin ? "true" : "false") +
-                    "}}");
+                await Utf8JsonWriterHelper.WriteResponseAsync(
+                    context.Response,
+                    currentUser,
+                    static (writer, state) =>
+                    {
+                        writer.WriteStartObject();
+                        writer.WriteBoolean("success", true);
+                        writer.WritePropertyName("data");
+                        writer.WriteStartObject();
+                        writer.WriteNumber("userId", state.UserId);
+                        writer.WriteString("username", state.Username);
+                        writer.WriteString("displayName", state.DisplayName);
+                        writer.WriteBoolean("isSuperAdmin", state.IsSuperAdmin);
+                        writer.WriteEndObject();
+                        writer.WriteEndObject();
+                    },
+                    context.RequestAborted);
             }).WithSummary("获取当前登录用户信息");
         }
 
@@ -178,6 +302,201 @@ namespace YTStdTenantPlatform.Bootstrap
             return value.Replace("\\", "\\\\").Replace("\"", "\\\"")
                         .Replace("\n", "\\n").Replace("\r", "\\r")
                         .Replace("\t", "\\t");
+        }
+
+        private static Task WriteHealthJsonAsync(HttpContext context, bool isHealthy, string message)
+        {
+            return Utf8JsonWriterHelper.WriteResponseAsync(
+                context.Response,
+                (isHealthy, message),
+                static (writer, state) =>
+                {
+                    writer.WriteStartObject();
+                    writer.WriteString("status", state.isHealthy ? "healthy" : "unhealthy");
+                    writer.WriteString("message", state.message);
+                    writer.WriteEndObject();
+                },
+                context.RequestAborted);
+        }
+
+        private static bool VerifyPassword(string password, string storedHash, string? storedSalt)
+        {
+            if (string.IsNullOrEmpty(storedHash))
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrEmpty(storedSalt))
+            {
+                var computedHash = HashPassword(password, storedSalt);
+                if (string.Equals(storedHash, computedHash, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return string.Equals(storedHash, password, StringComparison.Ordinal) &&
+                   string.Equals(storedSalt, password, StringComparison.Ordinal);
+        }
+
+        private static string HashPassword(string password, string salt)
+        {
+            var data = Encoding.UTF8.GetBytes(password + salt);
+            var hash = SHA256.HashData(data);
+            return Convert.ToHexString(hash);
+        }
+
+        private static async ValueTask RecordLoginAsync(
+            PlatformUser? user,
+            string username,
+            string? remoteIp,
+            string? userAgent,
+            string loginType,
+            string loginStatus,
+            string? failureReason)
+        {
+            try
+            {
+                var log = new PlatformLoginLog
+                {
+                    Id = await DB.GetNextLongIdAsync(),
+                    UserId = user?.Id,
+                    Username = username,
+                    LoginType = loginType,
+                    LoginStatus = loginStatus,
+                    IpAddress = remoteIp,
+                    UserAgent = userAgent,
+                    FailureReason = failureReason,
+                    OccurredAt = DateTime.UtcNow
+                };
+
+                await PlatformLoginLogCRUD.InsertAsync(0, 0, log);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(0, 0, "[RouteRegistration] 写入登录日志失败: " + ex.Message);
+            }
+        }
+
+        private static async Task<LoginRequest?> ReadLoginRequestAsync(HttpRequest request, CancellationToken cancellationToken)
+        {
+            try
+            {
+                using var document = await JsonDocument.ParseAsync(request.Body, cancellationToken: cancellationToken);
+                if (document.RootElement.ValueKind != JsonValueKind.Object)
+                {
+                    return null;
+                }
+
+                var root = document.RootElement;
+                return new LoginRequest
+                {
+                    Username = TryGetString(root, "username"),
+                    Password = TryGetString(root, "password")
+                };
+            }
+            catch (JsonException)
+            {
+                return null;
+            }
+        }
+
+        private static async Task<RefreshTokenRequest?> ReadRefreshTokenRequestAsync(HttpRequest request, CancellationToken cancellationToken)
+        {
+            try
+            {
+                using var document = await JsonDocument.ParseAsync(request.Body, cancellationToken: cancellationToken);
+                if (document.RootElement.ValueKind != JsonValueKind.Object)
+                {
+                    return null;
+                }
+
+                var root = document.RootElement;
+                return new RefreshTokenRequest
+                {
+                    Token = TryGetString(root, "token")
+                };
+            }
+            catch (JsonException)
+            {
+                return null;
+            }
+        }
+
+        private static string TryGetString(JsonElement root, string propertyName)
+        {
+            if (!root.TryGetProperty(propertyName, out var property) || property.ValueKind != JsonValueKind.String)
+            {
+                return string.Empty;
+            }
+
+            return property.GetString() ?? string.Empty;
+        }
+
+        private static async Task WriteAuthJsonAsync(HttpContext context, AuthResponse response, int statusCode = 200)
+        {
+            context.Response.StatusCode = statusCode;
+            context.Response.ContentType = "application/json; charset=utf-8";
+            await Utf8JsonWriterHelper.WriteResponseAsync(
+                context.Response,
+                response,
+                static (writer, state) =>
+                {
+                    writer.WriteStartObject();
+                    writer.WriteBoolean("success", state.Success);
+                    writer.WriteString("message", state.Message);
+                    if (string.IsNullOrEmpty(state.Token))
+                    {
+                        writer.WriteNull("token");
+                    }
+                    else
+                    {
+                        writer.WriteString("token", state.Token);
+                    }
+
+                    writer.WriteNumber("expiresIn", state.ExpiresIn);
+                    writer.WriteNumber("userId", state.UserId);
+                    writer.WriteString("username", state.Username);
+                    writer.WriteString("displayName", state.DisplayName);
+                    writer.WriteBoolean("requirePasswordReset", state.RequirePasswordReset);
+                    writer.WriteEndObject();
+                },
+                context.RequestAborted);
+        }
+
+        private sealed class LoginRequest
+        {
+            public string Username { get; set; } = string.Empty;
+            public string Password { get; set; } = string.Empty;
+        }
+
+        private sealed class RefreshTokenRequest
+        {
+            public string Token { get; set; } = string.Empty;
+        }
+
+        private sealed class AuthResponse
+        {
+            public bool Success { get; }
+            public string Message { get; }
+            public string? Token { get; }
+            public int ExpiresIn { get; }
+            public long UserId { get; }
+            public string Username { get; }
+            public string DisplayName { get; }
+            public bool RequirePasswordReset { get; }
+
+            public AuthResponse(bool success, string message, string? token, int expiresIn, long userId, string username, string displayName, bool requirePasswordReset)
+            {
+                Success = success;
+                Message = message;
+                Token = token;
+                ExpiresIn = expiresIn;
+                UserId = userId;
+                Username = username;
+                DisplayName = displayName;
+                RequirePasswordReset = requirePasswordReset;
+            }
         }
     }
 }

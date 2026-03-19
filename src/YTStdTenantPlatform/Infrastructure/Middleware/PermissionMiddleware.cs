@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using YTStdLogger.Core;
 using YTStdTenantPlatform.Infrastructure.Auth;
 using YTStdTenantPlatform.Infrastructure.Cache;
+using YTStdTenantPlatform.Infrastructure.Serialization;
 
 namespace YTStdTenantPlatform.Infrastructure.Middleware
 {
@@ -46,8 +47,18 @@ namespace YTStdTenantPlatform.Infrastructure.Middleware
             {
                 context.Response.StatusCode = 401;
                 context.Response.ContentType = "application/json; charset=utf-8";
-                await context.Response.WriteAsync(
-                    "{\"success\":false,\"error\":\"未认证\",\"message\":\"请先登录\"}");
+                await Utf8JsonWriterHelper.WriteResponseAsync(
+                    context.Response,
+                    false,
+                    static (writer, _) =>
+                    {
+                        writer.WriteStartObject();
+                        writer.WriteBoolean("success", false);
+                        writer.WriteString("error", "未认证");
+                        writer.WriteString("message", "请先登录");
+                        writer.WriteEndObject();
+                    },
+                    context.RequestAborted);
                 return;
             }
 
@@ -73,8 +84,18 @@ namespace YTStdTenantPlatform.Infrastructure.Middleware
 
                 context.Response.StatusCode = 403;
                 context.Response.ContentType = "application/json; charset=utf-8";
-                await context.Response.WriteAsync(
-                    "{\"success\":false,\"error\":\"权限不足\",\"message\":\"您没有执行此操作的权限\"}");
+                await Utf8JsonWriterHelper.WriteResponseAsync(
+                    context.Response,
+                    false,
+                    static (writer, _) =>
+                    {
+                        writer.WriteStartObject();
+                        writer.WriteBoolean("success", false);
+                        writer.WriteString("error", "权限不足");
+                        writer.WriteString("message", "您没有执行此操作的权限");
+                        writer.WriteEndObject();
+                    },
+                    context.RequestAborted);
                 return;
             }
 

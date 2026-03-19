@@ -55,7 +55,18 @@ namespace YTStdTenantPlatform.Infrastructure.Auth
             }
 
             // 解析 Token 为用户信息
-            return ParseToken(token, context.TraceIdentifier);
+            return TryResolveToken(token, context.TraceIdentifier);
+        }
+
+        /// <summary>从原始 Token 解析当前用户</summary>
+        public static CurrentUser? TryResolveToken(string token, string traceId)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return null;
+            }
+
+            return ParseToken(token, traceId);
         }
 
         /// <summary>
@@ -70,6 +81,12 @@ namespace YTStdTenantPlatform.Infrastructure.Auth
             return payload + ":" + signature;
         }
 
+        /// <summary>获取当前 Token 有效期（秒）</summary>
+        public static int GetTokenExpirySeconds()
+        {
+            return _tokenExpirySeconds;
+        }
+
         /// <summary>解析 Token，验证签名和有效期</summary>
         private static CurrentUser? ParseToken(string token, string traceId)
         {
@@ -77,13 +94,13 @@ namespace YTStdTenantPlatform.Infrastructure.Auth
             var parts = token.Split(':');
             if (parts.Length != 4)
             {
-                Logger.Debug(0, 0, "[PlatformAuthHandler] Token 格式无效");
+                Logger.Debug(0, 0, () => "[PlatformAuthHandler] Token 格式无效");
                 return null;
             }
 
             if (!long.TryParse(parts[0], out var userId))
             {
-                Logger.Debug(0, 0, "[PlatformAuthHandler] Token 中 UserId 无效");
+                Logger.Debug(0, 0, () => "[PlatformAuthHandler] Token 中 UserId 无效");
                 return null;
             }
 
@@ -91,7 +108,7 @@ namespace YTStdTenantPlatform.Infrastructure.Auth
 
             if (!long.TryParse(parts[2], out var timestamp))
             {
-                Logger.Debug(0, 0, "[PlatformAuthHandler] Token 中时间戳无效");
+                Logger.Debug(0, 0, () => "[PlatformAuthHandler] Token 中时间戳无效");
                 return null;
             }
 
@@ -100,7 +117,7 @@ namespace YTStdTenantPlatform.Infrastructure.Auth
             var expectedSignature = ComputeHmac(payload);
             if (!string.Equals(parts[3], expectedSignature, StringComparison.Ordinal))
             {
-                Logger.Debug(0, 0, "[PlatformAuthHandler] Token 签名校验失败");
+                Logger.Debug(0, 0, () => "[PlatformAuthHandler] Token 签名校验失败");
                 return null;
             }
 
@@ -108,7 +125,7 @@ namespace YTStdTenantPlatform.Infrastructure.Auth
             var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             if (now - timestamp > _tokenExpirySeconds)
             {
-                Logger.Debug(0, 0, "[PlatformAuthHandler] Token 已过期");
+                Logger.Debug(0, 0, () => "[PlatformAuthHandler] Token 已过期");
                 return null;
             }
 
@@ -142,34 +159,40 @@ namespace YTStdTenantPlatform.Infrastructure.Auth
         /// <summary>从缓存获取用户所有权限编码</summary>
         private static IReadOnlyList<string> GetUserPermissions(long userId, IReadOnlyList<string> roles)
         {
-            var rolePermCache = PlatformCacheWarmer.RolePermissionCache;
+            var rolePermCache = PlatformCacheWarmer.RoleCodePermissionCache;
             if (rolePermCache.Count == 0 || roles.Count == 0)
             {
                 return Array.Empty<string>();
             }
 
-            // 需要从 RoleCode → RoleId 反查以获取精确的角色权限
-            // 骨架阶段：获取所有角色的 Id，然后匹配用户拥有的角色
             var permSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            // 从 UserRoleCache 中获取用户的 RoleId 列表
-            var userRoleCache = PlatformCacheWarmer.UserRoleCache;
-            if (!userRoleCache.TryGetValue(userId, out var userRoleCodes))
+            for (int i = 0; i < roles.Count; i++)
+            {
+                var roleCode = roles[i];
+                if (!rolePermCache.TryGetValue(roleCode, out var permissions))
+                {
+                    continue;
+                }
+
+                for (int j = 0; j < permissions.Count; j++)
+                {
+                    permSet.Add(permissions[j]);
+                }
+            }
+
+            if (permSet.Count == 0)
             {
                 return Array.Empty<string>();
             }
 
-            // 通过角色编码查找角色 ID，再查找对应权限
-            // 此处需要 RoleCode → RoleId 映射（后续阶段优化为独立缓存）
-            foreach (var kvp in rolePermCache)
+            var list = new List<string>(permSet.Count);
+            foreach (var permission in permSet)
             {
-                // 目前 rolePermCache 以 RoleId 为 Key
-                // 需要判断该 RoleId 是否属于用户的角色之一
-                // 骨架阶段暂不精确匹配，后续阶段细化
-                // 此处不添加任何权限，等待后续阶段实现精确匹配
+                list.Add(permission);
             }
 
-            return Array.Empty<string>();
+            return list;
         }
 
         /// <summary>计算 HMAC-SHA256 签名</summary>

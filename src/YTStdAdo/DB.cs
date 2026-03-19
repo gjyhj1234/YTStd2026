@@ -84,13 +84,7 @@ public static partial class DB
             }
             catch (Exception ex)
             {
-                Logger.Error(0, 0, () =>
-                {
-                    var vsb = new ValueStringBuilder(128);
-                    vsb.Append("[DB.ShutdownAsync] 关闭连接异常: ");
-                    vsb.Append(ex.Message);
-                    return vsb.ToString();
-                });
+                Logger.Error(0, 0, BuildExceptionLog("DB.ShutdownAsync", ex, null));
             }
         }
 
@@ -208,7 +202,7 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(0, 0, () => BuildExceptionLog("DB.GetNextIntIdAsync", ex, sql));
+            Logger.Error(0, 0,  BuildExceptionLog("DB.GetNextIntIdAsync", ex, sql));
             throw;
         }
         finally
@@ -288,13 +282,7 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(tenantId, userId, () =>
-            {
-                var vsb = new ValueStringBuilder(128);
-                vsb.Append("[DB.BatchCommitAsync] 批处理提交异常: ");
-                vsb.Append(ex.Message);
-                return vsb.ToString();
-            });
+            Logger.Error(tenantId, userId, BuildExceptionLog("DB.BatchCommitAsync", ex, null));
 
             try
             {
@@ -304,13 +292,7 @@ public static partial class DB
             }
             catch (Exception rbEx)
             {
-                Logger.Error(tenantId, userId, () =>
-                {
-                    var vsb = new ValueStringBuilder(128);
-                    vsb.Append("[DB.BatchCommitAsync] 回滚异常: ");
-                    vsb.Append(rbEx.Message);
-                    return vsb.ToString();
-                });
+                Logger.Error(tenantId, userId, BuildExceptionLog("DB.BatchCommitAsync", rbEx));
             }
 
             return new DbUdqResult { Success = false, ErrorMessage = ex.Message };
@@ -373,14 +355,14 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(tenantId, userId, () => BuildExceptionLog("DB.InsertAsync", ex, sql, parameters));
+            Logger.Error(tenantId, userId,  BuildExceptionLog("DB.InsertAsync", ex, sql, parameters));
 
             if (batch?.Transaction is not null)
             {
                 try { await batch.Transaction.RollbackAsync().ConfigureAwait(false); }
                 catch (Exception rbEx)
                 {
-                    Logger.Error(tenantId, userId, () => BuildExceptionLog("DB.InsertAsync", rbEx));
+                    Logger.Error(tenantId, userId,   BuildExceptionLog("DB.InsertAsync", rbEx));
                 }
             }
 
@@ -454,26 +436,14 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(tenantId, userId, () =>
-            {
-                var vsb = new ValueStringBuilder(128);
-                vsb.Append("[DB.UpdateAsync] 更新异常: ");
-                vsb.Append(ex.Message);
-                return vsb.ToString();
-            });
+            Logger.Error(tenantId, userId, BuildExceptionLog("DB.UpdateAsync", ex, sql, parameters));
 
             if (batch?.Transaction is not null)
             {
                 try { await batch.Transaction.RollbackAsync().ConfigureAwait(false); }
                 catch (Exception rbEx)
                 {
-                    Logger.Error(tenantId, userId, () =>
-                    {
-                        var vsb = new ValueStringBuilder(128);
-                        vsb.Append("[DB.UpdateAsync] 回滚异常: ");
-                        vsb.Append(rbEx.Message);
-                        return vsb.ToString();
-                    });
+                    Logger.Error(tenantId, userId, BuildExceptionLog("DB.UpdateAsync", rbEx, null));
                 }
             }
 
@@ -545,26 +515,14 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(tenantId, userId, () =>
-            {
-                var vsb = new ValueStringBuilder(128);
-                vsb.Append("[DB.DeleteAsync] 删除异常: ");
-                vsb.Append(ex.Message);
-                return vsb.ToString();
-            });
+            Logger.Error(tenantId, userId, BuildExceptionLog("DB.DeleteAsync", ex, sql, parameters));
 
             if (batch?.Transaction is not null)
             {
                 try { await batch.Transaction.RollbackAsync().ConfigureAwait(false); }
                 catch (Exception rbEx)
                 {
-                    Logger.Error(tenantId, userId, () =>
-                    {
-                        var vsb = new ValueStringBuilder(128);
-                        vsb.Append("[DB.DeleteAsync] 回滚异常: ");
-                        vsb.Append(rbEx.Message);
-                        return vsb.ToString();
-                    });
+                    Logger.Error(tenantId, userId, BuildExceptionLog("DB.DeleteAsync", rbEx, null));
                 }
             }
 
@@ -634,13 +592,7 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(tenantId, userId, () =>
-            {
-                var vsb = new ValueStringBuilder(128);
-                vsb.Append("[DB.GetListAsync] 查询异常: ");
-                vsb.Append(ex.Message);
-                return vsb.ToString();
-            });
+            Logger.Error(tenantId, userId, BuildExceptionLog("DB.GetListAsync", ex, sql, parameters));
             return (new DbUdqResult { Success = false, ErrorMessage = ex.Message }, null);
         }
         finally
@@ -690,13 +642,7 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(tenantId, userId, () =>
-            {
-                var vsb = new ValueStringBuilder(128);
-                vsb.Append("[DB.GetListTxAsync] 查询异常: ");
-                vsb.Append(ex.Message);
-                return vsb.ToString();
-            });
+            Logger.Error(tenantId, userId, BuildExceptionLog("DB.GetListTxAsync", ex, sql, parameters));
             return (new DbUdqResult { Success = false, ErrorMessage = ex.Message }, null);
         }
     }
@@ -736,13 +682,7 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(tenantId, userId, () =>
-            {
-                var vsb = new ValueStringBuilder(128);
-                vsb.Append("[DB.GetListAsync(JSON)] 查询异常: ");
-                vsb.Append(ex.Message);
-                return vsb.ToString();
-            });
+            Logger.Error(tenantId, userId, BuildExceptionLog("DB.GetListAsync(JSON)", ex, sql, parameters));
             return new DbUdqResult { Success = false, ErrorMessage = ex.Message };
         }
         finally
@@ -787,13 +727,7 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(tenantId, userId, () =>
-            {
-                var vsb = new ValueStringBuilder(128);
-                vsb.Append("[DB.GetScalarAsync] 标量查询异常: ");
-                vsb.Append(ex.Message);
-                return vsb.ToString();
-            });
+            Logger.Error(tenantId, userId, BuildExceptionLog("DB.GetScalarAsync", ex, sql, parameters));
             return new DbScalarResult<T> { Success = false, ErrorMessage = ex.Message };
         }
         finally
@@ -844,13 +778,7 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(tenantId, userId, () =>
-            {
-                var vsb = new ValueStringBuilder(128);
-                vsb.Append("[DB.GetScalarTxAsync] 标量查询异常: ");
-                vsb.Append(ex.Message);
-                return vsb.ToString();
-            });
+            Logger.Error(tenantId, userId, BuildExceptionLog("DB.GetScalarTxAsync", ex, sql, parameters));
             return new DbScalarResult<T> { Success = false, ErrorMessage = ex.Message };
         }
     }
@@ -900,15 +828,7 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(0, 0, () =>
-            {
-                var vsb = new ValueStringBuilder(128);
-                vsb.Append("[DB.GetTableInfor] 查询表 ");
-                vsb.Append(tableName);
-                vsb.Append(" 异常: ");
-                vsb.Append(ex.Message);
-                return vsb.ToString();
-            });
+            Logger.Error(0, 0, BuildExceptionLog("[DB.GetTableInfor] 查询表", ex, null, null));
             return new DbUdqResult { Success = false, ErrorMessage = ex.Message };
         }
         finally
@@ -969,15 +889,7 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(0, 0, () =>
-            {
-                var vsb = new ValueStringBuilder(128);
-                vsb.Append("[DB.GetFieldsInfor] 查询表 ");
-                vsb.Append(tableName);
-                vsb.Append(" 字段异常: ");
-                vsb.Append(ex.Message);
-                return vsb.ToString();
-            });
+            Logger.Error(0, 0, BuildExceptionLog("DB.GetFieldsInfor", ex, null, null));
             return (new DbUdqResult { Success = false, ErrorMessage = ex.Message }, null);
         }
         finally
@@ -1030,15 +942,7 @@ public static partial class DB
         }
         catch (Exception ex)
         {
-            Logger.Error(0, 0, () =>
-            {
-                var vsb = new ValueStringBuilder(128);
-                vsb.Append("[DB.GetIndexesInfor] 查询表 ");
-                vsb.Append(tableName);
-                vsb.Append(" 索引异常: ");
-                vsb.Append(ex.Message);
-                return vsb.ToString();
-            });
+            Logger.Error(0, 0, BuildExceptionLog("DB.GetIndexesInfor" + " " + tableName, ex, null, null));
             return (new DbUdqResult { Success = false, ErrorMessage = ex.Message }, null);
         }
         finally

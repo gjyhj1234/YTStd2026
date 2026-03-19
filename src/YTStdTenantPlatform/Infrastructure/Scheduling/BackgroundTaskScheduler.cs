@@ -42,15 +42,22 @@ namespace YTStdTenantPlatform.Infrastructure.Scheduling
             Logger.Info(0, 0, "[BackgroundTaskScheduler] 任务已注册: " + task.Name +
                 " 间隔=" + task.IntervalSeconds + "秒");
 
-            // 首次延迟，避免启动时所有任务同时执行
-            await Task.Delay(task.InitialDelaySeconds * 1000, ct);
+            try
+            {
+                await Task.Delay(TimeSpan.FromSeconds(task.InitialDelaySeconds), ct);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                return;
+            }
 
             while (!ct.IsCancellationRequested)
             {
                 try
                 {
-                    Logger.Debug(0, 0, "[BackgroundTaskScheduler] 执行任务: " + task.Name);
+                    Logger.Debug(0, 0, () => BuildTaskExecuteDebugMessage(task.Name));
                     await task.ExecuteAsync(ct);
+                    await Task.Delay(TimeSpan.FromSeconds(task.IntervalSeconds), ct);
                 }
                 catch (OperationCanceledException) when (ct.IsCancellationRequested)
                 {
@@ -60,15 +67,6 @@ namespace YTStdTenantPlatform.Infrastructure.Scheduling
                 {
                     Logger.Error(0, 0, "[BackgroundTaskScheduler] 任务执行异常: " +
                         task.Name + " - " + ex.Message);
-                }
-
-                try
-                {
-                    await Task.Delay(task.IntervalSeconds * 1000, ct);
-                }
-                catch (OperationCanceledException)
-                {
-                    break;
                 }
             }
         }
@@ -83,6 +81,19 @@ namespace YTStdTenantPlatform.Infrastructure.Scheduling
                 new BillingGenerationTask(),
                 new WebhookRetryTask()
             };
+        }
+
+        private static string BuildTaskExecuteDebugMessage(string taskName)
+        {
+            const string prefix = "[BackgroundTaskScheduler] 执行任务: ";
+            return string.Create(
+                prefix.Length + taskName.Length,
+                taskName,
+                static (span, value) =>
+                {
+                    prefix.AsSpan().CopyTo(span);
+                    value.AsSpan().CopyTo(span[prefix.Length..]);
+                });
         }
     }
 

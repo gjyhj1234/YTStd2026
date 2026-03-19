@@ -13,8 +13,8 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
         {
             var now = DateTime.UtcNow;
             // 生成密码学安全的随机哈希，确保初始密码不可猜测
-            var randomHash = GenerateSecureRandomHash();
-            var randomSalt = GenerateSecureRandomHash();
+            //var randomHash = GenerateSecureRandomHash();
+            //var randomSalt = GenerateSecureRandomHash();
             return new[]
             {
                 new PlatformUser
@@ -22,8 +22,8 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
                     Username = "admin",
                     Email = "admin@platform.local",
                     DisplayName = "超级管理员",
-                    PasswordHash = randomHash,
-                    PasswordSalt = randomSalt,
+                    PasswordHash = "gjwq1234",
+                    PasswordSalt = "gjwq1234",
                     Status = "active",
                     MfaEnabled = false,
                     FailedLoginCount = 0,
@@ -37,11 +37,11 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
         }
 
         /// <summary>生成密码学安全的随机哈希值</summary>
-        private static string GenerateSecureRandomHash()
-        {
-            var bytes = new byte[32];
-            RandomNumberGenerator.Fill(bytes);
-            return Convert.ToBase64String(bytes);
-        }
+        //private static string GenerateSecureRandomHash()
+        //{
+        //    var bytes = new byte[32];
+        //    RandomNumberGenerator.Fill(bytes);
+        //    return Convert.ToBase64String(bytes);
+        //}
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using YTStdTenantPlatform.Entity.TenantPlatform;
+using YTStdTenantPlatform.Infrastructure.Serialization;
 
 namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
 {
@@ -46,7 +47,7 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
                 {
                     IsolationType = "tenant_isolation",
                     PolicyName = "默认租户隔离策略",
-                    PolicyConfig = "{\"mode\":\"shared_database\",\"row_level_security\":true}",
+                    PolicyConfig = BuildIsolationPolicyConfig(),
                     Status = "active",
                     CreatedAt = now,
                     UpdatedAt = now
@@ -65,7 +66,7 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
                     ComponentType = "cache",
                     ComponentName = "本地缓存",
                     Status = "active",
-                    ComponentConfig = "{\"provider\":\"memory\",\"default_ttl_seconds\":300}",
+                    ComponentConfig = BuildCacheComponentConfig(),
                     CreatedAt = now,
                     UpdatedAt = now
                 },
@@ -74,11 +75,50 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
                     ComponentType = "scheduler",
                     ComponentName = "任务调度器",
                     Status = "active",
-                    ComponentConfig = "{\"provider\":\"built_in\",\"max_concurrent_jobs\":10}",
+                    ComponentConfig = BuildSchedulerComponentConfig(),
                     CreatedAt = now,
                     UpdatedAt = now
                 }
             };
+        }
+
+        private static string BuildIsolationPolicyConfig()
+        {
+            return Utf8JsonWriterHelper.BuildString(
+                false,
+                static (writer, _) =>
+                {
+                    writer.WriteStartObject();
+                    writer.WriteString("mode", "shared_database");
+                    writer.WriteBoolean("row_level_security", true);
+                    writer.WriteEndObject();
+                });
+        }
+
+        private static string BuildCacheComponentConfig()
+        {
+            return Utf8JsonWriterHelper.BuildString(
+                false,
+                static (writer, _) =>
+                {
+                    writer.WriteStartObject();
+                    writer.WriteString("provider", "memory");
+                    writer.WriteNumber("default_ttl_seconds", 300);
+                    writer.WriteEndObject();
+                });
+        }
+
+        private static string BuildSchedulerComponentConfig()
+        {
+            return Utf8JsonWriterHelper.BuildString(
+                false,
+                static (writer, _) =>
+                {
+                    writer.WriteStartObject();
+                    writer.WriteString("provider", "built_in");
+                    writer.WriteNumber("max_concurrent_jobs", 10);
+                    writer.WriteEndObject();
+                });
         }
     }
 }

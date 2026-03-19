@@ -141,9 +141,7 @@ namespace YTStdTenantPlatform.Endpoints
 
         private static async Task WriteJsonAsync<T>(HttpContext ctx, T data, int statusCode = 200)
         {
-            ctx.Response.StatusCode = statusCode;
-            ctx.Response.ContentType = "application/json; charset=utf-8";
-            await System.Text.Json.JsonSerializer.SerializeAsync(ctx.Response.Body, data);
+            await YTStdTenantPlatform.Infrastructure.Serialization.TenantPlatformJsonResponseWriter.WriteAsync(ctx, data, statusCode);
         }
     }
 }

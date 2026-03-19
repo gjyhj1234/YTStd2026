@@ -39,7 +39,7 @@ public static class Logger
     /// 写入任意等级日志。
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Log(int tenantId, long userId, LogLevel level, string message)
+    static void Log(int tenantId, long userId, LogLevel level, string message)
     {
         _engine?.Log(tenantId, userId, level, message);
     }
@@ -48,7 +48,7 @@ public static class Logger
     /// 写入任意等级日志（延迟求值）。仅在该等级启用时才调用 <paramref name="messageFactory"/> 构建消息字符串。
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Log(int tenantId, long userId, LogLevel level, Func<string> messageFactory)
+    static void Log(int tenantId, long userId, LogLevel level, Func<string> messageFactory)
     {
         _engine?.Log(tenantId, userId, level, messageFactory);
     }
@@ -62,14 +62,7 @@ public static class Logger
         _engine?.Fatal(tenantId, userId, message);
     }
 
-    /// <summary>
-    /// 写入致命日志（延迟求值）。仅在该等级启用时才调用 <paramref name="messageFactory"/> 构建消息字符串。
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Fatal(int tenantId, long userId, Func<string> messageFactory)
-    {
-        _engine?.Fatal(tenantId, userId, messageFactory);
-    }
+   
 
     /// <summary>
     /// 写入错误日志。
@@ -80,15 +73,7 @@ public static class Logger
         _engine?.Error(tenantId, userId, message);
     }
 
-    /// <summary>
-    /// 写入错误日志（延迟求值）。仅在该等级启用时才调用 <paramref name="messageFactory"/> 构建消息字符串。
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Error(int tenantId, long userId, Func<string> messageFactory)
-    {
-        _engine?.Error(tenantId, userId, messageFactory);
-    }
-
+    
     /// <summary>
     /// 写入警告日志。
     /// </summary>
@@ -125,14 +110,8 @@ public static class Logger
         _engine?.Info(tenantId, userId, messageFactory);
     }
 
-    /// <summary>
-    /// 写入调试日志。
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Debug(int tenantId, long userId, string message)
-    {
-        _engine?.Debug(tenantId, userId, message);
-    }
+  
+   
 
     /// <summary>
     /// 写入调试日志（延迟求值）。仅在该等级启用时才调用 <paramref name="messageFactory"/> 构建消息字符串，

@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using YTStdLogger.Core;
+using YTStdTenantPlatform.Infrastructure.Serialization;
 
 namespace YTStdTenantPlatform.Infrastructure.Middleware
 {
@@ -61,20 +62,19 @@ namespace YTStdTenantPlatform.Infrastructure.Middleware
             context.Response.ContentType = "application/json; charset=utf-8";
 
             var traceId = context.TraceIdentifier;
-            var json = "{\"success\":false,\"error\":\"" + EscapeJson(error) +
-                       "\",\"message\":\"" + EscapeJson(message) +
-                       "\",\"traceId\":\"" + EscapeJson(traceId) + "\"}";
-
-            await context.Response.WriteAsync(json);
-        }
-
-        /// <summary>转义 JSON 字符串中的特殊字符</summary>
-        private static string EscapeJson(string value)
-        {
-            if (string.IsNullOrEmpty(value)) return string.Empty;
-            return value.Replace("\\", "\\\\").Replace("\"", "\\\"")
-                        .Replace("\n", "\\n").Replace("\r", "\\r")
-                        .Replace("\t", "\\t");
+            await Utf8JsonWriterHelper.WriteResponseAsync(
+                context.Response,
+                (error, message, traceId),
+                static (writer, state) =>
+                {
+                    writer.WriteStartObject();
+                    writer.WriteBoolean("success", false);
+                    writer.WriteString("error", state.error);
+                    writer.WriteString("message", state.message);
+                    writer.WriteString("traceId", state.traceId);
+                    writer.WriteEndObject();
+                },
+                context.RequestAborted);
         }
     }
 }

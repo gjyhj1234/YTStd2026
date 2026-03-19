@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using YTStdLogger.Core;
+using YTStdTenantPlatform.Infrastructure.Serialization;
 
 namespace YTStdTenantPlatform.Infrastructure.Middleware
 {
@@ -54,8 +55,18 @@ namespace YTStdTenantPlatform.Infrastructure.Middleware
                 context.Response.StatusCode = 429;
                 context.Response.ContentType = "application/json; charset=utf-8";
                 context.Response.Headers["Retry-After"] = _windowSeconds.ToString();
-                await context.Response.WriteAsync(
-                    "{\"success\":false,\"error\":\"请求过于频繁\",\"message\":\"请稍后再试\"}");
+                await Utf8JsonWriterHelper.WriteResponseAsync(
+                    context.Response,
+                    false,
+                    static (writer, _) =>
+                    {
+                        writer.WriteStartObject();
+                        writer.WriteBoolean("success", false);
+                        writer.WriteString("error", "请求过于频繁");
+                        writer.WriteString("message", "请稍后再试");
+                        writer.WriteEndObject();
+                    },
+                    context.RequestAborted);
             }
         }
 

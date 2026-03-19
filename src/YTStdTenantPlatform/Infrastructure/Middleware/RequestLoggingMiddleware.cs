@@ -29,7 +29,7 @@ namespace YTStdTenantPlatform.Infrastructure.Middleware
             var path = context.Request.Path.Value ?? "/";
             var startTicks = Stopwatch.GetTimestamp();
 
-            Logger.Debug(0, 0, "[Request] " + method + " " + path + " TraceId=" + traceId);
+            Logger.Debug(0, 0, () => "[Request] " + method + " " + path + " TraceId=" + traceId);
 
             await _next(context);
 

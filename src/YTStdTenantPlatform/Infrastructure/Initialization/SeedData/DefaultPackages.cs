@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using YTStdTenantPlatform.Entity.TenantPlatform;
+using YTStdTenantPlatform.Infrastructure.Serialization;
 
 namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
 {
@@ -119,23 +120,85 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
             return new[]
             {
                 // ── 免费版能力 ──
-                Cap("free_v1", "user_limit", "用户数量上限", "quota", "{\"limit\":5}", now),
-                Cap("free_v1", "storage_limit", "存储空间上限", "quota", "{\"limit\":\"1GB\"}", now),
-                Cap("free_v1", "api_limit", "API 调用上限", "quota", "{\"limit\":1000,\"period\":\"day\"}", now),
+                Cap("free_v1", "user_limit", "用户数量上限", "quota", BuildLimitMetadata(5), now),
+                Cap("free_v1", "storage_limit", "存储空间上限", "quota", BuildLimitMetadata("1GB"), now),
+                Cap("free_v1", "api_limit", "API 调用上限", "quota", BuildLimitPeriodMetadata(1000, "day"), now),
 
                 // ── 标准版能力 ──
-                Cap("standard_v1", "user_limit", "用户数量上限", "quota", "{\"limit\":50}", now),
-                Cap("standard_v1", "storage_limit", "存储空间上限", "quota", "{\"limit\":\"10GB\"}", now),
-                Cap("standard_v1", "api_limit", "API 调用上限", "quota", "{\"limit\":10000,\"period\":\"day\"}", now),
-                Cap("standard_v1", "feature_basic", "基础功能集", "feature", "{\"scope\":\"all_basic\"}", now),
+                Cap("standard_v1", "user_limit", "用户数量上限", "quota", BuildLimitMetadata(50), now),
+                Cap("standard_v1", "storage_limit", "存储空间上限", "quota", BuildLimitMetadata("10GB"), now),
+                Cap("standard_v1", "api_limit", "API 调用上限", "quota", BuildLimitPeriodMetadata(10000, "day"), now),
+                Cap("standard_v1", "feature_basic", "基础功能集", "feature", BuildScopeMetadata("all_basic"), now),
 
                 // ── 企业版能力 ──
-                Cap("enterprise_v1", "user_limit", "用户数量上限", "quota", "{\"limit\":\"unlimited\"}", now),
-                Cap("enterprise_v1", "storage_limit", "存储空间上限", "quota", "{\"limit\":\"100GB\"}", now),
-                Cap("enterprise_v1", "api_limit", "API 调用上限", "quota", "{\"limit\":\"unlimited\",\"period\":\"day\"}", now),
-                Cap("enterprise_v1", "feature_all", "全量功能集", "feature", "{\"scope\":\"all\"}", now),
-                Cap("enterprise_v1", "concurrency_limit", "并发连接上限", "quota", "{\"limit\":100}", now)
+                Cap("enterprise_v1", "user_limit", "用户数量上限", "quota", BuildLimitMetadata("unlimited"), now),
+                Cap("enterprise_v1", "storage_limit", "存储空间上限", "quota", BuildLimitMetadata("100GB"), now),
+                Cap("enterprise_v1", "api_limit", "API 调用上限", "quota", BuildLimitPeriodMetadata("unlimited", "day"), now),
+                Cap("enterprise_v1", "feature_all", "全量功能集", "feature", BuildScopeMetadata("all"), now),
+                Cap("enterprise_v1", "concurrency_limit", "并发连接上限", "quota", BuildLimitMetadata(100), now)
             };
+        }
+
+        private static string BuildLimitMetadata(int limit)
+        {
+            return Utf8JsonWriterHelper.BuildString(
+                limit,
+                static (writer, state) =>
+                {
+                    writer.WriteStartObject();
+                    writer.WriteNumber("limit", state);
+                    writer.WriteEndObject();
+                });
+        }
+
+        private static string BuildLimitMetadata(string limit)
+        {
+            return Utf8JsonWriterHelper.BuildString(
+                limit,
+                static (writer, state) =>
+                {
+                    writer.WriteStartObject();
+                    writer.WriteString("limit", state);
+                    writer.WriteEndObject();
+                });
+        }
+
+        private static string BuildLimitPeriodMetadata(int limit, string period)
+        {
+            return Utf8JsonWriterHelper.BuildString(
+                (limit, period),
+                static (writer, state) =>
+                {
+                    writer.WriteStartObject();
+                    writer.WriteNumber("limit", state.limit);
+                    writer.WriteString("period", state.period);
+                    writer.WriteEndObject();
+                });
+        }
+
+        private static string BuildLimitPeriodMetadata(string limit, string period)
+        {
+            return Utf8JsonWriterHelper.BuildString(
+                (limit, period),
+                static (writer, state) =>
+                {
+                    writer.WriteStartObject();
+                    writer.WriteString("limit", state.limit);
+                    writer.WriteString("period", state.period);
+                    writer.WriteEndObject();
+                });
+        }
+
+        private static string BuildScopeMetadata(string scope)
+        {
+            return Utf8JsonWriterHelper.BuildString(
+                scope,
+                static (writer, state) =>
+                {
+                    writer.WriteStartObject();
+                    writer.WriteString("scope", state);
+                    writer.WriteEndObject();
+                });
         }
 
         /// <summary>创建能力种子数据辅助方法</summary>
