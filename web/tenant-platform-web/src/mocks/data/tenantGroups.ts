@@ -1,0 +1,66 @@
+export const mockTenantGroups = [
+  {
+    id: 1,
+    groupCode: 'GRP_ENTERPRISE',
+    groupName: '企业客户',
+    parentId: null,
+    sortOrder: 1,
+    description: '企业级客户分组',
+    createdAt: '2025-01-01T00:00:00Z',
+    children: [
+      {
+        id: 3,
+        groupCode: 'GRP_ENTERPRISE_VIP',
+        groupName: 'VIP企业',
+        parentId: 1,
+        sortOrder: 1,
+        description: 'VIP级别企业客户',
+        createdAt: '2025-01-10T00:00:00Z',
+        children: [],
+      },
+    ],
+  },
+  {
+    id: 2,
+    groupCode: 'GRP_INDIVIDUAL',
+    groupName: '个人客户',
+    parentId: null,
+    sortOrder: 2,
+    description: '个人用户分组',
+    createdAt: '2025-01-01T00:00:00Z',
+    children: [],
+  },
+]
+
+export const mockFlatTenantGroups = [
+  {
+    id: 1,
+    groupCode: 'GRP_ENTERPRISE',
+    groupName: '企业客户',
+    parentId: null,
+    sortOrder: 1,
+    description: '企业级客户分组',
+    createdAt: '2025-01-01T00:00:00Z',
+    children: [],
+  },
+  {
+    id: 2,
+    groupCode: 'GRP_INDIVIDUAL',
+    groupName: '个人客户',
+    parentId: null,
+    sortOrder: 2,
+    description: '个人用户分组',
+    createdAt: '2025-01-01T00:00:00Z',
+    children: [],
+  },
+  {
+    id: 3,
+    groupCode: 'GRP_ENTERPRISE_VIP',
+    groupName: 'VIP企业',
+    parentId: 1,
+    sortOrder: 1,
+    description: 'VIP级别企业客户',
+    createdAt: '2025-01-10T00:00:00Z',
+    children: [],
+  },
+]
