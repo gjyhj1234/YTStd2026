@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -239,8 +240,31 @@ namespace YTStdTenantPlatform.Bootstrap
 
                 var token = PlatformAuthHandler.GenerateToken(matchedUser.Id, matchedUser.Username);
                 var requirePasswordReset = matchedUser.PasswordExpiresAt.HasValue && matchedUser.PasswordExpiresAt.Value <= now;
+
+                // 从缓存获取用户角色、权限、超管标识
+                var userRoleCache = PlatformCacheWarmer.UserRoleCache;
+                IReadOnlyList<string> loginRoles = userRoleCache.TryGetValue(matchedUser.Id, out var cachedRoles)
+                    ? cachedRoles
+                    : Array.Empty<string>();
+                var rolePermCache = PlatformCacheWarmer.RoleCodePermissionCache;
+                var permSet = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var loginIsSuperAdmin = false;
+                for (int ri = 0; ri < loginRoles.Count; ri++)
+                {
+                    if (string.Equals(loginRoles[ri], "super_admin", StringComparison.OrdinalIgnoreCase))
+                    {
+                        loginIsSuperAdmin = true;
+                    }
+                    if (rolePermCache.TryGetValue(loginRoles[ri], out var rp))
+                    {
+                        for (int pi = 0; pi < rp.Count; pi++) permSet.Add(rp[pi]);
+                    }
+                }
+                var loginPermissions = new List<string>(permSet.Count);
+                foreach (var p in permSet) loginPermissions.Add(p);
+
                 await RecordLoginAsync(matchedUser, username, remoteIp, userAgent, "password", "success", null);
-                await WriteAuthJsonAsync(context, new AuthResponse(true, requirePasswordReset ? "登录成功，需尽快修改密码" : "登录成功", token, PlatformAuthHandler.GetTokenExpirySeconds(), matchedUser.Id, matchedUser.Username, matchedUser.DisplayName, requirePasswordReset));
+                await WriteAuthJsonAsync(context, new AuthResponse(true, requirePasswordReset ? "登录成功，需尽快修改密码" : "登录成功", token, PlatformAuthHandler.GetTokenExpirySeconds(), matchedUser.Id, matchedUser.Username, matchedUser.DisplayName, requirePasswordReset, loginRoles, loginPermissions, loginIsSuperAdmin));
             }).WithSummary("平台用户登录");
 
             group.MapPost("/refresh", async (HttpContext context, CancellationToken cancellationToken) =>
@@ -265,7 +289,7 @@ namespace YTStdTenantPlatform.Bootstrap
                 }
 
                 var refreshedToken = PlatformAuthHandler.GenerateToken(currentUser.UserId, currentUser.Username);
-                await WriteAuthJsonAsync(context, new AuthResponse(true, "刷新成功", refreshedToken, PlatformAuthHandler.GetTokenExpirySeconds(), currentUser.UserId, currentUser.Username, currentUser.DisplayName, false));
+                await WriteAuthJsonAsync(context, new AuthResponse(true, "刷新成功", refreshedToken, PlatformAuthHandler.GetTokenExpirySeconds(), currentUser.UserId, currentUser.Username, currentUser.DisplayName, false, currentUser.Roles, currentUser.Permissions, currentUser.IsSuperAdmin));
             }).WithSummary("刷新访问令牌");
 
             group.MapGet("/me", async (HttpContext context) =>
@@ -282,6 +306,7 @@ namespace YTStdTenantPlatform.Bootstrap
                     {
                         writer.WriteStartObject();
                         writer.WriteBoolean("success", true);
+                        writer.WriteString("message", "操作成功");
                         writer.WritePropertyName("data");
                         writer.WriteStartObject();
                         writer.WriteNumber("userId", state.UserId);
@@ -289,6 +314,7 @@ namespace YTStdTenantPlatform.Bootstrap
                         writer.WriteString("displayName", state.DisplayName);
                         writer.WriteBoolean("isSuperAdmin", state.IsSuperAdmin);
                         writer.WriteEndObject();
+                        writer.WriteString("traceId", "");
                         writer.WriteEndObject();
                     },
                     context.RequestAborted);
@@ -445,6 +471,8 @@ namespace YTStdTenantPlatform.Bootstrap
                     writer.WriteStartObject();
                     writer.WriteBoolean("success", state.Success);
                     writer.WriteString("message", state.Message);
+                    writer.WritePropertyName("data");
+                    writer.WriteStartObject();
                     if (string.IsNullOrEmpty(state.Token))
                     {
                         writer.WriteNull("token");
@@ -459,6 +487,23 @@ namespace YTStdTenantPlatform.Bootstrap
                     writer.WriteString("username", state.Username);
                     writer.WriteString("displayName", state.DisplayName);
                     writer.WriteBoolean("requirePasswordReset", state.RequirePasswordReset);
+                    writer.WritePropertyName("roles");
+                    writer.WriteStartArray();
+                    for (int i = 0; i < state.Roles.Count; i++)
+                    {
+                        writer.WriteStringValue(state.Roles[i]);
+                    }
+                    writer.WriteEndArray();
+                    writer.WritePropertyName("permissions");
+                    writer.WriteStartArray();
+                    for (int i = 0; i < state.Permissions.Count; i++)
+                    {
+                        writer.WriteStringValue(state.Permissions[i]);
+                    }
+                    writer.WriteEndArray();
+                    writer.WriteBoolean("isSuperAdmin", state.IsSuperAdmin);
+                    writer.WriteEndObject();
+                    writer.WriteString("traceId", "");
                     writer.WriteEndObject();
                 },
                 context.RequestAborted);
@@ -485,8 +530,12 @@ namespace YTStdTenantPlatform.Bootstrap
             public string Username { get; }
             public string DisplayName { get; }
             public bool RequirePasswordReset { get; }
+            public IReadOnlyList<string> Roles { get; }
+            public IReadOnlyList<string> Permissions { get; }
+            public bool IsSuperAdmin { get; }
 
-            public AuthResponse(bool success, string message, string? token, int expiresIn, long userId, string username, string displayName, bool requirePasswordReset)
+            public AuthResponse(bool success, string message, string? token, int expiresIn, long userId, string username, string displayName, bool requirePasswordReset,
+                IReadOnlyList<string>? roles = null, IReadOnlyList<string>? permissions = null, bool isSuperAdmin = false)
             {
                 Success = success;
                 Message = message;
@@ -496,6 +545,9 @@ namespace YTStdTenantPlatform.Bootstrap
                 Username = username;
                 DisplayName = displayName;
                 RequirePasswordReset = requirePasswordReset;
+                Roles = roles ?? Array.Empty<string>();
+                Permissions = permissions ?? Array.Empty<string>();
+                IsSuperAdmin = isSuperAdmin;
             }
         }
     }

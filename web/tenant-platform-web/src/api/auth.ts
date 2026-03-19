@@ -8,9 +8,11 @@ export interface LoginRequest {
 
 export interface LoginResult {
   token: string
+  expiresIn: number
   userId: number
   username: string
   displayName: string
+  requirePasswordReset: boolean
   roles: string[]
   permissions: string[]
   isSuperAdmin: boolean
