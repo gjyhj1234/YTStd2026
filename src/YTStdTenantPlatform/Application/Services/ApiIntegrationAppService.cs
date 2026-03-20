@@ -71,7 +71,7 @@ namespace YTStdTenantPlatform.Application.Services
             };
 
             var insResult = await TenantApiKeyCRUD.InsertAsync(tenantId, operatorId, entity);
-            if (insResult.Code != 0)
+            if (!insResult.Success)
                 return ApiResult<ApiKeyCreatedRepDTO>.Fail(ErrorCodes.ApiKeyCreateFailed, Messages.ApiKeyCreateFailed);
 
             Logger.Info(tenantId, operatorId,
@@ -99,7 +99,7 @@ namespace YTStdTenantPlatform.Application.Services
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await TenantApiKeyCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (updResult.Code != 0) return ApiResult.Fail(ErrorCodes.ApiKeyDisableFailed, Messages.ApiKeyDisableFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.ApiKeyDisableFailed, Messages.ApiKeyDisableFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[ApiIntegrationAppService] 禁用 API 密钥: " + target.KeyName);
@@ -223,7 +223,7 @@ namespace YTStdTenantPlatform.Application.Services
             };
 
             var insResult = await TenantWebhookCRUD.InsertAsync(tenantId, operatorId, entity);
-            if (insResult.Code != 0)
+            if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.WebhookCreateFailed, Messages.WebhookCreateFailed);
 
             Logger.Info(tenantId, operatorId,
@@ -247,7 +247,7 @@ namespace YTStdTenantPlatform.Application.Services
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await TenantWebhookCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (updResult.Code != 0) return ApiResult.Fail(ErrorCodes.WebhookUpdateFailed, Messages.WebhookUpdateFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.WebhookUpdateFailed, Messages.WebhookUpdateFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[ApiIntegrationAppService] 更新 Webhook: " + target.WebhookName);
@@ -269,7 +269,7 @@ namespace YTStdTenantPlatform.Application.Services
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await TenantWebhookCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (updResult.Code != 0) return ApiResult.Fail(ErrorCodes.WebhookStatusChangeFailed, Messages.WebhookStatusChangeFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.WebhookStatusChangeFailed, Messages.WebhookStatusChangeFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[ApiIntegrationAppService] Webhook 状态变更: " + target.WebhookName + " → " + status);

@@ -95,7 +95,7 @@ namespace YTStdTenantPlatform.Application.Services
             };
 
             var insResult = await PlatformRoleCRUD.InsertAsync(tenantId, operatorId, role);
-            if (insResult.Code != 0)
+            if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.RoleCreateFailed, Messages.RoleCreateFailed);
 
             await PlatformCacheCoordinator.InvalidatePermissionsAsync();
@@ -120,7 +120,7 @@ namespace YTStdTenantPlatform.Application.Services
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await PlatformRoleCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (updResult.Code != 0) return ApiResult.Fail(ErrorCodes.RoleUpdateFailed, Messages.RoleUpdateFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.RoleUpdateFailed, Messages.RoleUpdateFailed);
 
             await PlatformCacheCoordinator.InvalidatePermissionsAsync();
             Logger.Info(tenantId, operatorId, "[PlatformRoleAppService] 更新角色: " + target.Code);
@@ -141,7 +141,7 @@ namespace YTStdTenantPlatform.Application.Services
             target.Status = status;
             target.UpdatedAt = DateTime.UtcNow;
             var updResult = await PlatformRoleCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (updResult.Code != 0) return ApiResult.Fail(ErrorCodes.RoleStatusChangeFailed, Messages.RoleStatusChangeFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.RoleStatusChangeFailed, Messages.RoleStatusChangeFailed);
 
             await PlatformCacheCoordinator.InvalidatePermissionsAsync();
             Logger.Info(tenantId, operatorId,

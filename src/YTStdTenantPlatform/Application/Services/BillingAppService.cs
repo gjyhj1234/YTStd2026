@@ -84,7 +84,7 @@ namespace YTStdTenantPlatform.Application.Services
             };
 
             var insResult = await BillingInvoiceCRUD.InsertAsync(tenantId, operatorId, entity);
-            if (insResult.Code != 0)
+            if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.InvoiceCreateFailed, Messages.InvoiceCreateFailed);
 
             Logger.Info(tenantId, operatorId,
@@ -107,7 +107,7 @@ namespace YTStdTenantPlatform.Application.Services
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await BillingInvoiceCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (updResult.Code != 0) return ApiResult.Fail(ErrorCodes.InvoiceVoidFailed, Messages.InvoiceVoidFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.InvoiceVoidFailed, Messages.InvoiceVoidFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[BillingAppService] 作废发票: " + target.InvoiceNo);
@@ -211,7 +211,7 @@ namespace YTStdTenantPlatform.Application.Services
             };
 
             var insResult = await PaymentOrderCRUD.InsertAsync(tenantId, operatorId, entity);
-            if (insResult.Code != 0)
+            if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.PaymentOrderCreateFailed, Messages.PaymentOrderCreateFailed);
 
             Logger.Info(tenantId, operatorId,
@@ -264,7 +264,7 @@ namespace YTStdTenantPlatform.Application.Services
             };
 
             var insResult = await PaymentRefundCRUD.InsertAsync(tenantId, operatorId, entity);
-            if (insResult.Code != 0)
+            if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.RefundCreateFailed, Messages.RefundCreateFailed);
 
             Logger.Info(tenantId, operatorId,

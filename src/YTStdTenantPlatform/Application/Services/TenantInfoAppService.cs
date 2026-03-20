@@ -54,7 +54,7 @@ namespace YTStdTenantPlatform.Application.Services
             };
 
             var insResult = await TenantGroupCRUD.InsertAsync(tenantId, operatorId, group);
-            if (insResult.Code != 0) return ApiResult<long>.Fail(ErrorCodes.GroupCreateFailed, Messages.GroupCreateFailed);
+            if (!insResult.Success) return ApiResult<long>.Fail(ErrorCodes.GroupCreateFailed, Messages.GroupCreateFailed);
 
             Logger.Info(tenantId, operatorId, "[TenantInfoAppService] 创建分组: " + req.GroupCode);
             return ApiResult<long>.Ok(insResult.Id);
@@ -98,7 +98,7 @@ namespace YTStdTenantPlatform.Application.Services
             };
 
             var insResult = await TenantDomainCRUD.InsertAsync(tenantId, operatorId, domain);
-            if (insResult.Code != 0) return ApiResult<long>.Fail(ErrorCodes.DomainCreateFailed, Messages.DomainCreateFailed);
+            if (!insResult.Success) return ApiResult<long>.Fail(ErrorCodes.DomainCreateFailed, Messages.DomainCreateFailed);
 
             Logger.Info(tenantId, operatorId, "[TenantInfoAppService] 创建域名: " + req.Domain);
             return ApiResult<long>.Ok(insResult.Id);
@@ -156,7 +156,7 @@ namespace YTStdTenantPlatform.Application.Services
             };
 
             var insResult = await TenantTagCRUD.InsertAsync(tenantId, operatorId, tag);
-            if (insResult.Code != 0) return ApiResult<long>.Fail(ErrorCodes.TagCreateFailed, Messages.TagCreateFailed);
+            if (!insResult.Success) return ApiResult<long>.Fail(ErrorCodes.TagCreateFailed, Messages.TagCreateFailed);
 
             Logger.Info(tenantId, operatorId, "[TenantInfoAppService] 创建标签: " + req.TagKey);
             return ApiResult<long>.Ok(insResult.Id);

@@ -129,7 +129,7 @@ namespace YTStdTenantPlatform.Application.Services
             };
 
             var insResult = await TenantFeatureFlagCRUD.InsertAsync(tenantId, operatorId, flag);
-            if (insResult.Code != 0)
+            if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.FeatureFlagSaveFailed, Messages.FeatureFlagSaveFailed);
 
             await PlatformCacheCoordinator.InvalidateFeatureFlagsAsync();
@@ -152,7 +152,7 @@ namespace YTStdTenantPlatform.Application.Services
             target.Enabled = enabled;
             target.UpdatedAt = DateTime.UtcNow;
             var updResult = await TenantFeatureFlagCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (updResult.Code != 0) return ApiResult.Fail(ErrorCodes.FeatureFlagToggleFailed, Messages.FeatureFlagToggleFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.FeatureFlagToggleFailed, Messages.FeatureFlagToggleFailed);
 
             await PlatformCacheCoordinator.InvalidateFeatureFlagsAsync();
             Logger.Info(tenantId, operatorId,
@@ -225,7 +225,7 @@ namespace YTStdTenantPlatform.Application.Services
             };
 
             var insResult = await TenantParameterCRUD.InsertAsync(tenantId, operatorId, param);
-            if (insResult.Code != 0)
+            if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.ParamSaveFailed, Messages.ParamSaveFailed);
 
             Logger.Info(tenantId, operatorId,
@@ -238,7 +238,7 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, long id)
         {
             var delResult = await TenantParameterCRUD.DeleteAsync(tenantId, operatorId, id);
-            if (delResult.Code != 0) return ApiResult.Fail(ErrorCodes.ParamDeleteFailed, Messages.ParamDeleteFailed);
+            if (!delResult.Success) return ApiResult.Fail(ErrorCodes.ParamDeleteFailed, Messages.ParamDeleteFailed);
 
             Logger.Info(tenantId, operatorId, "[TenantConfigAppService] 删除参数: id=" + id);
             return ApiResult.Ok(Messages.OperationSuccess);

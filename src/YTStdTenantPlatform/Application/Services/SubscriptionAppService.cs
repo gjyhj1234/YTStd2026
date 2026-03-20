@@ -84,7 +84,7 @@ namespace YTStdTenantPlatform.Application.Services
             };
 
             var insResult = await TenantSubscriptionCRUD.InsertAsync(tenantId, operatorId, entity);
-            if (insResult.Code != 0)
+            if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.SubscriptionCreateFailed, Messages.SubscriptionCreateFailed);
 
             Logger.Info(tenantId, operatorId,
@@ -108,7 +108,7 @@ namespace YTStdTenantPlatform.Application.Services
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await TenantSubscriptionCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (updResult.Code != 0) return ApiResult.Fail(ErrorCodes.SubscriptionCancelFailed, Messages.SubscriptionCancelFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.SubscriptionCancelFailed, Messages.SubscriptionCancelFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[SubscriptionAppService] 取消订阅: id=" + id);
@@ -160,7 +160,7 @@ namespace YTStdTenantPlatform.Application.Services
             };
 
             var insResult = await TenantTrialCRUD.InsertAsync(tenantId, operatorId, entity);
-            if (insResult.Code != 0)
+            if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.TrialCreateFailed, Messages.TrialCreateFailed);
 
             Logger.Info(tenantId, operatorId,

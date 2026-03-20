@@ -81,7 +81,7 @@ namespace YTStdTenantPlatform.Application.Services
             };
 
             var insResult = await NotificationTemplateCRUD.InsertAsync(tenantId, operatorId, entity);
-            if (insResult.Code != 0)
+            if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.NotificationTemplateCreateFailed, Messages.NotificationTemplateCreateFailed);
 
             Logger.Info(tenantId, operatorId,
@@ -106,7 +106,7 @@ namespace YTStdTenantPlatform.Application.Services
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await NotificationTemplateCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (updResult.Code != 0) return ApiResult.Fail(ErrorCodes.NotificationTemplateUpdateFailed, Messages.NotificationTemplateUpdateFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.NotificationTemplateUpdateFailed, Messages.NotificationTemplateUpdateFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[NotificationAppService] 更新通知模板: " + target.TemplateCode);
@@ -128,7 +128,7 @@ namespace YTStdTenantPlatform.Application.Services
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await NotificationTemplateCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (updResult.Code != 0) return ApiResult.Fail(ErrorCodes.NotificationTemplateStatusChangeFailed, Messages.NotificationTemplateStatusChangeFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.NotificationTemplateStatusChangeFailed, Messages.NotificationTemplateStatusChangeFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[NotificationAppService] 通知模板状态变更: " + target.TemplateCode + " → " + status);
@@ -207,7 +207,7 @@ namespace YTStdTenantPlatform.Application.Services
             };
 
             var insResult = await NotificationCRUD.InsertAsync(tenantId, operatorId, entity);
-            if (insResult.Code != 0)
+            if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.NotificationCreateFailed, Messages.NotificationCreateFailed);
 
             Logger.Info(tenantId, operatorId,
@@ -229,7 +229,7 @@ namespace YTStdTenantPlatform.Application.Services
             target.ReadAt = DateTime.UtcNow;
 
             var updResult = await NotificationCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (updResult.Code != 0) return ApiResult.Fail(ErrorCodes.NotificationMarkReadFailed, Messages.NotificationMarkReadFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.NotificationMarkReadFailed, Messages.NotificationMarkReadFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[NotificationAppService] 标记通知已读: id=" + id);

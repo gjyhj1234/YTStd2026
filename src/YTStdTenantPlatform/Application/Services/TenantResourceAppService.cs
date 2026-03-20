@@ -78,7 +78,7 @@ namespace YTStdTenantPlatform.Application.Services
             };
 
             var insResult = await TenantResourceQuotaCRUD.InsertAsync(tenantId, operatorId, quota);
-            if (insResult.Code != 0)
+            if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.QuotaSaveFailed, Messages.QuotaSaveFailed);
 
             Logger.Info(tenantId, operatorId,

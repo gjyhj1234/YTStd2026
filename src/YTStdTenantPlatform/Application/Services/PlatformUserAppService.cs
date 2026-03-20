@@ -19,7 +19,7 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, PagedRequest request)
         {
             var (queryResult, data) = await PlatformUserCRUD.GetListAsync(tenantId, operatorId);
-            if (queryResult.Code != 0 || data == null)
+            if (!queryResult.Success || data == null)
                 return new PagedResult<PlatformUserRepDTO> { Page = request.NormalizedPage, PageSize = request.NormalizedPageSize };
 
             var filtered = FilterUsers(data, request);
@@ -41,7 +41,7 @@ namespace YTStdTenantPlatform.Application.Services
         public static async ValueTask<PlatformUserRepDTO?> GetByIdAsync(int tenantId, long operatorId, long id)
         {
             var (queryResult, data) = await PlatformUserCRUD.GetListAsync(tenantId, operatorId);
-            if (queryResult.Code != 0 || data == null) return null;
+            if (!queryResult.Success || data == null) return null;
 
             foreach (var u in data)
             {
@@ -82,7 +82,7 @@ namespace YTStdTenantPlatform.Application.Services
             };
 
             var insResult = await PlatformUserCRUD.InsertAsync(tenantId, operatorId, user);
-            if (insResult.Code != 0)
+            if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.UserCreateFailed, Messages.UserCreateFailed);
 
             Logger.Info(tenantId, operatorId, "[PlatformUserAppService] 创建用户: " + req.Username);
@@ -94,7 +94,7 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, long id, UpdatePlatformUserReqDTO req)
         {
             var (queryResult, allUsers) = await PlatformUserCRUD.GetListAsync(tenantId, operatorId);
-            if (queryResult.Code != 0 || allUsers == null)
+            if (!queryResult.Success || allUsers == null)
                 return ApiResult.Fail(ErrorCodes.UserQueryFailed, Messages.UserQueryFailed);
 
             PlatformUser? target = null;
@@ -111,7 +111,7 @@ namespace YTStdTenantPlatform.Application.Services
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await PlatformUserCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (updResult.Code != 0)
+            if (!updResult.Success)
                 return ApiResult.Fail(ErrorCodes.UserUpdateFailed, Messages.UserUpdateFailed);
 
             Logger.Info(tenantId, operatorId, "[PlatformUserAppService] 更新用户: " + target.Username);
@@ -123,7 +123,7 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, long id, string status)
         {
             var (queryResult, allUsers) = await PlatformUserCRUD.GetListAsync(tenantId, operatorId);
-            if (queryResult.Code != 0 || allUsers == null)
+            if (!queryResult.Success || allUsers == null)
                 return ApiResult.Fail(ErrorCodes.UserQueryFailed, Messages.UserQueryFailed);
 
             PlatformUser? target = null;
@@ -137,7 +137,7 @@ namespace YTStdTenantPlatform.Application.Services
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await PlatformUserCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (updResult.Code != 0)
+            if (!updResult.Success)
                 return ApiResult.Fail(ErrorCodes.UserStatusChangeFailed, Messages.UserStatusChangeFailed);
 
             Logger.Info(tenantId, operatorId,
