@@ -90,7 +90,7 @@ async function loadData() {
       PageSize: 20,
       WebhookId: filterWebhookId.value,
     })
-    gridData.value = res.data!.items
+    gridData.value = res.Data!.Items
   } catch {
     // 接口未就绪时保持空列表
   }

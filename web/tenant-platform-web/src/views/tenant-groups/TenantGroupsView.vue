@@ -166,7 +166,7 @@ const createForm = reactive<CreateTenantGroupReqDTO>({
 async function loadData() {
   try {
     const res = await getTenantGroups()
-    allGroups.value = res.data!
+    allGroups.value = res.Data!
   } catch {
     // 接口未就绪时保持空列表
   }

@@ -3,7 +3,7 @@ import { get, post, put } from '@/utils/http'
 import type { PagedResult } from '@/types/base'
 import type { NotificationTemplateRepDTO, CreateNotificationTemplateReqDTO, UpdateNotificationTemplateReqDTO, NotificationRepDTO, CreateNotificationReqDTO } from '@/types/notification'
 
-export type { NotificationTemplateRepDTO, NotificationRepDTO, CreateNotificationTemplateReqDTO, CreateNotificationReqDTO }
+export type { NotificationTemplateRepDTO, NotificationRepDTO, CreateNotificationTemplateReqDTO, UpdateNotificationTemplateReqDTO, CreateNotificationReqDTO }
 
 /* ---------- 通知模板 ---------- */
 

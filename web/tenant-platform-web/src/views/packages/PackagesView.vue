@@ -203,7 +203,7 @@ async function loadData() {
       PageSize: 20,
       Keyword: filterKeyword.value || undefined,
     })
-    gridData.value = res.data!.items
+    gridData.value = res.Data!.Items
   } catch {
     // 接口未就绪时保持空列表
   }
@@ -223,7 +223,7 @@ async function handleCreate() {
 function openEdit(row: SaasPackageRepDTO) {
   editingId.value = row.Id
   editForm.PackageName = row.PackageName
-  editForm.Description = row.Description
+  editForm.Description = row.Description ?? undefined
   showEditPopup.value = true
 }
 

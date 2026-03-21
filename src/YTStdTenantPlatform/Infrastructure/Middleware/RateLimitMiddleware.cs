@@ -61,10 +61,9 @@ namespace YTStdTenantPlatform.Infrastructure.Middleware
                     static (writer, traceId) =>
                     {
                         writer.WriteStartObject();
-                        writer.WriteBoolean("success", false);
-                        writer.WriteString("message", "请求过于频繁: 请稍后再试");
-                        writer.WriteNull("data");
-                        writer.WriteString("traceId", traceId);
+                        writer.WriteNumber("Code", 1008);
+                        writer.WriteString("Message", "common.system_busy");
+                        writer.WriteNull("Data");
                         writer.WriteEndObject();
                     },
                     context.RequestAborted);

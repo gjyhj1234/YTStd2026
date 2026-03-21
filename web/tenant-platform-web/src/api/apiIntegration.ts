@@ -3,7 +3,7 @@ import { get, post, put } from '@/utils/http'
 import type { PagedResult } from '@/types/base'
 import type { TenantApiKeyRepDTO, CreateApiKeyReqDTO, ApiKeyCreatedRepDTO, TenantApiUsageStatRepDTO, WebhookEventRepDTO, TenantWebhookRepDTO, CreateWebhookReqDTO, UpdateWebhookReqDTO, WebhookDeliveryLogRepDTO } from '@/types/apiIntegration'
 
-export type { TenantApiKeyRepDTO, ApiKeyCreatedRepDTO, TenantApiUsageStatRepDTO, WebhookEventRepDTO, TenantWebhookRepDTO, WebhookDeliveryLogRepDTO, CreateApiKeyReqDTO, CreateWebhookReqDTO }
+export type { TenantApiKeyRepDTO, ApiKeyCreatedRepDTO, TenantApiUsageStatRepDTO, WebhookEventRepDTO, TenantWebhookRepDTO, WebhookDeliveryLogRepDTO, CreateApiKeyReqDTO, CreateWebhookReqDTO, UpdateWebhookReqDTO }
 
 /* ---------- API 密钥 ---------- */
 

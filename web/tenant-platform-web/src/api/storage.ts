@@ -3,7 +3,7 @@ import { get, post, put, del } from '@/utils/http'
 import type { PagedResult } from '@/types/base'
 import type { StorageStrategyRepDTO, CreateStorageStrategyReqDTO, UpdateStorageStrategyReqDTO, TenantFileRepDTO, FileAccessPolicyRepDTO, SaveFileAccessPolicyReqDTO } from '@/types/storage'
 
-export type { StorageStrategyRepDTO, TenantFileRepDTO, FileAccessPolicyRepDTO, CreateStorageStrategyReqDTO, SaveFileAccessPolicyReqDTO }
+export type { StorageStrategyRepDTO, TenantFileRepDTO, FileAccessPolicyRepDTO, CreateStorageStrategyReqDTO, UpdateStorageStrategyReqDTO, SaveFileAccessPolicyReqDTO }
 
 /* ---------- 存储策略 ---------- */
 

@@ -185,7 +185,7 @@ const editForm = reactive<UpdateWebhookReqDTO>({
 async function loadData() {
   try {
     const res = await getWebhooks({ Page: 1, PageSize: 20 })
-    gridData.value = res.data!.items
+    gridData.value = res.Data!.Items
   } catch {
     // 接口未就绪时保持空列表
   }

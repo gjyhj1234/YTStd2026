@@ -145,7 +145,7 @@ async function loadData() {
       Keyword: filterKeyword.value || undefined,
       OperationResult: filterResult.value || undefined,
     })
-    gridData.value = res.data!.items
+    gridData.value = res.Data!.Items
   } catch {
     // 接口未就绪时保持空列表
   }
@@ -154,7 +154,7 @@ async function loadData() {
 async function onRowClick(e: { data: OperationLogRepDTO }) {
   try {
     const res = await getOperationLog(e.data.Id)
-    detailData.value = res.data!
+    detailData.value = res.Data!
     showDetail.value = true
   } catch {
     // 错误由 http 层统一处理

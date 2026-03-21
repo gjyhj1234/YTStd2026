@@ -45,13 +45,13 @@ export const useAuthStore = defineStore('auth', () => {
   /** 登录 */
   async function login(username: string, password: string) {
     const res = await apiLogin({ Username: username, Password: password })
-    saveLoginData(res.data!)
+    saveLoginData(res.Data!)
   }
 
   /** 刷新令牌 */
   async function refresh() {
     const res = await apiRefresh({ Token: token.value ?? undefined })
-    saveLoginData(res.data!)
+    saveLoginData(res.Data!)
   }
 
   /** 登出 */

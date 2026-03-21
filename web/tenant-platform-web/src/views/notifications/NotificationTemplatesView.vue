@@ -246,7 +246,7 @@ async function loadData() {
       Keyword: filterKeyword.value || undefined,
       Channel: filterChannel.value || undefined,
     })
-    gridData.value = res.data!.items
+    gridData.value = res.Data!.Items
   } catch {
     // 接口未就绪时保持空列表
   }

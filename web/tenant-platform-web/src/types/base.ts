@@ -1,8 +1,8 @@
 /** 统一响应结构 */
 export interface ApiResult<T = void> {
-  code: number
-  message: string
-  data?: T
+  Code: number
+  Message: string
+  Data?: T
 }
 
 /** 分页请求参数 */
@@ -15,9 +15,9 @@ export interface PagedRequest {
 
 /** 分页响应结构 */
 export interface PagedResult<T> {
-  items: T[]
-  total: number
-  page: number
-  pageSize: number
-  totalPages: number
+  Items: T[]
+  Total: number
+  Page: number
+  PageSize: number
+  TotalPages: number
 }

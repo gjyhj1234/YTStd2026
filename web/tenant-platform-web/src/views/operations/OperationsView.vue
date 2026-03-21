@@ -120,7 +120,7 @@ async function loadDailyStats() {
       PageSize: 20,
       TenantRefId: filterTenantRefId.value,
     })
-    dailyStatsData.value = res.data!.items
+    dailyStatsData.value = res.Data!.Items
   } catch {
     // 接口未就绪时保持空列表
   }
@@ -129,7 +129,7 @@ async function loadDailyStats() {
 async function loadMetrics() {
   try {
     const res = await getMonitorMetrics({ Page: 1, PageSize: 20 })
-    metricsData.value = res.data!.items
+    metricsData.value = res.Data!.Items
   } catch {
     // 接口未就绪时保持空列表
   }
