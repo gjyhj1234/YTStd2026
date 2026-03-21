@@ -3,7 +3,7 @@ import { get, post } from '@/utils/http'
 import type { PagedResult } from '@/types/base'
 import type { TenantTagRepDTO, CreateTenantTagReqDTO, TagBindReqDTO } from '@/types/tenantInfo'
 
-export type { TenantTagRepDTO, CreateTenantTagReqDTO }
+export type { TenantTagRepDTO, CreateTenantTagReqDTO, TagBindReqDTO }
 
 export function getTenantTags(params: Record<string, string | number | undefined>) {
   return get<PagedResult<TenantTagRepDTO>>('/api/tenant-tags', params)

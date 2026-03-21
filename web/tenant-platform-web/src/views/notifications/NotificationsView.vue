@@ -206,7 +206,7 @@ async function loadData() {
       Channel: filterChannel.value || undefined,
       SendStatus: filterStatus.value || undefined,
     })
-    gridData.value = res.data!.items
+    gridData.value = res.Data!.Items
   } catch {
     // 接口未就绪时保持空列表
   }

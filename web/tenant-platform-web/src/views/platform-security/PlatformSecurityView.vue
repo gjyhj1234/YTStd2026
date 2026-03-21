@@ -59,7 +59,7 @@
         <div class="security-card-body">
           <div class="security-item">
             <span class="security-label">启用状态</span>
-            <StatusTag :status="securityInfo.ipWhitelist.enabled ? 'Active' : 'Disabled'" />
+            <StatusTag :status="securityInfo.ipWhitelist.Enabled ? 'Active' : 'Disabled'" />
           </div>
           <div class="security-item">
             <span class="security-label">白名单条目数</span>
@@ -81,7 +81,7 @@
         <div class="security-card-body">
           <div class="security-item">
             <span class="security-label">启用状态</span>
-            <StatusTag :status="securityInfo.mfa.enabled ? 'Active' : 'Disabled'" />
+            <StatusTag :status="securityInfo.mfa.Enabled ? 'Active' : 'Disabled'" />
           </div>
           <div class="security-item">
             <span class="security-label">强制要求</span>

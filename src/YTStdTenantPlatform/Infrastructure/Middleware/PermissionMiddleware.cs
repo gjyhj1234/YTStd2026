@@ -53,10 +53,9 @@ namespace YTStdTenantPlatform.Infrastructure.Middleware
                     static (writer, traceId) =>
                     {
                         writer.WriteStartObject();
-                        writer.WriteBoolean("success", false);
-                        writer.WriteString("message", "未认证: 请先登录");
-                        writer.WriteNull("data");
-                        writer.WriteString("traceId", traceId);
+                        writer.WriteNumber("Code", 2006);
+                        writer.WriteString("Message", "auth.token_invalid");
+                        writer.WriteNull("Data");
                         writer.WriteEndObject();
                     },
                     context.RequestAborted);
@@ -91,10 +90,9 @@ namespace YTStdTenantPlatform.Infrastructure.Middleware
                     static (writer, traceId) =>
                     {
                         writer.WriteStartObject();
-                        writer.WriteBoolean("success", false);
-                        writer.WriteString("message", "权限不足: 您没有执行此操作的权限");
-                        writer.WriteNull("data");
-                        writer.WriteString("traceId", traceId);
+                        writer.WriteNumber("Code", 1007);
+                        writer.WriteString("Message", "common.forbidden");
+                        writer.WriteNull("Data");
                         writer.WriteEndObject();
                     },
                     context.RequestAborted);

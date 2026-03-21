@@ -104,11 +104,11 @@ async function loadConfig() {
   try {
     const res = await getTenantSystemConfig(tenantRefId.value)
     Object.assign(configForm, {
-      SystemName: res.data!.SystemName,
-      LogoUrl: res.data!.LogoUrl,
-      SystemTheme: res.data!.SystemTheme,
-      DefaultLanguage: res.data!.DefaultLanguage,
-      DefaultTimezone: res.data!.DefaultTimezone,
+      SystemName: res.Data!.SystemName,
+      LogoUrl: res.Data!.LogoUrl,
+      SystemTheme: res.Data!.SystemTheme,
+      DefaultLanguage: res.Data!.DefaultLanguage,
+      DefaultTimezone: res.Data!.DefaultTimezone,
     })
     configLoaded.value = true
   } catch {

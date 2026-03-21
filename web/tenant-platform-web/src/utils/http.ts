@@ -1,4 +1,4 @@
-import { getCurrentLocale, translateText } from '@/locales'
+import { getCurrentLocale } from '@/locales'
 import { ApiError, handleApiError } from '@/utils/errorHandler'
 import type { ApiResult, PagedResult } from '@/types/base'
 
@@ -36,8 +36,8 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<ApiRe
   }
 
   const result: ApiResult<T> = await response.json()
-  if (result.code !== 0) {
-    const error = new ApiError(result.code, result.message)
+  if (result.Code !== 0) {
+    const error = new ApiError(result.Code, result.Message)
     handleApiError(error)
     throw error
   }

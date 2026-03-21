@@ -173,7 +173,7 @@ const createForm = reactive<CreateTenantDomainReqDTO>({
 async function loadData() {
   try {
     const res = await getTenantDomains()
-    const all = res.data!
+    const all = res.Data!
     const kw = filterKeyword.value?.toLowerCase()
     gridData.value = kw ? all.filter(d => d.Domain.toLowerCase().includes(kw)) : all
   } catch {

@@ -104,8 +104,8 @@
         <div style="background: #fff7e6; border: 1px solid #ffd591; border-radius: 4px; padding: 12px; margin-bottom: 16px; color: #d46b08;">
           ⚠️ <strong>请立即复制并妥善保存 Secret Key！</strong>此密钥仅在创建时显示一次，关闭后将无法再次查看。
         </div>
-        <p><strong>Access Key：</strong>{{ createdResult.accessKey }}</p>
-        <p><strong>Secret Key：</strong>{{ createdResult.secretKey }}</p>
+        <p><strong>Access Key：</strong>{{ createdResult.AccessKey }}</p>
+        <p><strong>Secret Key：</strong>{{ createdResult.SecretKey }}</p>
       </div>
     </DxPopup>
 
@@ -167,7 +167,7 @@ const createdResult = reactive<ApiKeyCreatedRepDTO>({
 async function loadData() {
   try {
     const res = await getApiKeys({ Page: 1, PageSize: 20 })
-    gridData.value = res.data!.items
+    gridData.value = res.Data!.Items
   } catch {
     // 接口未就绪时保持空列表
   }
@@ -178,7 +178,7 @@ async function handleCreate() {
     const res = await createApiKey(createForm)
     showCreatePopup.value = false
     Object.assign(createForm, { TenantRefId: 0, KeyName: '', ExpiresAt: '' })
-    Object.assign(createdResult, res.data!)
+    Object.assign(createdResult, res.Data!)
     showSecretPopup.value = true
     await loadData()
   } catch {

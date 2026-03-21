@@ -3,7 +3,7 @@ import { get, post, put } from '@/utils/http'
 import type { PagedResult } from '@/types/base'
 import type { SaasPackageRepDTO, CreateSaasPackageReqDTO, UpdateSaasPackageReqDTO, SaasPackageVersionRepDTO, CreateSaasPackageVersionReqDTO, SaasPackageCapabilityRepDTO, SaveSaasPackageCapabilityReqDTO } from '@/types/saasPackage'
 
-export type { SaasPackageRepDTO, SaasPackageVersionRepDTO, SaasPackageCapabilityRepDTO, CreateSaasPackageReqDTO, CreateSaasPackageVersionReqDTO, SaveSaasPackageCapabilityReqDTO }
+export type { SaasPackageRepDTO, SaasPackageVersionRepDTO, SaasPackageCapabilityRepDTO, CreateSaasPackageReqDTO, UpdateSaasPackageReqDTO, CreateSaasPackageVersionReqDTO, SaveSaasPackageCapabilityReqDTO }
 
 /* ---------- 套餐 ---------- */
 

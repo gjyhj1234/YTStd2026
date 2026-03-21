@@ -3,7 +3,7 @@ import { get, post, put, del } from '@/utils/http'
 import type { PagedResult } from '@/types/base'
 import type { TenantSystemConfigRepDTO, UpdateTenantSystemConfigReqDTO, TenantFeatureFlagRepDTO, SaveTenantFeatureFlagReqDTO, TenantParameterRepDTO, SaveTenantParameterReqDTO } from '@/types/tenantConfig'
 
-export type { TenantSystemConfigRepDTO, TenantFeatureFlagRepDTO, TenantParameterRepDTO, SaveTenantFeatureFlagReqDTO, SaveTenantParameterReqDTO }
+export type { TenantSystemConfigRepDTO, UpdateTenantSystemConfigReqDTO, TenantFeatureFlagRepDTO, TenantParameterRepDTO, SaveTenantFeatureFlagReqDTO, SaveTenantParameterReqDTO }
 
 /* ---------- 系统配置 ---------- */
 

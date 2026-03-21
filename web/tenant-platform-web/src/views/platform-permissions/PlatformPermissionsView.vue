@@ -82,8 +82,8 @@ interface FlatPermission {
   Name: string
   PermissionType: string
   ParentId: number | null
-  Path: string
-  Method: string
+  Path: string | null
+  Method: string | null
 }
 
 const filterKeyword = ref('')
@@ -169,7 +169,7 @@ function onFilterChanged() {
 async function loadData() {
   try {
     const res = await getPermissions()
-    allData.value = flattenTree(res.data!)
+    allData.value = flattenTree(res.Data!)
     treeData.value = allData.value
   } catch {
     // 接口未就绪时保持空列表

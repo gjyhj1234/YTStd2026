@@ -195,7 +195,7 @@ async function loadData() {
       Page: 1,
       PageSize: 20,
     })
-    gridData.value = res.data!.items
+    gridData.value = res.Data!.Items
   } catch {
     // 接口未就绪时保持空列表
   }
