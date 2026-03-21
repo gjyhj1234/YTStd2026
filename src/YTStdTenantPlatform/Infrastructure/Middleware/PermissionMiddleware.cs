@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using YTStdLogger.Core;
 using YTStdTenantPlatform.Infrastructure.Auth;
 using YTStdTenantPlatform.Infrastructure.Cache;
+using YTStdTenantPlatform.Infrastructure.Serialization;
 
 namespace YTStdTenantPlatform.Infrastructure.Middleware
 {
@@ -46,8 +47,19 @@ namespace YTStdTenantPlatform.Infrastructure.Middleware
             {
                 context.Response.StatusCode = 401;
                 context.Response.ContentType = "application/json; charset=utf-8";
-                await context.Response.WriteAsync(
-                    "{\"success\":false,\"error\":\"未认证\",\"message\":\"请先登录\"}");
+                await Utf8JsonWriterHelper.WriteResponseAsync(
+                    context.Response,
+                    context.TraceIdentifier,
+                    static (writer, traceId) =>
+                    {
+                        writer.WriteStartObject();
+                        writer.WriteBoolean("success", false);
+                        writer.WriteString("message", "未认证: 请先登录");
+                        writer.WriteNull("data");
+                        writer.WriteString("traceId", traceId);
+                        writer.WriteEndObject();
+                    },
+                    context.RequestAborted);
                 return;
             }
 
@@ -73,8 +85,19 @@ namespace YTStdTenantPlatform.Infrastructure.Middleware
 
                 context.Response.StatusCode = 403;
                 context.Response.ContentType = "application/json; charset=utf-8";
-                await context.Response.WriteAsync(
-                    "{\"success\":false,\"error\":\"权限不足\",\"message\":\"您没有执行此操作的权限\"}");
+                await Utf8JsonWriterHelper.WriteResponseAsync(
+                    context.Response,
+                    context.TraceIdentifier,
+                    static (writer, traceId) =>
+                    {
+                        writer.WriteStartObject();
+                        writer.WriteBoolean("success", false);
+                        writer.WriteString("message", "权限不足: 您没有执行此操作的权限");
+                        writer.WriteNull("data");
+                        writer.WriteString("traceId", traceId);
+                        writer.WriteEndObject();
+                    },
+                    context.RequestAborted);
                 return;
             }
 

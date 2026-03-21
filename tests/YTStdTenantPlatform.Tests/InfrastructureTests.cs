@@ -102,6 +102,29 @@ namespace YTStdTenantPlatform.Tests
             Assert.NotEqual(token1, token2);
         }
 
+        [Fact]
+        public void PlatformAuthHandler_TryResolveToken_RoundTripsUserInfo()
+        {
+            PlatformCacheWarmer.ClearAll();
+            PlatformAuthHandler.SetTokenSecret("test-secret-key-for-unit-tests");
+            var token = PlatformAuthHandler.GenerateToken(12, "tester");
+
+            var user = PlatformAuthHandler.TryResolveToken(token, "trace-token");
+
+            Assert.NotNull(user);
+            Assert.Equal(12, user!.UserId);
+            Assert.Equal("tester", user.Username);
+            Assert.Equal("trace-token", user.TraceId);
+        }
+
+        [Fact]
+        public void PlatformCacheWarmer_ClearAll_ClearsRoleCodePermissionCache()
+        {
+            PlatformCacheWarmer.ClearAll();
+
+            Assert.Empty(PlatformCacheWarmer.RoleCodePermissionCache);
+        }
+
         // ============================================================
         // HealthCheck 测试
         // ============================================================

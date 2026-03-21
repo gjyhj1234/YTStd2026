@@ -85,14 +85,14 @@ namespace YTStdTenantPlatform.Infrastructure.Cache
         /// <summary>刷新全部缓存</summary>
         public static async ValueTask RefreshAllAsync()
         {
-            Logger.Debug(0, 0, "[PlatformCacheCoordinator] 执行全量缓存刷新");
+            Logger.Debug(0, 0, () => "[PlatformCacheCoordinator] 执行全量缓存刷新");
             await PlatformCacheWarmer.WarmUpAsync(0, 0);
         }
 
         /// <summary>刷新权限相关缓存（权限快照 + 角色权限映射）</summary>
         public static async ValueTask InvalidatePermissionsAsync()
         {
-            Logger.Debug(0, 0, "[PlatformCacheCoordinator] 刷新权限缓存");
+            Logger.Debug(0, 0, () => "[PlatformCacheCoordinator] 刷新权限缓存");
             await PlatformCacheWarmer.WarmUpPermissionsAsync(0, 0);
             await PlatformCacheWarmer.WarmUpRolePermissionsAsync(0, 0);
         }
@@ -100,21 +100,21 @@ namespace YTStdTenantPlatform.Infrastructure.Cache
         /// <summary>刷新用户角色缓存</summary>
         public static async ValueTask InvalidateUserRolesAsync()
         {
-            Logger.Debug(0, 0, "[PlatformCacheCoordinator] 刷新用户角色缓存");
+            Logger.Debug(0, 0, () => "[PlatformCacheCoordinator] 刷新用户角色缓存");
             await PlatformCacheWarmer.WarmUpUserRolesAsync(0, 0);
         }
 
         /// <summary>刷新功能开关缓存</summary>
         public static async ValueTask InvalidateFeatureFlagsAsync()
         {
-            Logger.Debug(0, 0, "[PlatformCacheCoordinator] 刷新功能开关缓存");
+            Logger.Debug(0, 0, () => "[PlatformCacheCoordinator] 刷新功能开关缓存");
             await PlatformCacheWarmer.WarmUpFeatureFlagsAsync(0, 0);
         }
 
         /// <summary>刷新平台配置缓存</summary>
         public static async ValueTask InvalidateConfigAsync()
         {
-            Logger.Debug(0, 0, "[PlatformCacheCoordinator] 刷新平台配置缓存");
+            Logger.Debug(0, 0, () => "[PlatformCacheCoordinator] 刷新平台配置缓存");
             await PlatformCacheWarmer.WarmUpConfigAsync(0, 0);
         }
 

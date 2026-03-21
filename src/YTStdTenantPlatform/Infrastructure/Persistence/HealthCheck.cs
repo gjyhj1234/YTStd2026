@@ -1,5 +1,7 @@
 using System;
 using System.Threading.Tasks;
+using Npgsql;
+using YTStdAdo;
 using YTStdLogger.Core;
 
 namespace YTStdTenantPlatform.Infrastructure.Persistence
@@ -10,17 +12,37 @@ namespace YTStdTenantPlatform.Infrastructure.Persistence
         /// <summary>执行数据库连通性检查</summary>
         public static async ValueTask<HealthCheckResult> CheckDatabaseAsync()
         {
+            NpgsqlConnection? conn = null;
             try
             {
-                // 骨架实现：通过 DB.GetConnection 验证连接池可用
-                // 实际实现应执行 SELECT 1 验证连接有效性
-                Logger.Debug(0, 0, "[HealthCheck] 数据库连通性检查");
-                return new HealthCheckResult(true, "数据库连接正常");
+                conn = DB.GetConnection();
+                await using var cmd = new NpgsqlCommand("SELECT 1", conn);
+                var scalar = await cmd.ExecuteScalarAsync().ConfigureAwait(false);
+                if (scalar is int intValue && intValue == 1)
+                {
+                    Logger.Debug(0, 0, () => "[HealthCheck] 数据库连通性检查");
+                    return new HealthCheckResult(true, "数据库连接正常");
+                }
+
+                if (scalar is long longValue && longValue == 1L)
+                {
+                    Logger.Debug(0, 0, () => "[HealthCheck] 数据库连通性检查");
+                    return new HealthCheckResult(true, "数据库连接正常");
+                }
+
+                return new HealthCheckResult(false, "数据库返回了异常结果");
             }
             catch (Exception ex)
             {
                 Logger.Error(0, 0, "[HealthCheck] 数据库连通性检查失败: " + ex.Message);
                 return new HealthCheckResult(false, "数据库连接异常: " + ex.Message);
+            }
+            finally
+            {
+                if (conn != null)
+                {
+                    DB.ReturnConnection(conn);
+                }
             }
         }
 

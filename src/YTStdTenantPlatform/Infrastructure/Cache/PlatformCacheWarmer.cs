@@ -17,6 +17,10 @@ namespace YTStdTenantPlatform.Infrastructure.Cache
         private static volatile IReadOnlyDictionary<long, IReadOnlyList<string>> _rolePermissionCache =
             new Dictionary<long, IReadOnlyList<string>>();
 
+        /// <summary>角色编码-权限缓存（RoleCode → PermissionCode 集合）</summary>
+        private static volatile IReadOnlyDictionary<string, IReadOnlyList<string>> _roleCodePermissionCache =
+            new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
+
         /// <summary>用户-角色缓存（UserId → RoleCode 集合）</summary>
         private static volatile IReadOnlyDictionary<long, IReadOnlyList<string>> _userRoleCache =
             new Dictionary<long, IReadOnlyList<string>>();
@@ -33,6 +37,9 @@ namespace YTStdTenantPlatform.Infrastructure.Cache
 
         /// <summary>获取角色-权限缓存</summary>
         public static IReadOnlyDictionary<long, IReadOnlyList<string>> RolePermissionCache => _rolePermissionCache;
+
+        /// <summary>获取角色编码-权限缓存</summary>
+        public static IReadOnlyDictionary<string, IReadOnlyList<string>> RoleCodePermissionCache => _roleCodePermissionCache;
 
         /// <summary>获取用户-角色缓存</summary>
         public static IReadOnlyDictionary<long, IReadOnlyList<string>> UserRoleCache => _userRoleCache;
@@ -80,8 +87,12 @@ namespace YTStdTenantPlatform.Infrastructure.Cache
             var (rpResult, rpData) = await PlatformRolePermissionCRUD.GetListAsync(tenantId, userId);
             if (!rpResult.Success || rpData == null) return;
 
+            var (roleResult, roleData) = await PlatformRoleCRUD.GetListAsync(tenantId, userId);
+            if (!roleResult.Success || roleData == null) return;
+
             var permCache = _permissionCache;
             var dict = new Dictionary<long, IReadOnlyList<string>>();
+            var roleCodeDict = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
 
             // 先收集每个 RoleId 的 PermissionId 列表
             var rolePermIds = new Dictionary<long, List<long>>();
@@ -102,6 +113,12 @@ namespace YTStdTenantPlatform.Infrastructure.Cache
                 idToCode[kvp.Value.Id] = kvp.Key;
             }
 
+            var roleIdToCode = new Dictionary<long, string>();
+            foreach (var role in roleData)
+            {
+                roleIdToCode[role.Id] = role.Code;
+            }
+
             foreach (var kvp in rolePermIds)
             {
                 var codes = new List<string>(kvp.Value.Count);
@@ -113,9 +130,14 @@ namespace YTStdTenantPlatform.Infrastructure.Cache
                     }
                 }
                 dict[kvp.Key] = codes;
+                if (roleIdToCode.TryGetValue(kvp.Key, out var roleCode))
+                {
+                    roleCodeDict[roleCode] = codes;
+                }
             }
 
             _rolePermissionCache = dict;
+            _roleCodePermissionCache = roleCodeDict;
             Logger.Info(tenantId, userId,
                 "[PlatformCacheWarmer] 角色-权限缓存已加载, 角色数=" + dict.Count);
         }
@@ -223,6 +245,7 @@ namespace YTStdTenantPlatform.Infrastructure.Cache
         {
             _permissionCache = new Dictionary<string, PlatformPermission>();
             _rolePermissionCache = new Dictionary<long, IReadOnlyList<string>>();
+            _roleCodePermissionCache = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
             _userRoleCache = new Dictionary<long, IReadOnlyList<string>>();
             _featureFlagCache = new Dictionary<string, bool>();
             _configSnapshot = null;

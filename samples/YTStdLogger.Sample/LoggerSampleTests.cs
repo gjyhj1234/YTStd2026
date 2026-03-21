@@ -46,8 +46,8 @@ public class LoggerSampleTests
             Logger.Fatal(1, 100, "致命错误示例");
             Logger.Error(1, 100, "错误日志示例");
             Logger.Warn(1, 100, "警告日志示例");
-            Logger.Info(1, 100, "信息日志示例");
-            Logger.Debug(1, 100, "调试日志示例");
+            Logger.Info(1, 100, () => "信息日志示例");
+            Logger.Debug(1, 100, () => "调试日志示例");
 
             // 延迟求值重载（仅在等级启用时才执行工厂方法）
             Logger.Debug(1, 100, () => "延迟求值日志: " + DateTime.Now.ToString());
@@ -93,14 +93,14 @@ public class LoggerSampleTests
             Logger.Init(options);
 
             // 全局等级为 Error，Debug 日志不会记录
-            Logger.Debug(1, 100, "此 Debug 不会被记录");
+            Logger.Debug(1, 100, () => "此 Debug 不会被记录");
 
             // 开启租户 1 的 Debug 覆盖
             Logger.EnableTenantDebug(1);
             Assert.True(Logger.IsTenantDebugEnabled(1));
 
             // 现在租户 1 的 Debug 日志会被记录
-            Logger.Debug(1, 100, "租户1的 Debug 日志已开启");
+            Logger.Debug(1, 100, () => "租户1的 Debug 日志已开启");
 
             // 关闭租户 Debug
             bool wasEnabled = Logger.DisableTenantDebug(1);

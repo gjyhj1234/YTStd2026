@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using YTStdLogger.Core;
+using YTStdTenantPlatform.Entity.TenantPlatform;
+using YTStdTenantPlatform.Infrastructure.Serialization;
 
 namespace YTStdTenantPlatform.Infrastructure.Scheduling
 {
@@ -21,16 +24,110 @@ namespace YTStdTenantPlatform.Infrastructure.Scheduling
         /// 执行租户初始化任务。
         /// 查找 status=pending 的 TenantInitializationTask 记录并依次执行。
         /// </summary>
-        public ValueTask ExecuteAsync(CancellationToken cancellationToken)
+        public async ValueTask ExecuteAsync(CancellationToken cancellationToken)
         {
-            // 骨架实现：后续阶段将接入实际的初始化任务执行逻辑
-            // 1. 查询 TenantInitializationTask 表中 status=pending 的记录
-            // 2. 按 created_at 排序逐条执行
-            // 3. 更新任务状态为 running → completed / failed
-            // 4. 记录执行日志
+            Logger.Debug(0, 0, () => "[TenantInitializationTask] 检查待处理的租户初始化任务");
 
-            Logger.Debug(0, 0, "[TenantInitializationTask] 检查待处理的租户初始化任务");
-            return ValueTask.CompletedTask;
+            var (taskResult, tasks) = await YTStdTenantPlatform.Entity.TenantPlatform.TenantInitializationTaskCRUD.GetListAsync(0, 0);
+            if (!taskResult.Success || tasks == null || tasks.Count == 0)
+            {
+                return;
+            }
+
+            var (tenantResult, tenants) = await TenantCRUD.GetListAsync(0, 0);
+            if (!tenantResult.Success || tenants == null)
+            {
+                Logger.Error(0, 0, "[TenantInitializationTask] 查询租户失败: " + tenantResult.ErrorMessage);
+                return;
+            }
+
+            for (int i = 0; i < tasks.Count; i++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var task = tasks[i];
+                if (!string.Equals(task.TaskStatus, "pending", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                await ProcessTaskAsync(task, tenants);
+            }
+        }
+
+        private static async ValueTask ProcessTaskAsync(
+            YTStdTenantPlatform.Entity.TenantPlatform.TenantInitializationTask task,
+            IReadOnlyList<Tenant> tenants)
+        {
+            var now = DateTime.UtcNow;
+            task.TaskStatus = "running";
+            task.StartedAt = now;
+            task.Details = BuildTaskDetails(task.TaskType, "running", "初始化任务开始执行");
+            await YTStdTenantPlatform.Entity.TenantPlatform.TenantInitializationTaskCRUD.UpdateAsync(0, 0, task);
+
+            Tenant? tenant = null;
+            for (int i = 0; i < tenants.Count; i++)
+            {
+                if (tenants[i].Id == task.TenantRefId && tenants[i].DeletedAt == null)
+                {
+                    tenant = tenants[i];
+                    break;
+                }
+            }
+
+            if (tenant == null)
+            {
+                task.TaskStatus = "failed";
+                task.FinishedAt = DateTime.UtcNow;
+                task.Details = BuildTaskDetails(task.TaskType, "failed", "关联租户不存在");
+                await YTStdTenantPlatform.Entity.TenantPlatform.TenantInitializationTaskCRUD.UpdateAsync(0, 0, task);
+                return;
+            }
+
+            var tenantUpdated = false;
+            if (string.IsNullOrEmpty(tenant.SchemaName))
+            {
+                tenant.SchemaName = "tenant_" + tenant.Id;
+                tenantUpdated = true;
+            }
+
+            if (string.IsNullOrEmpty(tenant.DatabaseName) && !string.Equals(tenant.IsolationMode, "shared_database", StringComparison.OrdinalIgnoreCase))
+            {
+                tenant.DatabaseName = "tenant_" + tenant.Id;
+                tenantUpdated = true;
+            }
+
+            if (string.IsNullOrEmpty(tenant.DefaultDomain))
+            {
+                tenant.DefaultDomain = tenant.TenantCode.ToLowerInvariant() + ".platform.local";
+                tenantUpdated = true;
+            }
+
+            if (tenantUpdated)
+            {
+                tenant.UpdatedAt = DateTime.UtcNow;
+                await TenantCRUD.UpdateAsync(0, 0, tenant);
+            }
+
+            task.TaskStatus = "success";
+            task.FinishedAt = DateTime.UtcNow;
+            task.Details = BuildTaskDetails(task.TaskType, "success", "初始化任务执行完成");
+            await YTStdTenantPlatform.Entity.TenantPlatform.TenantInitializationTaskCRUD.UpdateAsync(0, 0, task);
+        }
+
+        private static string BuildTaskDetails(string taskType, string status, string message)
+        {
+            return Utf8JsonWriterHelper.BuildString(
+                (taskType, status, message, handledAt: DateTime.UtcNow),
+                static (writer, state) =>
+                {
+                    writer.WriteStartObject();
+                    writer.WriteString("taskType", state.taskType);
+                    writer.WriteString("status", state.status);
+                    writer.WriteString("message", state.message);
+                    writer.WriteString("handledAt", state.handledAt);
+                    writer.WriteEndObject();
+                });
         }
     }
 }

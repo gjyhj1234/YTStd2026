@@ -59,6 +59,8 @@ internal static class CrudEmitter
         sb.AppendLine();
         EmitGetAsyncPartial(sb, model);
         sb.AppendLine();
+        EmitIndexMethods(sb, model);
+        sb.AppendLine();
         EmitGetListAsync(sb, model);
 
         sb.AppendLine("    }");
@@ -97,7 +99,7 @@ internal static class CrudEmitter
         var tn = model.TableName;
         var pk = model.PrimaryKey;
 
-        // Build column and parameter lists (excluding auto-generated PK)
+        // Build column and parameter lists
         var insertCols = model.Columns;
         var colNames = string.Join(",\\n                ", insertCols.Select(c => "\\\"" + c.ColumnName + "\\\""));
         var paramNames = string.Join(",\\n                ", insertCols.Select(c => "@" + c.ColumnName));
@@ -121,8 +123,6 @@ internal static class CrudEmitter
         else
             sb.AppendLine($"                \")\";");
 
-        sb.AppendLine();
-        sb.AppendLine($"            Logger.Debug(tenantId, userId, () => $\"[{cn}CRUD.InsertAsync] SQL={{sql}}\");");
         sb.AppendLine();
 
         // Build params
@@ -155,11 +155,11 @@ internal static class CrudEmitter
     {
         var cn = model.ClassName;
         var tn = model.TableName;
-        var insertCols = model.Columns;
         var pk = model.PrimaryKey;
+        var insertCols = model.Columns;
 
         sb.AppendLine($"        /// <summary>插入 {cn}（事务变体，不提交）</summary>");
-        sb.AppendLine($"        public static ValueTask<DbInsResult> InsertTxAsync(");
+        sb.AppendLine($"        public static async ValueTask<DbInsResult> InsertTxAsync(");
         sb.AppendLine($"            NpgsqlBatch batch, int tenantId, long userId, {cn} entity)");
         sb.AppendLine("        {");
         sb.AppendLine($"            Logger.Debug(tenantId, userId, () => \"[{cn}CRUD.InsertTxAsync] 进入方法\");");
@@ -189,7 +189,7 @@ internal static class CrudEmitter
         }
         sb.AppendLine();
 
-        sb.AppendLine("            return DB.InsertTxAsync(batch, sql, parameters, tenantId, userId);");
+        sb.AppendLine("            return await DB.InsertTxAsync(batch, sql, parameters, tenantId, userId);");
         sb.AppendLine("        }");
     }
 
@@ -482,7 +482,7 @@ internal static class CrudEmitter
     {
         if (EntityGenerator.NeedsGenericReader(col))
         {
-            return $"reader.GetFieldValue<{EntityGenerator.GetClrTypeForCode(col)}>({ordinal})";
+            return "reader.GetFieldValue<" + EntityGenerator.GetClrTypeForCode(col) + ">(" + ordinal + ")";
         }
         return $"reader.{EntityGenerator.GetReaderMethod(col)}({ordinal})";
     }
@@ -519,7 +519,7 @@ internal static class CrudEmitter
     {
         if (EntityGenerator.NeedsGenericReader(col))
         {
-            return $"reader.GetFieldValue<{EntityGenerator.GetClrTypeForCode(col)}>(i)";
+            return "reader.GetFieldValue<" + EntityGenerator.GetClrTypeForCode(col) + ">(i)";
         }
         return $"reader.{EntityGenerator.GetReaderMethod(col)}(i)";
     }
@@ -711,12 +711,267 @@ internal static class CrudEmitter
         sb.AppendLine("        }");
     }
 
+    private static void EmitIndexMethods(StringBuilder sb, EntityModel model)
+    {
+        if (model.Indexes.Count == 0)
+        {
+            return;
+        }
+
+        var emitted = false;
+        for (int i = 0; i < model.Indexes.Count; i++)
+        {
+            var index = model.Indexes[i];
+            var indexColumns = ResolveIndexColumns(model, index);
+            if (indexColumns.Count == 0)
+            {
+                continue;
+            }
+
+            if (emitted)
+            {
+                sb.AppendLine();
+            }
+
+            if (index.IsUnique)
+            {
+                EmitUniqueIndexMethod(sb, model, index, indexColumns);
+            }
+            else
+            {
+                EmitNormalIndexMethod(sb, model, index, indexColumns);
+            }
+
+            emitted = true;
+        }
+    }
+
+    private static void EmitUniqueIndexMethod(StringBuilder sb, EntityModel model, IndexModel index, List<ColumnModel> indexColumns)
+    {
+        var cn = model.ClassName;
+        var methodName = GetIndexMethodName(index.IndexName);
+
+        sb.AppendLine($"        /// <summary>按唯一索引 {index.IndexName} 查询 {cn}，返回单个实体</summary>");
+        sb.AppendLine($"        public static async ValueTask<{cn}?> {methodName}(");
+        EmitIndexMethodParameters(sb, indexColumns);
+        sb.AppendLine("        {");
+        sb.AppendLine($"            Logger.Debug(tenantId, userId, () => $\"[{cn}CRUD.{methodName}] 进入方法, columns={{string.Join(\",\", columns)}}\");");
+        sb.AppendLine();
+        EmitIndexMethodBody(sb, model, indexColumns, methodName, true);
+        sb.AppendLine("        }");
+    }
+
+    private static void EmitNormalIndexMethod(StringBuilder sb, EntityModel model, IndexModel index, List<ColumnModel> indexColumns)
+    {
+        var cn = model.ClassName;
+        var methodName = GetIndexMethodName(index.IndexName);
+
+        sb.AppendLine($"        /// <summary>按索引 {index.IndexName} 查询 {cn} 列表</summary>");
+        sb.AppendLine($"        public static async ValueTask<List<{cn}>?> {methodName}(");
+        EmitIndexMethodParameters(sb, indexColumns);
+        sb.AppendLine("        {");
+        sb.AppendLine($"            Logger.Debug(tenantId, userId, () => $\"[{cn}CRUD.{methodName}] 进入方法, columns={{string.Join(\",\", columns)}}\");");
+        sb.AppendLine();
+        EmitIndexMethodBody(sb, model, indexColumns, methodName, false);
+        sb.AppendLine("        }");
+    }
+
+    private static void EmitIndexMethodParameters(StringBuilder sb, List<ColumnModel> indexColumns)
+    {
+        sb.AppendLine("            int tenantId, long userId,");
+        for (int i = 0; i < indexColumns.Count; i++)
+        {
+            var col = indexColumns[i];
+            sb.AppendLine($"            {GetMethodParameterType(col)} {ToCamelCase(col.PropertyName)},");
+        }
+        sb.AppendLine("            params string[] columns)");
+    }
+
+    private static void EmitIndexMethodBody(StringBuilder sb, EntityModel model, List<ColumnModel> indexColumns, string methodName, bool single)
+    {
+        var cn = model.ClassName;
+        var tn = model.TableName;
+        var whereClause = BuildIndexWhereClause(indexColumns);
+
+        sb.AppendLine("            if (columns == null || columns.Length == 0)");
+        sb.AppendLine("            {");
+        sb.AppendLine("                const string sql =");
+        sb.AppendLine("                    \"SELECT \" +");
+        EmitSelectColumnList(sb, model.Columns, "                    ");
+        sb.AppendLine($"                    \"FROM \\\"{tn}\\\" WHERE {whereClause}\";");
+        sb.AppendLine();
+        EmitIndexParameters(sb, indexColumns, "                ", "parameters");
+        sb.AppendLine();
+        sb.AppendLine("                try");
+        sb.AppendLine("                {");
+        sb.AppendLine($"                    var (result, data) = await DB.GetListAsync<{cn}>(sql, parameters, ReadEntity, tenantId, userId);");
+        if (single)
+        {
+            sb.AppendLine("                    var entity = (data != null && data.Count > 0) ? data[0] : null;");
+            sb.AppendLine($"                    Logger.Debug(tenantId, userId, () => $\"[{cn}CRUD.{methodName}] 完成, found={{entity != null}}\");");
+            sb.AppendLine("                    return entity;");
+        }
+        else
+        {
+            sb.AppendLine($"                    Logger.Debug(tenantId, userId, () => $\"[{cn}CRUD.{methodName}] 完成, 记录数={{data?.Count ?? 0}}\");");
+            sb.AppendLine("                    return data;");
+        }
+        sb.AppendLine("                }");
+        sb.AppendLine("                catch (Exception ex)");
+        sb.AppendLine("                {");
+        sb.AppendLine($"                    Logger.Error(tenantId, userId, $\"[{cn}CRUD.{methodName}] 异常: {{ex}}\");");
+        sb.AppendLine("                    throw;");
+        sb.AppendLine("                }");
+        sb.AppendLine("            }");
+        sb.AppendLine();
+        sb.AppendLine("            var quotedCols = new string[columns.Length];");
+        sb.AppendLine("            for (int i = 0; i < columns.Length; i++)");
+        sb.AppendLine("            {");
+        sb.AppendLine("                quotedCols[i] = \"\\\"\" + columns[i] + \"\\\"\";");
+        sb.AppendLine("            }");
+        sb.AppendLine();
+        sb.AppendLine($"            var partialSql = \"SELECT \" + string.Join(\", \", quotedCols) + \" FROM \\\"{tn}\\\" WHERE {whereClause}\";");
+        sb.AppendLine();
+        EmitIndexParameters(sb, indexColumns, "            ", "partialParameters");
+        sb.AppendLine();
+        sb.AppendLine("            try");
+        sb.AppendLine("            {");
+        sb.AppendLine($"                var (result, data) = await DB.GetListAsync<{cn}>(partialSql, partialParameters, ReadEntityPartial, tenantId, userId);");
+        if (single)
+        {
+            sb.AppendLine("                var entity = (data != null && data.Count > 0) ? data[0] : null;");
+            sb.AppendLine($"                Logger.Debug(tenantId, userId, () => $\"[{cn}CRUD.{methodName}] 完成, found={{entity != null}}\");");
+            sb.AppendLine("                return entity;");
+        }
+        else
+        {
+            sb.AppendLine($"                Logger.Debug(tenantId, userId, () => $\"[{cn}CRUD.{methodName}] 完成, 记录数={{data?.Count ?? 0}}\");");
+            sb.AppendLine("                return data;");
+        }
+        sb.AppendLine("            }");
+        sb.AppendLine("            catch (Exception ex)");
+        sb.AppendLine("            {");
+        sb.AppendLine($"                Logger.Error(tenantId, userId, $\"[{cn}CRUD.{methodName}] 异常: {{ex}}\");");
+        sb.AppendLine("                throw;");
+        sb.AppendLine("            }");
+    }
+
+    private static void EmitIndexParameters(StringBuilder sb, List<ColumnModel> indexColumns, string indent, string variableName)
+    {
+        sb.AppendLine($"{indent}var {variableName} = new PgSqlParam[]");
+        sb.AppendLine($"{indent}{{");
+        for (int i = 0; i < indexColumns.Count; i++)
+        {
+            var col = indexColumns[i];
+            var valueExpr = col.IsNullable
+                ? $"(object?){ToCamelCase(col.PropertyName)} ?? DBNull.Value"
+                : ToCamelCase(col.PropertyName);
+            var suffix = i < indexColumns.Count - 1 ? "," : string.Empty;
+            sb.AppendLine($"{indent}    new PgSqlParam(\"@{col.ColumnName}\", {valueExpr}, NpgsqlDbType.{col.NpgsqlDbTypeName}){suffix}");
+        }
+        sb.AppendLine($"{indent}}};");
+    }
+
+    private static List<ColumnModel> ResolveIndexColumns(EntityModel model, IndexModel index)
+    {
+        var result = new List<ColumnModel>(index.Columns.Length);
+        for (int i = 0; i < index.Columns.Length; i++)
+        {
+            var indexColumnName = index.Columns[i];
+            ColumnModel? matched = null;
+            for (int j = 0; j < model.Columns.Count; j++)
+            {
+                var col = model.Columns[j];
+                if (col.ColumnName == indexColumnName)
+                {
+                    matched = col;
+                    break;
+                }
+            }
+
+            if (matched == null)
+            {
+                return new List<ColumnModel>();
+            }
+
+            result.Add(matched);
+        }
+
+        return result;
+    }
+
+    private static string BuildIndexWhereClause(List<ColumnModel> indexColumns)
+    {
+        var sb = new StringBuilder();
+        for (int i = 0; i < indexColumns.Count; i++)
+        {
+            if (i > 0)
+            {
+                sb.Append(" AND ");
+            }
+
+            sb.Append("\\\"");
+            sb.Append(indexColumns[i].ColumnName);
+            sb.Append("\\\" = @");
+            sb.Append(indexColumns[i].ColumnName);
+        }
+
+        return sb.ToString();
+    }
+
+    private static string GetMethodParameterType(ColumnModel col)
+    {
+        var clrType = EntityGenerator.GetClrTypeForCode(col);
+        if (!col.IsNullable)
+        {
+            return clrType;
+        }
+
+        if (clrType.EndsWith("?"))
+        {
+            return clrType;
+        }
+
+        return clrType + "?";
+    }
+
+    private static string GetIndexMethodName(string indexName)
+    {
+        if (string.IsNullOrWhiteSpace(indexName))
+        {
+            return "Index";
+        }
+
+        var result = new StringBuilder(indexName.Length + 1);
+        var first = indexName[0];
+        if (char.IsLetter(first) || first == '_')
+        {
+            result.Append(first);
+        }
+        else
+        {
+            result.Append('_');
+            if (char.IsLetterOrDigit(first))
+            {
+                result.Append(first);
+            }
+        }
+
+        for (int i = 1; i < indexName.Length; i++)
+        {
+            var ch = indexName[i];
+            result.Append(char.IsLetterOrDigit(ch) || ch == '_' ? ch : '_');
+        }
+
+        return result.ToString();
+    }
+
     private static string ToCamelCase(string propertyName)
     {
         if (string.IsNullOrEmpty(propertyName)) return propertyName;
         var camel = char.ToLowerInvariant(propertyName[0]) + propertyName.Substring(1);
-        // Avoid conflict with method parameters tenantId, userId, id, batch
-        if (camel == "tenantId" || camel == "userId" || camel == "id" || camel == "batch")
+        // Avoid conflict with method parameters tenantId, userId, id, batch, columns
+        if (camel == "tenantId" || camel == "userId" || camel == "id" || camel == "batch" || camel == "columns")
             return "field_" + camel;
         return camel;
     }

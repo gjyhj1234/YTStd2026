@@ -176,7 +176,8 @@ dotnet run --project benchmarks/YTStdSqlBuilder.Benchmarks/ -c Release
 
 ## 设计原则
 
-1. **正确性** > 语义完整性 > 安全性 > 可维护性 > 可读性 > 复杂度可控 > 性能 > 易用性
-2. **AOT 友好** — 所有项目均支持 .NET Native AOT 编译
-3. **高性能、低 GC** — 使用 `ref struct`、`Span<T>`、`stackalloc`、`ArrayPool` 等技术
+1. **正确性** > 语义完整性 > 安全性 > 性能 > 可维护性 > 可读性 > 复杂度可控  > 易用性
+2. **AOT 友好** — 所有项目均支持 .NET 10.0 + NativeAOT ，并且要求极致轻量、高性能、低内存、零反射、零动态、零LINQ
+3. **高性能、低 GC** — 使用  `ref struct`、`Span<T>`、`stackalloc`、`ArrayPool` 、`ValueStringBuilder`、`Uft8JsonWriter` 等技术
 4. **PostgreSQL 专用** — 仅适配 PostgreSQL / Npgsql，不做多数据库抽象
+5. 请严格按"生产级顶级标准"**完整可编译的代码**（非伪代码，非demo，非玩具）、测试与设计说明。严禁需求漂移，严禁引入未要求的复杂依赖。
