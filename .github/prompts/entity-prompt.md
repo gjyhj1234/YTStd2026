@@ -82,6 +82,7 @@ Logger.Error(tenantId, userId, $"[InsertAsync] 异常: {ex}");
 | 内存分配 | 最小化——优先栈分配、`Span<T>`、`ArrayPool`、`ref struct` |
 | 日志 | 所有方法必须集成 `Logger.Debug`（使用 `Func<string>` 延迟求值重载） / `Logger.Info` / `Logger.Error` / `Logger.Fatal` |
 | 联合主键 | **禁止**——每表仅允许一个主键字段 |
+| 主键生成 | **禁止**数据库自动分配——业务代码必须显式调用 `DB.GetNextLongIdAsync()` 或 `DB.GetNextIntIdAsync()` 获取 ID 后再调用 InsertAsync |
 | i18n 就绪 | 用户可见错误消息使用常量 key，预留国际化扩展点 |
 | 依赖项目 | YTStdSqlBuilder、YTStdAdo、YTStdLogger.Core、Npgsql |
 
@@ -762,6 +763,11 @@ Environment.FailFast($"[CreateTableIfNotExists] 创建失败, 表名={tableName}
 - 每个操作都有 **非事务**（`XxxAsync`）和**事务**（`XxxTxAsync`）两个变体
 - 每个操作都有**打散参数**和**实体参数**两套重载
 - 所有方法必须在每个执行步骤插入 `Logger.Debug` 调用（使用 `Func<string>` 延迟求值重载，避免不必要的字符串构建开销）
+
+> **⚠️ 主键 ID 生成约束**：CRUD 生成的 `InsertAsync` **不负责自动分配主键 ID**。
+> 业务调用方必须在调用 `InsertAsync` 之前，显式调用 `DB.GetNextLongIdAsync()` 或 `DB.GetNextIntIdAsync()` 获取 ID，
+> 并赋值给实体对象的 `Id` 属性。这是因为事务插入场景中，子表外键常依赖主表 ID，
+> 如果 ID 由 InsertAsync 内部生成，则无法在事务内提前获取主表 ID 供子表使用。
 
 ### 7.1 `InsertAsync` / `InsertTxAsync`
 
@@ -1737,6 +1743,11 @@ internal static class EntityErrors
 ```
 
 后续可通过 i18n 模块（参考 `i18n-prompt.md`）将 key 映射为多语言消息。
+
+> **⚠️ 业务应用层的 i18n 要求更严格**：在业务应用服务（如租户平台等）中，
+> 所有 `ApiResult.Fail(...)` 返回的消息参数必须使用统一定义在 `Messages.cs` 中的常量键
+>（格式：`"module.action_description"`），**禁止硬编码中文字符串**。
+> 详见 `tenant-platform-backend-prompt.md` 第 6.1 节。
 
 ---
 

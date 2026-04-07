@@ -204,6 +204,126 @@ src/YTStdTenantPlatform/
 - 所有公开类型、DTO、Endpoint 注册方法、应用服务方法都必须补齐**中文 XML 注释**，确保前端 AI 能稳定识别接口用途和字段语义。
 - 需要为前端提供清晰的接口语义描述：请求用途、关键参数、返回结构、分页字段、状态字段含义。
 
+### 4.2.1 主键 ID 显式生成（强制要求）
+
+**所有新建数据记录的操作，必须在调用 `InsertAsync` 之前，显式调用 `DB.GetNextLongIdAsync()` 或 `DB.GetNextIntIdAsync()` 获取主键 ID，并赋值给实体对象。**
+
+- 主键 ID 不能由 CRUD 生成器自动分配（如数据库 SERIAL/BIGSERIAL）。
+- 事务插入常依赖主表 ID（例如：先插入主表获取 ID，再将 ID 赋值给子表的外键字段），因此业务代码必须显式获取并设置 ID。
+- 所有实体的 ID 字段类型为 `long`，统一使用 `DB.GetNextLongIdAsync()`。
+
+**正确示例：**
+
+```csharp
+// 创建记录前必须显式获取 ID
+var entity = new SaasPackage { ... };
+entity.Id = await DB.GetNextLongIdAsync();  // ← 必须在 InsertAsync 之前
+var insResult = await SaasPackageCRUD.InsertAsync(tenantId, operatorId, entity);
+```
+
+**在循环中创建子记录时同样适用：**
+
+```csharp
+foreach (var permId in req.PermissionIds)
+{
+    var rp = new PlatformRolePermission { RoleId = roleId, PermissionId = permId, ... };
+    rp.Id = await DB.GetNextLongIdAsync();  // ← 每条子记录都需要
+    await PlatformRolePermissionCRUD.InsertAsync(tenantId, operatorId, rp);
+}
+```
+
+**需要引入命名空间：** `using YTStdAdo;`
+
+### 4.2.2 唯一性校验与 check-exists 接口（强制要求）
+
+**所有包含唯一索引的实体，在创建和更新时必须进行唯一性校验，并且必须提供对应的 check-exists 接口供前端调用。**
+
+#### 唯一性校验规则
+
+1. **创建操作**：在 `InsertAsync` 之前，查询已有数据，判断唯一字段是否已存在。若存在，返回明确的错误码和消息键。
+2. **更新操作**：若更新了唯一字段值，同样需要校验（排除自身记录：`excludeId != null && item.Id != excludeId`）。
+3. **错误码/消息键**：统一定义在 `ErrorCodes.cs` 和 `Messages.cs` 中，使用 `18xxx` 段错误码，消息使用 i18n 键格式（如 `"user.username_exists"`）。
+
+**正确示例（服务层唯一性校验）：**
+
+```csharp
+// 创建用户前检查用户名唯一性
+var (existResult, existData) = await PlatformUserCRUD.GetListAsync(tenantId, operatorId);
+if (existResult.Success && existData != null)
+{
+    foreach (var existing in existData)
+    {
+        if (existing.DeletedAt == null &&
+            string.Equals(existing.Username, req.Username, StringComparison.OrdinalIgnoreCase))
+            return ApiResult<long>.Fail(ErrorCodes.UserUsernameExists, Messages.UserUsernameExists);
+    }
+}
+```
+
+#### check-exists 接口规范
+
+为每个包含唯一索引的实体提供 `GET /api/{resource}/check-{field}-exists` 接口：
+
+- 路由格式：`GET /api/{resource}/check-{field}-exists?{field}={value}&excludeId={id}`
+- 返回类型：`ApiResult<bool>`，`Data = true` 表示已存在，`Data = false` 表示不存在
+- `excludeId` 可选参数，用于更新时排除当前记录
+
+**正确示例（服务层 CheckExists 方法）：**
+
+```csharp
+/// <summary>检查用户名是否已存在</summary>
+public static async ValueTask<ApiResult<bool>> CheckUsernameExistsAsync(
+    int tenantId, long operatorId, string username, long? excludeId = null)
+{
+    var (result, data) = await PlatformUserCRUD.GetListAsync(tenantId, operatorId);
+    if (!result.Success || data == null) return ApiResult<bool>.Ok(false);
+    foreach (var item in data)
+    {
+        if (item.DeletedAt == null &&
+            string.Equals(item.Username, username, StringComparison.OrdinalIgnoreCase) &&
+            (excludeId == null || item.Id != excludeId.Value))
+            return ApiResult<bool>.Ok(true);
+    }
+    return ApiResult<bool>.Ok(false);
+}
+```
+
+**正确示例（Endpoint 层注册）：**
+
+```csharp
+group.MapGet("/check-username-exists", async (HttpContext ctx, string username, long? excludeId) =>
+{
+    var user = GetCurrentUser(ctx);
+    var result = await PlatformUserAppService.CheckUsernameExistsAsync(0, user.UserId, username, excludeId);
+    await WriteJsonAsync(ctx, result);
+}).WithSummary("检查用户名是否已存在");
+```
+
+#### 需要提供 check-exists 接口的实体清单
+
+以下是当前所有包含唯一索引的实体及其需要校验的字段：
+
+| 实体 | 唯一字段 | check-exists 接口路径 |
+|------|---------|---------------------|
+| Tenant | tenant_code | `/api/tenants/check-code-exists` |
+| PlatformUser | username | `/api/platform-users/check-username-exists` |
+| PlatformUser | email | `/api/platform-users/check-email-exists` |
+| PlatformRole | code | `/api/platform-roles/check-code-exists` |
+| SaasPackage | package_code | `/api/saas-packages/check-code-exists` |
+| SaasPackageVersion | package_id + version_code | `/api/saas-packages/versions/check-code-exists` |
+| SaasPackageCapability | package_version_id + capability_key | `/api/saas-packages/capabilities/check-key-exists` |
+| NotificationTemplate | template_code | `/api/notification-templates/check-code-exists` |
+| StorageStrategy | strategy_code | `/api/storage-strategies/check-code-exists` |
+| TenantGroup | group_code | `/api/tenant-groups/check-code-exists` |
+| TenantDomain | domain | `/api/tenant-domains/check-exists` |
+| TenantTag | tag_key + tag_value | `/api/tenant-tags/check-exists` |
+| TenantFeatureFlag | tenant_ref_id + feature_key | `/api/tenant-feature-flags/check-key-exists` |
+| TenantParameter | tenant_ref_id + param_key | `/api/tenant-parameters/check-key-exists` |
+| TenantResourceQuota | tenant_ref_id + quota_type | `/api/tenant-resource-quotas/check-type-exists` |
+| BillingInvoice | invoice_no | `/api/billing-invoices/check-no-exists` |
+| PaymentOrder | order_no | `/api/payment-orders/check-no-exists` |
+| PaymentRefund | refund_no | `/api/payment-refunds/check-no-exists` |
+
 ### 4.3 权限与 Local Cache
 
 至少设计以下缓存：
@@ -256,10 +376,42 @@ src/YTStdTenantPlatform/
 ## 6. 日志与安全要求
 
 - 所有公开 API 和应用服务要接入 `Logger.Debug / Info / Error / Fatal`。
+- `Logger.Debug` **必须使用 `Func<string>` 委托重载**，绝不使用直接字符串参数或字符串插值/连接。优先传递 lambda，以避免在 Debug 被禁用时的内存分配。
 - 用户可见错误信息应支持 `I18n`。
 - 密码字段只保存摘要，不保存明文。
 - API Key、Webhook Secret、MFA 等敏感字段必须使用摘要或密文。
 - 权限相关接口必须输出审计日志。
+
+### 6.1 国际化（i18n）严格要求
+
+**后端所有面向用户的消息、错误提示，禁止使用硬编码中文字符串，必须使用 i18n 消息键。**
+
+1. **错误消息**：所有 `ApiResult.Fail(...)` 的 `message` 参数必须使用 `Messages.XXX` 常量（格式为 `"module.action_description"`），**禁止直接写中文字符串**。
+2. **消息键定义**：所有消息键统一定义在 `Application/Constants/Messages.cs` 中，每个常量必须有中文 XML 注释说明含义。
+3. **错误码定义**：所有错误码统一定义在 `Application/Constants/ErrorCodes.cs` 中，使用分段编号（如 3xxx = 用户错误，6xxx = 租户错误，18xxx = 唯一性校验错误）。
+4. **日志消息**：`Logger.Info` / `Logger.Error` 中的日志消息允许使用中文（仅后端运维人员可见），但方法标识必须使用 `[ClassName.MethodName]` 格式前缀。
+5. **XML 注释**：代码中的 `/// <summary>` XML 注释使用中文编写（面向开发团队），但 API 返回的 `Message` 字段必须是 i18n 键。
+
+**正确示例：**
+
+```csharp
+// ✅ 正确：使用 Messages 常量
+return ApiResult<long>.Fail(ErrorCodes.UserUsernameExists, Messages.UserUsernameExists);
+
+// ❌ 错误：硬编码中文字符串
+return ApiResult<long>.Fail(18001, "用户名已存在");
+
+// ✅ 正确：Logger 使用委托重载
+Logger.Debug(tenantId, operatorId, () => "[PlatformUserAppService.CreateAsync] username=" + req.Username);
+
+// ❌ 错误：Logger.Debug 使用直接字符串
+Logger.Debug(tenantId, operatorId, $"[PlatformUserAppService.CreateAsync] username={req.Username}");
+```
+
+### 6.2 JSON 序列化要求
+
+- 手动 JSON 字符串连接应替换为基于 `Utf8JsonWriter` 的构造，实现 AOT 友好的低分配 JSON 生成。
+- 对于 AOT 友好的 JSON，优先使用 `JsonSerializerContext` 和 `JsonSerializable` 源生成，而不是手动元数据注册。
 
 ## 7. 测试要求
 

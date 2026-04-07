@@ -41,6 +41,7 @@
 - 所有初始化逻辑仍在**单体主程序**中执行，不拆成独立初始化微服务。
 - 必须在**实体编译并触发源码生成器之后**再实现或执行初始化数据逻辑。
 - 必须通过**生成后的 DAL / CRUD 能力**创建表结构并填充数据，不允许绕开生成代码单独维护平台表 SQL。
+- **主键 ID 显式生成**：所有 `InsertAsync` 调用前必须通过 `DB.GetNextLongIdAsync()` 显式获取并赋值主键 ID（`entity.Id = await DB.GetNextLongIdAsync();`），禁止依赖数据库自动分配 ID。需引入 `using YTStdAdo;`。
 
 ---
 

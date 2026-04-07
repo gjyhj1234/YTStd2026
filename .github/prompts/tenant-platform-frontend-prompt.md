@@ -170,6 +170,29 @@ web/tenant-platform-web/
 - 新增/编辑/状态流转/授权操作统一封装为明确方法，不要在页面中散落 URL 字符串。
 - 只有在后端接口注释、DTO 注释和路由清单稳定后，前端阶段才开始批量生成页面，以减少接口语义漂移。
 
+### 6.0.1 唯一性校验接口调用（前端表单必须对接）
+
+后端为所有包含唯一索引的实体提供了 `check-exists` 接口。前端表单在以下场景**必须**调用：
+
+1. **新增表单提交前**：调用 `GET /api/{resource}/check-{field}-exists?{field}={value}` 验证唯一字段值是否已被占用。
+2. **编辑表单提交前**：调用时传入 `excludeId` 参数排除当前记录（`?{field}={value}&excludeId={currentId}`）。
+3. **实时校验（推荐）**：在输入框 blur 事件中调用 check-exists 接口，实时提示用户该值是否已存在。
+
+**返回格式**：`ApiResult<bool>`，`Data = true` 表示已存在，`Data = false` 表示可用。
+
+**前端 API 模块示例**：
+
+```typescript
+// api/platformUsers.ts
+export function checkUsernameExists(username: string, excludeId?: number) {
+  return http.get<ApiResult<boolean>>('/api/platform-users/check-username-exists', {
+    params: { username, excludeId }
+  })
+}
+```
+
+完整的 check-exists 接口清单参见 `tenant-platform-backend-prompt.md` 第 4.2.2 节。
+
 ### 6.1 GitHub Agents 分阶段执行建议
 
 如果当前使用 GitHub Agents / Copilot 分阶段推进，而不是一次性生成整个前端工程，

@@ -41,6 +41,9 @@ Infrastructure/Initialization/
 └── SeedData/
 ```
 
+### 2.1 主键 ID 生成要求
+初始化数据插入时，**必须**在每次 `InsertAsync` 之前调用 `entity.Id = await DB.GetNextLongIdAsync();` 或 `context.GetNextLongIdAsync()` 显式获取并赋值主键 ID，**禁止**依赖数据库自动分配 ID。
+
 ### 3. 初始化数据范围
 至少覆盖：
 - 默认平台管理员

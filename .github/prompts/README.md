@@ -165,6 +165,17 @@ Logger.Debug(tenantId, userId, () => $"[方法名] SQL: {sql}");
 - **日志**：每个模块必须包含日志集成要求
 - **国际化**：用户可见的错误信息应使用 `I18n.T()` 国际化
 
+### 全局硬约束（所有业务模块必须遵循）
+
+以下约束适用于所有业务应用模块（如租户平台），在编写任何提示词时必须包含或引用：
+
+1. **主键 ID 显式生成**：所有创建操作必须在 `InsertAsync` 之前显式调用 `DB.GetNextLongIdAsync()` 或 `DB.GetNextIntIdAsync()` 获取并设置 ID，**禁止依赖数据库自动分配 ID**。引入 `using YTStdAdo;`。
+2. **唯一性校验**：所有包含唯一索引（`IndexKind.Unique`）的实体，在创建和更新时必须在应用层进行唯一性校验；同时必须提供 `GET /api/{resource}/check-{field}-exists` 接口供前端调用。
+3. **i18n 消息键**：所有 `ApiResult.Fail(...)` 返回的 `message` 参数必须使用 `Messages.XXX` 常量（i18n 键格式：`"module.action_description"`），**禁止硬编码中文字符串**。错误码统一定义在 `ErrorCodes.cs`，消息键统一定义在 `Messages.cs`。
+4. **Logger.Debug 委托重载**：`Logger.Debug` **必须使用 `Func<string>` 委托重载**（lambda），绝不使用直接字符串参数或字符串插值/连接，以避免在 Debug 被禁用时的内存分配。
+5. **JSON 序列化 AOT 友好**：手动 JSON 字符串连接应替换为 `Utf8JsonWriter`；优先使用 `JsonSerializerContext` + `JsonSerializable` 源生成。
+6. **PascalCase JSON**：后端 JSON 属性名使用 PascalCase（Code, Message, Data），不配置 PropertyNamingPolicy。
+
 ---
 
 ## 如何使用提示词

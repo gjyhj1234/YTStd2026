@@ -22,6 +22,11 @@
 - API 是否覆盖核心模块
 - 公开类型 / 方法 / DTO 是否补齐中文 XML 注释
 - 接口测试是否覆盖主流程、权限拒绝、限流、审计
+- **所有创建操作是否在 InsertAsync 之前调用 `DB.GetNextLongIdAsync()` 显式获取主键 ID**
+- **所有包含唯一索引的实体是否有唯一性校验（创建/更新前检查）**
+- **是否提供了完整的 check-exists 接口（对应唯一索引字段）**
+- **所有 `ApiResult.Fail(...)` 的 message 参数是否使用 `Messages.XXX` 常量（i18n 键），是否存在硬编码中文字符串**
+- **`Logger.Debug` 是否全部使用 `Func<string>` 委托重载（lambda），是否存在直接字符串参数**
 
 ### 前端
 - 工程是否位于 `web/tenant-platform-web/`
