@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using YTStdAdo;
 using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
@@ -66,6 +67,19 @@ namespace YTStdTenantPlatform.Application.Services
             var hash = HashPassword(req.Password, salt);
             var now = DateTime.UtcNow;
 
+            // Check Username and Email uniqueness
+            var (existResult, existData) = await PlatformUserCRUD.GetListAsync(tenantId, operatorId);
+            if (existResult.Success && existData != null)
+            {
+                foreach (var existing in existData)
+                {
+                    if (string.Equals(existing.Username, req.Username, StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.UserUsernameExists, Messages.UserUsernameExists);
+                    if (string.Equals(existing.Email, req.Email, StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.UserEmailExists, Messages.UserEmailExists);
+                }
+            }
+
             var user = new PlatformUser
             {
                 Username = req.Username.Trim(),
@@ -81,6 +95,7 @@ namespace YTStdTenantPlatform.Application.Services
                 UpdatedAt = now
             };
 
+            user.Id = await DB.GetNextLongIdAsync();
             var insResult = await PlatformUserCRUD.InsertAsync(tenantId, operatorId, user);
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.UserCreateFailed, Messages.UserCreateFailed);
@@ -198,6 +213,36 @@ namespace YTStdTenantPlatform.Application.Services
             var data = Encoding.UTF8.GetBytes(password + salt);
             var hash = SHA256.HashData(data);
             return Convert.ToHexString(hash);
+        }
+
+        /// <summary>检查用户名是否已存在</summary>
+        public static async ValueTask<ApiResult<bool>> CheckUsernameExistsAsync(
+            int tenantId, long operatorId, string value, long? excludeId = null)
+        {
+            var (result, data) = await PlatformUserCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return ApiResult<bool>.Ok(false);
+            foreach (var item in data)
+            {
+                if (string.Equals(item.Username, value, StringComparison.OrdinalIgnoreCase) &&
+                    (excludeId == null || item.Id != excludeId.Value))
+                    return ApiResult<bool>.Ok(true);
+            }
+            return ApiResult<bool>.Ok(false);
+        }
+
+        /// <summary>检查邮箱是否已存在</summary>
+        public static async ValueTask<ApiResult<bool>> CheckEmailExistsAsync(
+            int tenantId, long operatorId, string value, long? excludeId = null)
+        {
+            var (result, data) = await PlatformUserCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return ApiResult<bool>.Ok(false);
+            foreach (var item in data)
+            {
+                if (string.Equals(item.Email, value, StringComparison.OrdinalIgnoreCase) &&
+                    (excludeId == null || item.Id != excludeId.Value))
+                    return ApiResult<bool>.Ok(true);
+            }
+            return ApiResult<bool>.Ok(false);
         }
     }
 }

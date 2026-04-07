@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using YTStdAdo;
 using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
@@ -81,6 +82,17 @@ namespace YTStdTenantPlatform.Application.Services
             if (string.IsNullOrWhiteSpace(req.Name))
                 return ApiResult<long>.Fail(ErrorCodes.RoleNameRequired, Messages.RoleNameRequired);
 
+            // Check Code uniqueness
+            var (existResult, existData) = await PlatformRoleCRUD.GetListAsync(tenantId, operatorId);
+            if (existResult.Success && existData != null)
+            {
+                foreach (var existing in existData)
+                {
+                    if (string.Equals(existing.Code, req.Code, StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.RoleCodeExists, Messages.RoleCodeExists);
+                }
+            }
+
             var now = DateTime.UtcNow;
             var role = new PlatformRole
             {
@@ -94,6 +106,7 @@ namespace YTStdTenantPlatform.Application.Services
                 UpdatedAt = now
             };
 
+            role.Id = await DB.GetNextLongIdAsync();
             var insResult = await PlatformRoleCRUD.InsertAsync(tenantId, operatorId, role);
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.RoleCreateFailed, Messages.RoleCreateFailed);
@@ -163,6 +176,7 @@ namespace YTStdTenantPlatform.Application.Services
                     GrantedBy = operatorId,
                     GrantedAt = now
                 };
+                rp.Id = await DB.GetNextLongIdAsync();
                 await PlatformRolePermissionCRUD.InsertAsync(tenantId, operatorId, rp);
             }
 
@@ -186,6 +200,7 @@ namespace YTStdTenantPlatform.Application.Services
                     AssignedBy = operatorId,
                     AssignedAt = now
                 };
+                rm.Id = await DB.GetNextLongIdAsync();
                 await PlatformRoleMemberCRUD.InsertAsync(tenantId, operatorId, rm);
             }
 
@@ -193,6 +208,21 @@ namespace YTStdTenantPlatform.Application.Services
             Logger.Info(tenantId, operatorId,
                 "[PlatformRoleAppService] 角色成员: roleId=" + roleId + " 用户数=" + req.UserIds.Length);
             return ApiResult.Ok(Messages.OperationSuccess);
+        }
+
+        /// <summary>检查角色编码是否已存在</summary>
+        public static async ValueTask<ApiResult<bool>> CheckRoleCodeExistsAsync(
+            int tenantId, long operatorId, string value, long? excludeId = null)
+        {
+            var (result, data) = await PlatformRoleCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return ApiResult<bool>.Ok(false);
+            foreach (var item in data)
+            {
+                if (string.Equals(item.Code, value, StringComparison.OrdinalIgnoreCase) &&
+                    (excludeId == null || item.Id != excludeId.Value))
+                    return ApiResult<bool>.Ok(true);
+            }
+            return ApiResult<bool>.Ok(false);
         }
     }
 }

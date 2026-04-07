@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using YTStdAdo;
 using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
@@ -69,6 +70,17 @@ namespace YTStdTenantPlatform.Application.Services
             if (string.IsNullOrWhiteSpace(req.PackageCode))
                 return ApiResult<long>.Fail(ErrorCodes.PackageCodeRequired, Messages.PackageCodeRequired);
 
+            // Check PackageCode uniqueness
+            var (existResult, existData) = await SaasPackageCRUD.GetListAsync(tenantId, operatorId);
+            if (existResult.Success && existData != null)
+            {
+                foreach (var existing in existData)
+                {
+                    if (string.Equals(existing.PackageCode, req.PackageCode, StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.PackageCodeExists, Messages.PackageCodeExists);
+                }
+            }
+
             var now = DateTime.UtcNow;
             var entity = new SaasPackage
             {
@@ -81,6 +93,7 @@ namespace YTStdTenantPlatform.Application.Services
                 UpdatedAt = now
             };
 
+            entity.Id = await DB.GetNextLongIdAsync();
             var insResult = await SaasPackageCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.PackageCreateFailed, Messages.PackageCreateFailed);
@@ -172,6 +185,18 @@ namespace YTStdTenantPlatform.Application.Services
             if (string.IsNullOrWhiteSpace(req.VersionCode))
                 return ApiResult<long>.Fail(ErrorCodes.PackageVersionCodeRequired, Messages.PackageVersionCodeRequired);
 
+            // Check VersionCode uniqueness per package
+            var (existResult, existData) = await SaasPackageVersionCRUD.GetListAsync(tenantId, operatorId);
+            if (existResult.Success && existData != null)
+            {
+                foreach (var existing in existData)
+                {
+                    if (existing.PackageId == req.PackageId &&
+                        string.Equals(existing.VersionCode, req.VersionCode, StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.PackageVersionCodeExists, Messages.PackageVersionCodeExists);
+                }
+            }
+
             var now = DateTime.UtcNow;
             var entity = new SaasPackageVersion
             {
@@ -189,6 +214,7 @@ namespace YTStdTenantPlatform.Application.Services
                 UpdatedAt = now
             };
 
+            entity.Id = await DB.GetNextLongIdAsync();
             var insResult = await SaasPackageVersionCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.PackageVersionCreateFailed, Messages.PackageVersionCreateFailed);
@@ -236,6 +262,18 @@ namespace YTStdTenantPlatform.Application.Services
             if (string.IsNullOrWhiteSpace(req.CapabilityKey))
                 return ApiResult<long>.Fail(ErrorCodes.PackageCapabilityKeyRequired, Messages.PackageCapabilityKeyRequired);
 
+            // Check CapabilityKey uniqueness per version
+            var (existResult, existData) = await SaasPackageCapabilityCRUD.GetListAsync(tenantId, operatorId);
+            if (existResult.Success && existData != null)
+            {
+                foreach (var existing in existData)
+                {
+                    if (existing.PackageVersionId == req.PackageVersionId &&
+                        string.Equals(existing.CapabilityKey, req.CapabilityKey, StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.PackageCapabilityKeyExists, Messages.PackageCapabilityKeyExists);
+                }
+            }
+
             var now = DateTime.UtcNow;
             var entity = new SaasPackageCapability
             {
@@ -248,6 +286,7 @@ namespace YTStdTenantPlatform.Application.Services
                 UpdatedAt = now
             };
 
+            entity.Id = await DB.GetNextLongIdAsync();
             var insResult = await SaasPackageCapabilityCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.PackageCapabilitySaveFailed, Messages.PackageCapabilitySaveFailed);
@@ -284,5 +323,52 @@ namespace YTStdTenantPlatform.Application.Services
             CapabilityType = c.CapabilityType, CapabilityValue = c.CapabilityValue,
             CreatedAt = c.CreatedAt
         };
+
+        /// <summary>检查套餐编码是否已存在</summary>
+        public static async ValueTask<ApiResult<bool>> CheckPackageCodeExistsAsync(
+            int tenantId, long operatorId, string value, long? excludeId = null)
+        {
+            var (result, data) = await SaasPackageCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return ApiResult<bool>.Ok(false);
+            foreach (var item in data)
+            {
+                if (string.Equals(item.PackageCode, value, StringComparison.OrdinalIgnoreCase) &&
+                    (excludeId == null || item.Id != excludeId.Value))
+                    return ApiResult<bool>.Ok(true);
+            }
+            return ApiResult<bool>.Ok(false);
+        }
+
+        /// <summary>检查套餐版本编码是否已存在</summary>
+        public static async ValueTask<ApiResult<bool>> CheckVersionCodeExistsAsync(
+            int tenantId, long operatorId, long packageId, string value, long? excludeId = null)
+        {
+            var (result, data) = await SaasPackageVersionCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return ApiResult<bool>.Ok(false);
+            foreach (var item in data)
+            {
+                if (item.PackageId == packageId &&
+                    string.Equals(item.VersionCode, value, StringComparison.OrdinalIgnoreCase) &&
+                    (excludeId == null || item.Id != excludeId.Value))
+                    return ApiResult<bool>.Ok(true);
+            }
+            return ApiResult<bool>.Ok(false);
+        }
+
+        /// <summary>检查套餐能力键是否已存在</summary>
+        public static async ValueTask<ApiResult<bool>> CheckCapabilityKeyExistsAsync(
+            int tenantId, long operatorId, long packageVersionId, string value, long? excludeId = null)
+        {
+            var (result, data) = await SaasPackageCapabilityCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return ApiResult<bool>.Ok(false);
+            foreach (var item in data)
+            {
+                if (item.PackageVersionId == packageVersionId &&
+                    string.Equals(item.CapabilityKey, value, StringComparison.OrdinalIgnoreCase) &&
+                    (excludeId == null || item.Id != excludeId.Value))
+                    return ApiResult<bool>.Ok(true);
+            }
+            return ApiResult<bool>.Ok(false);
+        }
     }
 }

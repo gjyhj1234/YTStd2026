@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using YTStdAdo;
 using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
@@ -55,6 +56,7 @@ namespace YTStdTenantPlatform.Application.Services
                     CreatedAt = now,
                     UpdatedAt = now
                 };
+                target.Id = await DB.GetNextLongIdAsync();
                 await TenantSystemConfigCRUD.InsertAsync(tenantId, operatorId, target);
             }
             else
@@ -116,6 +118,18 @@ namespace YTStdTenantPlatform.Application.Services
             if (string.IsNullOrWhiteSpace(req.FeatureKey))
                 return ApiResult<long>.Fail(ErrorCodes.FeatureKeyRequired, Messages.FeatureKeyRequired);
 
+            // Check FeatureKey per tenant uniqueness
+            var (existResult, existData) = await TenantFeatureFlagCRUD.GetListAsync(tenantId, operatorId);
+            if (existResult.Success && existData != null)
+            {
+                foreach (var existing in existData)
+                {
+                    if (existing.TenantRefId == req.TenantRefId &&
+                        string.Equals(existing.FeatureKey, req.FeatureKey, StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.FeatureKeyExists, Messages.FeatureKeyExists);
+                }
+            }
+
             var now = DateTime.UtcNow;
             var flag = new TenantFeatureFlag
             {
@@ -128,6 +142,7 @@ namespace YTStdTenantPlatform.Application.Services
                 UpdatedAt = now
             };
 
+            flag.Id = await DB.GetNextLongIdAsync();
             var insResult = await TenantFeatureFlagCRUD.InsertAsync(tenantId, operatorId, flag);
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.FeatureFlagSaveFailed, Messages.FeatureFlagSaveFailed);
@@ -212,6 +227,18 @@ namespace YTStdTenantPlatform.Application.Services
             if (string.IsNullOrWhiteSpace(req.ParamKey))
                 return ApiResult<long>.Fail(ErrorCodes.ParamKeyRequired, Messages.ParamKeyRequired);
 
+            // Check ParamKey per tenant uniqueness
+            var (existResult, existData) = await TenantParameterCRUD.GetListAsync(tenantId, operatorId);
+            if (existResult.Success && existData != null)
+            {
+                foreach (var existing in existData)
+                {
+                    if (existing.TenantRefId == req.TenantRefId &&
+                        string.Equals(existing.ParamKey, req.ParamKey, StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.ParamKeyExists, Messages.ParamKeyExists);
+                }
+            }
+
             var now = DateTime.UtcNow;
             var param = new TenantParameter
             {
@@ -224,6 +251,7 @@ namespace YTStdTenantPlatform.Application.Services
                 UpdatedAt = now
             };
 
+            param.Id = await DB.GetNextLongIdAsync();
             var insResult = await TenantParameterCRUD.InsertAsync(tenantId, operatorId, param);
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.ParamSaveFailed, Messages.ParamSaveFailed);
@@ -268,6 +296,38 @@ namespace YTStdTenantPlatform.Application.Services
                 Enabled = f.Enabled, RolloutType = f.RolloutType,
                 UpdatedAt = f.UpdatedAt
             };
+        }
+
+        /// <summary>检查功能开关键是否已存在</summary>
+        public static async ValueTask<ApiResult<bool>> CheckFeatureKeyExistsAsync(
+            int tenantId, long operatorId, long tenantRefId, string value, long? excludeId = null)
+        {
+            var (result, data) = await TenantFeatureFlagCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return ApiResult<bool>.Ok(false);
+            foreach (var item in data)
+            {
+                if (item.TenantRefId == tenantRefId &&
+                    string.Equals(item.FeatureKey, value, StringComparison.OrdinalIgnoreCase) &&
+                    (excludeId == null || item.Id != excludeId.Value))
+                    return ApiResult<bool>.Ok(true);
+            }
+            return ApiResult<bool>.Ok(false);
+        }
+
+        /// <summary>检查参数键是否已存在</summary>
+        public static async ValueTask<ApiResult<bool>> CheckParamKeyExistsAsync(
+            int tenantId, long operatorId, long tenantRefId, string value, long? excludeId = null)
+        {
+            var (result, data) = await TenantParameterCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return ApiResult<bool>.Ok(false);
+            foreach (var item in data)
+            {
+                if (item.TenantRefId == tenantRefId &&
+                    string.Equals(item.ParamKey, value, StringComparison.OrdinalIgnoreCase) &&
+                    (excludeId == null || item.Id != excludeId.Value))
+                    return ApiResult<bool>.Ok(true);
+            }
+            return ApiResult<bool>.Ok(false);
         }
     }
 }

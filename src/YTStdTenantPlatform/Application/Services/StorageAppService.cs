@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using YTStdAdo;
 using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
@@ -66,6 +67,17 @@ namespace YTStdTenantPlatform.Application.Services
             if (string.IsNullOrWhiteSpace(req.StrategyCode))
                 return ApiResult<long>.Fail(ErrorCodes.StorageStrategyNameRequired, Messages.StorageStrategyNameRequired);
 
+            // Check StrategyCode uniqueness
+            var (existResult, existData) = await StorageStrategyCRUD.GetListAsync(tenantId, operatorId);
+            if (existResult.Success && existData != null)
+            {
+                foreach (var existing in existData)
+                {
+                    if (string.Equals(existing.StrategyCode, req.StrategyCode, StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.StorageStrategyCodeExists, Messages.StorageStrategyCodeExists);
+                }
+            }
+
             var now = DateTime.UtcNow;
             var entity = new StorageStrategy
             {
@@ -79,6 +91,7 @@ namespace YTStdTenantPlatform.Application.Services
                 UpdatedAt = now
             };
 
+            entity.Id = await DB.GetNextLongIdAsync();
             var insResult = await StorageStrategyCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.StorageStrategyCreateFailed, Messages.StorageStrategyCreateFailed);
@@ -254,6 +267,7 @@ namespace YTStdTenantPlatform.Application.Services
                 CreatedAt = DateTime.UtcNow
             };
 
+            entity.Id = await DB.GetNextLongIdAsync();
             var insResult = await FileAccessPolicyCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.FileAccessPolicySaveFailed, Messages.FileAccessPolicySaveFailed);
@@ -283,5 +297,20 @@ namespace YTStdTenantPlatform.Application.Services
             UploaderId = f.UploaderId, Visibility = f.Visibility,
             DownloadCount = f.DownloadCount, CreatedAt = f.CreatedAt
         };
+
+        /// <summary>检查存储策略编码是否已存在</summary>
+        public static async ValueTask<ApiResult<bool>> CheckStrategyCodeExistsAsync(
+            int tenantId, long operatorId, string value, long? excludeId = null)
+        {
+            var (result, data) = await StorageStrategyCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return ApiResult<bool>.Ok(false);
+            foreach (var item in data)
+            {
+                if (string.Equals(item.StrategyCode, value, StringComparison.OrdinalIgnoreCase) &&
+                    (excludeId == null || item.Id != excludeId.Value))
+                    return ApiResult<bool>.Ok(true);
+            }
+            return ApiResult<bool>.Ok(false);
+        }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using YTStdAdo;
 using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
@@ -70,6 +71,7 @@ namespace YTStdTenantPlatform.Application.Services
                 UpdatedAt = now
             };
 
+            entity.Id = await DB.GetNextLongIdAsync();
             var insResult = await TenantApiKeyCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
                 return ApiResult<ApiKeyCreatedRepDTO>.Fail(ErrorCodes.ApiKeyCreateFailed, Messages.ApiKeyCreateFailed);
@@ -222,6 +224,7 @@ namespace YTStdTenantPlatform.Application.Services
                 UpdatedAt = now
             };
 
+            entity.Id = await DB.GetNextLongIdAsync();
             var insResult = await TenantWebhookCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.WebhookCreateFailed, Messages.WebhookCreateFailed);

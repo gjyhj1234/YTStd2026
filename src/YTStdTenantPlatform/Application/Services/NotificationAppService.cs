@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using YTStdAdo;
 using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
@@ -67,6 +68,17 @@ namespace YTStdTenantPlatform.Application.Services
             if (string.IsNullOrWhiteSpace(req.TemplateCode))
                 return ApiResult<long>.Fail(ErrorCodes.NotificationTemplateNameRequired, Messages.NotificationTemplateNameRequired);
 
+            // Check TemplateCode uniqueness
+            var (existResult, existData) = await NotificationTemplateCRUD.GetListAsync(tenantId, operatorId);
+            if (existResult.Success && existData != null)
+            {
+                foreach (var existing in existData)
+                {
+                    if (string.Equals(existing.TemplateCode, req.TemplateCode, StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.NotificationTemplateCodeExists, Messages.NotificationTemplateCodeExists);
+                }
+            }
+
             var now = DateTime.UtcNow;
             var entity = new NotificationTemplate
             {
@@ -80,6 +92,7 @@ namespace YTStdTenantPlatform.Application.Services
                 UpdatedAt = now
             };
 
+            entity.Id = await DB.GetNextLongIdAsync();
             var insResult = await NotificationTemplateCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.NotificationTemplateCreateFailed, Messages.NotificationTemplateCreateFailed);
@@ -206,6 +219,7 @@ namespace YTStdTenantPlatform.Application.Services
                 CreatedAt = DateTime.UtcNow
             };
 
+            entity.Id = await DB.GetNextLongIdAsync();
             var insResult = await NotificationCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.NotificationCreateFailed, Messages.NotificationCreateFailed);
@@ -256,5 +270,20 @@ namespace YTStdTenantPlatform.Application.Services
             SendStatus = n.SendStatus, SentAt = n.SentAt,
             ReadAt = n.ReadAt, CreatedAt = n.CreatedAt
         };
+
+        /// <summary>检查通知模板编码是否已存在</summary>
+        public static async ValueTask<ApiResult<bool>> CheckTemplateCodeExistsAsync(
+            int tenantId, long operatorId, string value, long? excludeId = null)
+        {
+            var (result, data) = await NotificationTemplateCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return ApiResult<bool>.Ok(false);
+            foreach (var item in data)
+            {
+                if (string.Equals(item.TemplateCode, value, StringComparison.OrdinalIgnoreCase) &&
+                    (excludeId == null || item.Id != excludeId.Value))
+                    return ApiResult<bool>.Ok(true);
+            }
+            return ApiResult<bool>.Ok(false);
+        }
     }
 }

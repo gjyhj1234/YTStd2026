@@ -258,4 +258,42 @@ public static class ErrorCodes
     public const int FileDeleteFailed = 17007;
     /// <summary>保存文件访问策略失败</summary>
     public const int FileAccessPolicySaveFailed = 17008;
+
+    // ── 唯一性校验错误 (18xxx) ──
+    /// <summary>用户名已存在</summary>
+    public const int UserUsernameExists = 18001;
+    /// <summary>邮箱已存在</summary>
+    public const int UserEmailExists = 18002;
+    /// <summary>角色编码已存在</summary>
+    public const int RoleCodeExists = 18003;
+    /// <summary>租户编码已存在</summary>
+    public const int TenantCodeExists = 18004;
+    /// <summary>分组编码已存在</summary>
+    public const int GroupCodeExists = 18005;
+    /// <summary>域名已存在</summary>
+    public const int DomainExists = 18006;
+    /// <summary>标签已存在</summary>
+    public const int TagExists = 18007;
+    /// <summary>套餐编码已存在</summary>
+    public const int PackageCodeExists = 18008;
+    /// <summary>套餐版本编码已存在</summary>
+    public const int PackageVersionCodeExists = 18009;
+    /// <summary>套餐能力键已存在</summary>
+    public const int PackageCapabilityKeyExists = 18010;
+    /// <summary>通知模板编码已存在</summary>
+    public const int NotificationTemplateCodeExists = 18011;
+    /// <summary>存储策略编码已存在</summary>
+    public const int StorageStrategyCodeExists = 18012;
+    /// <summary>功能开关键已存在</summary>
+    public const int FeatureKeyExists = 18013;
+    /// <summary>参数键已存在</summary>
+    public const int ParamKeyExists = 18014;
+    /// <summary>配额类型已存在</summary>
+    public const int QuotaTypeExists = 18015;
+    /// <summary>发票编号已存在</summary>
+    public const int InvoiceNoExists = 18016;
+    /// <summary>支付单号已存在</summary>
+    public const int PaymentOrderNoExists = 18017;
+    /// <summary>退款单号已存在</summary>
+    public const int RefundNoExists = 18018;
 }

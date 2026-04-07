@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using YTStdAdo;
 using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
@@ -42,6 +43,17 @@ namespace YTStdTenantPlatform.Application.Services
             if (string.IsNullOrWhiteSpace(req.GroupCode))
                 return ApiResult<long>.Fail(ErrorCodes.GroupCodeRequired, Messages.GroupCodeRequired);
 
+            // Check GroupCode uniqueness
+            var (existResult, existData) = await TenantGroupCRUD.GetListAsync(tenantId, operatorId);
+            if (existResult.Success && existData != null)
+            {
+                foreach (var existing in existData)
+                {
+                    if (string.Equals(existing.GroupCode, req.GroupCode, StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.GroupCodeExists, Messages.GroupCodeExists);
+                }
+            }
+
             var group = new TenantGroup
             {
                 GroupCode = req.GroupCode.Trim(),
@@ -53,6 +65,7 @@ namespace YTStdTenantPlatform.Application.Services
                 UpdatedAt = DateTime.UtcNow
             };
 
+            group.Id = await DB.GetNextLongIdAsync();
             var insResult = await TenantGroupCRUD.InsertAsync(tenantId, operatorId, group);
             if (!insResult.Success) return ApiResult<long>.Fail(ErrorCodes.GroupCreateFailed, Messages.GroupCreateFailed);
 
@@ -87,6 +100,17 @@ namespace YTStdTenantPlatform.Application.Services
             if (string.IsNullOrWhiteSpace(req.Domain))
                 return ApiResult<long>.Fail(ErrorCodes.DomainRequired, Messages.DomainRequired);
 
+            // Check Domain uniqueness
+            var (existResult, existData) = await TenantDomainCRUD.GetListAsync(tenantId, operatorId);
+            if (existResult.Success && existData != null)
+            {
+                foreach (var existing in existData)
+                {
+                    if (string.Equals(existing.Domain, req.Domain, StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.DomainExists, Messages.DomainExists);
+                }
+            }
+
             var domain = new TenantDomain
             {
                 TenantRefId = req.TenantRefId,
@@ -97,6 +121,7 @@ namespace YTStdTenantPlatform.Application.Services
                 CreatedAt = DateTime.UtcNow
             };
 
+            domain.Id = await DB.GetNextLongIdAsync();
             var insResult = await TenantDomainCRUD.InsertAsync(tenantId, operatorId, domain);
             if (!insResult.Success) return ApiResult<long>.Fail(ErrorCodes.DomainCreateFailed, Messages.DomainCreateFailed);
 
@@ -146,6 +171,18 @@ namespace YTStdTenantPlatform.Application.Services
             if (string.IsNullOrWhiteSpace(req.TagKey))
                 return ApiResult<long>.Fail(ErrorCodes.TagKeyRequired, Messages.TagKeyRequired);
 
+            // Check Tag (key+value) uniqueness
+            var (existResult, existData) = await TenantTagCRUD.GetListAsync(tenantId, operatorId);
+            if (existResult.Success && existData != null)
+            {
+                foreach (var existing in existData)
+                {
+                    if (string.Equals(existing.TagKey, req.TagKey, StringComparison.OrdinalIgnoreCase) &&
+                        string.Equals(existing.TagValue, req.TagValue, StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.TagExists, Messages.TagExists);
+                }
+            }
+
             var tag = new TenantTag
             {
                 TagKey = req.TagKey.Trim(),
@@ -155,6 +192,7 @@ namespace YTStdTenantPlatform.Application.Services
                 CreatedAt = DateTime.UtcNow
             };
 
+            tag.Id = await DB.GetNextLongIdAsync();
             var insResult = await TenantTagCRUD.InsertAsync(tenantId, operatorId, tag);
             if (!insResult.Success) return ApiResult<long>.Fail(ErrorCodes.TagCreateFailed, Messages.TagCreateFailed);
 
@@ -174,6 +212,7 @@ namespace YTStdTenantPlatform.Application.Services
                     TagId = tagId,
                     CreatedAt = DateTime.UtcNow
                 };
+                binding.Id = await DB.GetNextLongIdAsync();
                 await TenantTagBindingCRUD.InsertAsync(tenantId, operatorId, binding);
             }
 
@@ -236,6 +275,52 @@ namespace YTStdTenantPlatform.Application.Services
                 TagType = t.TagType, Description = t.Description,
                 CreatedAt = t.CreatedAt
             };
+        }
+
+        /// <summary>检查分组编码是否已存在</summary>
+        public static async ValueTask<ApiResult<bool>> CheckGroupCodeExistsAsync(
+            int tenantId, long operatorId, string value, long? excludeId = null)
+        {
+            var (result, data) = await TenantGroupCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return ApiResult<bool>.Ok(false);
+            foreach (var item in data)
+            {
+                if (string.Equals(item.GroupCode, value, StringComparison.OrdinalIgnoreCase) &&
+                    (excludeId == null || item.Id != excludeId.Value))
+                    return ApiResult<bool>.Ok(true);
+            }
+            return ApiResult<bool>.Ok(false);
+        }
+
+        /// <summary>检查域名是否已存在</summary>
+        public static async ValueTask<ApiResult<bool>> CheckDomainExistsAsync(
+            int tenantId, long operatorId, string value, long? excludeId = null)
+        {
+            var (result, data) = await TenantDomainCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return ApiResult<bool>.Ok(false);
+            foreach (var item in data)
+            {
+                if (string.Equals(item.Domain, value, StringComparison.OrdinalIgnoreCase) &&
+                    (excludeId == null || item.Id != excludeId.Value))
+                    return ApiResult<bool>.Ok(true);
+            }
+            return ApiResult<bool>.Ok(false);
+        }
+
+        /// <summary>检查标签是否已存在</summary>
+        public static async ValueTask<ApiResult<bool>> CheckTagExistsAsync(
+            int tenantId, long operatorId, string tagKey, string tagValue, long? excludeId = null)
+        {
+            var (result, data) = await TenantTagCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return ApiResult<bool>.Ok(false);
+            foreach (var item in data)
+            {
+                if (string.Equals(item.TagKey, tagKey, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(item.TagValue, tagValue, StringComparison.OrdinalIgnoreCase) &&
+                    (excludeId == null || item.Id != excludeId.Value))
+                    return ApiResult<bool>.Ok(true);
+            }
+            return ApiResult<bool>.Ok(false);
         }
     }
 }

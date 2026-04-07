@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using YTStdAdo;
 using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
@@ -65,6 +66,18 @@ namespace YTStdTenantPlatform.Application.Services
             if (req.QuotaLimit <= 0)
                 return ApiResult<long>.Fail(ErrorCodes.QuotaLimitInvalid, Messages.QuotaLimitInvalid);
 
+            // Check QuotaType per tenant uniqueness
+            var (existResult, existData) = await TenantResourceQuotaCRUD.GetListAsync(tenantId, operatorId);
+            if (existResult.Success && existData != null)
+            {
+                foreach (var existing in existData)
+                {
+                    if (existing.TenantRefId == req.TenantRefId &&
+                        string.Equals(existing.QuotaType, req.QuotaType, StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.QuotaTypeExists, Messages.QuotaTypeExists);
+                }
+            }
+
             var now = DateTime.UtcNow;
             var quota = new TenantResourceQuota
             {
@@ -77,6 +90,7 @@ namespace YTStdTenantPlatform.Application.Services
                 UpdatedAt = now
             };
 
+            quota.Id = await DB.GetNextLongIdAsync();
             var insResult = await TenantResourceQuotaCRUD.InsertAsync(tenantId, operatorId, quota);
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.QuotaSaveFailed, Messages.QuotaSaveFailed);
@@ -94,6 +108,22 @@ namespace YTStdTenantPlatform.Application.Services
                 QuotaLimit = q.QuotaLimit, WarningThreshold = q.WarningThreshold,
                 ResetCycle = q.ResetCycle, CreatedAt = q.CreatedAt
             };
+        }
+
+        /// <summary>检查配额类型是否已存在</summary>
+        public static async ValueTask<ApiResult<bool>> CheckQuotaTypeExistsAsync(
+            int tenantId, long operatorId, long tenantRefId, string value, long? excludeId = null)
+        {
+            var (result, data) = await TenantResourceQuotaCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return ApiResult<bool>.Ok(false);
+            foreach (var item in data)
+            {
+                if (item.TenantRefId == tenantRefId &&
+                    string.Equals(item.QuotaType, value, StringComparison.OrdinalIgnoreCase) &&
+                    (excludeId == null || item.Id != excludeId.Value))
+                    return ApiResult<bool>.Ok(true);
+            }
+            return ApiResult<bool>.Ok(false);
         }
     }
 }

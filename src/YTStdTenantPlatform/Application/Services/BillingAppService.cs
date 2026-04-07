@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using YTStdAdo;
 using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
@@ -83,6 +84,18 @@ namespace YTStdTenantPlatform.Application.Services
                 UpdatedAt = now
             };
 
+            // Check InvoiceNo uniqueness
+            var (existResult, existData) = await BillingInvoiceCRUD.GetListAsync(tenantId, operatorId);
+            if (existResult.Success && existData != null)
+            {
+                foreach (var existing in existData)
+                {
+                    if (string.Equals(existing.InvoiceNo, entity.InvoiceNo, StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.InvoiceNoExists, Messages.InvoiceNoExists);
+                }
+            }
+
+            entity.Id = await DB.GetNextLongIdAsync();
             var insResult = await BillingInvoiceCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.InvoiceCreateFailed, Messages.InvoiceCreateFailed);
@@ -210,6 +223,18 @@ namespace YTStdTenantPlatform.Application.Services
                 UpdatedAt = now
             };
 
+            // Check OrderNo uniqueness
+            var (existResult, existData) = await PaymentOrderCRUD.GetListAsync(tenantId, operatorId);
+            if (existResult.Success && existData != null)
+            {
+                foreach (var existing in existData)
+                {
+                    if (string.Equals(existing.OrderNo, entity.OrderNo, StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.PaymentOrderNoExists, Messages.PaymentOrderNoExists);
+                }
+            }
+
+            entity.Id = await DB.GetNextLongIdAsync();
             var insResult = await PaymentOrderCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.PaymentOrderCreateFailed, Messages.PaymentOrderCreateFailed);
@@ -263,6 +288,18 @@ namespace YTStdTenantPlatform.Application.Services
                 UpdatedAt = now
             };
 
+            // Check RefundNo uniqueness
+            var (existResult, existData) = await PaymentRefundCRUD.GetListAsync(tenantId, operatorId);
+            if (existResult.Success && existData != null)
+            {
+                foreach (var existing in existData)
+                {
+                    if (string.Equals(existing.RefundNo, entity.RefundNo, StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.RefundNoExists, Messages.RefundNoExists);
+                }
+            }
+
+            entity.Id = await DB.GetNextLongIdAsync();
             var insResult = await PaymentRefundCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.RefundCreateFailed, Messages.RefundCreateFailed);
@@ -303,5 +340,50 @@ namespace YTStdTenantPlatform.Application.Services
             RefundReason = r.RefundReason, RefundedAt = r.RefundedAt,
             CreatedAt = r.CreatedAt
         };
+
+        /// <summary>检查发票编号是否已存在</summary>
+        public static async ValueTask<ApiResult<bool>> CheckInvoiceNoExistsAsync(
+            int tenantId, long operatorId, string value, long? excludeId = null)
+        {
+            var (result, data) = await BillingInvoiceCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return ApiResult<bool>.Ok(false);
+            foreach (var item in data)
+            {
+                if (string.Equals(item.InvoiceNo, value, StringComparison.OrdinalIgnoreCase) &&
+                    (excludeId == null || item.Id != excludeId.Value))
+                    return ApiResult<bool>.Ok(true);
+            }
+            return ApiResult<bool>.Ok(false);
+        }
+
+        /// <summary>检查支付单号是否已存在</summary>
+        public static async ValueTask<ApiResult<bool>> CheckOrderNoExistsAsync(
+            int tenantId, long operatorId, string value, long? excludeId = null)
+        {
+            var (result, data) = await PaymentOrderCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return ApiResult<bool>.Ok(false);
+            foreach (var item in data)
+            {
+                if (string.Equals(item.OrderNo, value, StringComparison.OrdinalIgnoreCase) &&
+                    (excludeId == null || item.Id != excludeId.Value))
+                    return ApiResult<bool>.Ok(true);
+            }
+            return ApiResult<bool>.Ok(false);
+        }
+
+        /// <summary>检查退款单号是否已存在</summary>
+        public static async ValueTask<ApiResult<bool>> CheckRefundNoExistsAsync(
+            int tenantId, long operatorId, string value, long? excludeId = null)
+        {
+            var (result, data) = await PaymentRefundCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return ApiResult<bool>.Ok(false);
+            foreach (var item in data)
+            {
+                if (string.Equals(item.RefundNo, value, StringComparison.OrdinalIgnoreCase) &&
+                    (excludeId == null || item.Id != excludeId.Value))
+                    return ApiResult<bool>.Ok(true);
+            }
+            return ApiResult<bool>.Ok(false);
+        }
     }
 }

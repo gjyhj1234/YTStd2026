@@ -253,4 +253,42 @@ public static class Messages
     public const string FileDeleteFailed = "storage.file_delete_failed";
     /// <summary>保存文件访问策略失败</summary>
     public const string FileAccessPolicySaveFailed = "storage.file_access_policy_save_failed";
+
+    // ── 唯一性校验消息 ──
+    /// <summary>用户名已存在</summary>
+    public const string UserUsernameExists = "user.username_exists";
+    /// <summary>邮箱已存在</summary>
+    public const string UserEmailExists = "user.email_exists";
+    /// <summary>角色编码已存在</summary>
+    public const string RoleCodeExists = "role.code_exists";
+    /// <summary>租户编码已存在</summary>
+    public const string TenantCodeExists = "tenant.code_exists";
+    /// <summary>分组编码已存在</summary>
+    public const string GroupCodeExists = "group.code_exists";
+    /// <summary>域名已存在</summary>
+    public const string DomainExists = "domain.exists";
+    /// <summary>标签已存在</summary>
+    public const string TagExists = "tag.exists";
+    /// <summary>套餐编码已存在</summary>
+    public const string PackageCodeExists = "package.code_exists";
+    /// <summary>套餐版本编码已存在</summary>
+    public const string PackageVersionCodeExists = "package.version_code_exists";
+    /// <summary>套餐能力键已存在</summary>
+    public const string PackageCapabilityKeyExists = "package.capability_key_exists";
+    /// <summary>通知模板编码已存在</summary>
+    public const string NotificationTemplateCodeExists = "notification.template_code_exists";
+    /// <summary>存储策略编码已存在</summary>
+    public const string StorageStrategyCodeExists = "storage.strategy_code_exists";
+    /// <summary>功能开关键已存在</summary>
+    public const string FeatureKeyExists = "feature.key_exists";
+    /// <summary>参数键已存在</summary>
+    public const string ParamKeyExists = "param.key_exists";
+    /// <summary>配额类型已存在</summary>
+    public const string QuotaTypeExists = "quota.type_exists";
+    /// <summary>发票编号已存在</summary>
+    public const string InvoiceNoExists = "billing.invoice_no_exists";
+    /// <summary>支付单号已存在</summary>
+    public const string PaymentOrderNoExists = "billing.payment_order_no_exists";
+    /// <summary>退款单号已存在</summary>
+    public const string RefundNoExists = "billing.refund_no_exists";
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using YTStdAdo;
 using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
@@ -68,6 +69,17 @@ namespace YTStdTenantPlatform.Application.Services
             if (string.IsNullOrWhiteSpace(req.TenantName))
                 return ApiResult<long>.Fail(ErrorCodes.TenantNameRequired, Messages.TenantNameRequired);
 
+            // Check TenantCode uniqueness
+            var (existResult, existData) = await TenantCRUD.GetListAsync(tenantId, operatorId);
+            if (existResult.Success && existData != null)
+            {
+                foreach (var existing in existData)
+                {
+                    if (string.Equals(existing.TenantCode, req.TenantCode, StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.TenantCodeExists, Messages.TenantCodeExists);
+                }
+            }
+
             var now = DateTime.UtcNow;
             var tenant = new Tenant
             {
@@ -88,6 +100,7 @@ namespace YTStdTenantPlatform.Application.Services
                 UpdatedAt = now
             };
 
+            tenant.Id = await DB.GetNextLongIdAsync();
             var insResult = await TenantCRUD.InsertAsync(tenantId, operatorId, tenant);
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.TenantCreateFailed, Messages.TenantCreateFailed);
@@ -242,6 +255,7 @@ namespace YTStdTenantPlatform.Application.Services
                 OperatorId = opId,
                 OccurredAt = DateTime.UtcNow
             };
+            evt.Id = await DB.GetNextLongIdAsync();
             await TenantLifecycleEventCRUD.InsertAsync(tenantId, operatorId, evt);
         }
 
@@ -256,6 +270,21 @@ namespace YTStdTenantPlatform.Application.Services
                 IsolationMode = t.IsolationMode, Enabled = t.Enabled,
                 OpenedAt = t.OpenedAt, ExpiresAt = t.ExpiresAt, CreatedAt = t.CreatedAt
             };
+        }
+
+        /// <summary>检查租户编码是否已存在</summary>
+        public static async ValueTask<ApiResult<bool>> CheckTenantCodeExistsAsync(
+            int tenantId, long operatorId, string tenantCode, long? excludeId = null)
+        {
+            var (result, data) = await TenantCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return ApiResult<bool>.Ok(false);
+            foreach (var item in data)
+            {
+                if (string.Equals(item.TenantCode, tenantCode, StringComparison.OrdinalIgnoreCase) &&
+                    (excludeId == null || item.Id != excludeId.Value))
+                    return ApiResult<bool>.Ok(true);
+            }
+            return ApiResult<bool>.Ok(false);
         }
     }
 }
