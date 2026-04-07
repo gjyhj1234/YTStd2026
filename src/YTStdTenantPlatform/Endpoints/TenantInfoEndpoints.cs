@@ -52,6 +52,13 @@ namespace YTStdTenantPlatform.Endpoints
                 ctx.Response.StatusCode = 201;
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("创建租户分组");
+
+            group.MapGet("/check-code-exists", async (HttpContext ctx, string groupCode, long? excludeId) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await TenantInfoAppService.CheckGroupCodeExistsAsync(0, user.UserId, groupCode, excludeId);
+                await WriteJsonAsync(ctx, result);
+            }).WithSummary("检查分组编码是否已存在");
         }
 
         /// <summary>注册租户域名路由</summary>
@@ -77,6 +84,13 @@ namespace YTStdTenantPlatform.Endpoints
                 ctx.Response.StatusCode = 201;
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("创建租户域名");
+
+            group.MapGet("/check-exists", async (HttpContext ctx, string domain, long? excludeId) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await TenantInfoAppService.CheckDomainExistsAsync(0, user.UserId, domain, excludeId);
+                await WriteJsonAsync(ctx, result);
+            }).WithSummary("检查域名是否已存在");
         }
 
         /// <summary>注册租户标签路由</summary>
@@ -112,6 +126,13 @@ namespace YTStdTenantPlatform.Endpoints
                 var result = await TenantInfoAppService.BindTagsAsync(0, user.UserId, req);
                 await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
             }).WithSummary("批量绑定标签");
+
+            group.MapGet("/check-exists", async (HttpContext ctx, string tagKey, string tagValue, long? excludeId) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await TenantInfoAppService.CheckTagExistsAsync(0, user.UserId, tagKey, tagValue, excludeId);
+                await WriteJsonAsync(ctx, result);
+            }).WithSummary("检查标签是否已存在");
         }
 
         private static CurrentUser GetCurrentUser(HttpContext ctx) =>

@@ -78,6 +78,13 @@ namespace YTStdTenantPlatform.Endpoints
                 if (result.Code != 0) { await WriteJsonAsync(ctx, result, 400); return; }
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("禁用通知模板");
+
+            group.MapGet("/check-code-exists", async (HttpContext ctx, string templateCode, long? excludeId) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await NotificationAppService.CheckTemplateCodeExistsAsync(0, user.UserId, templateCode, excludeId);
+                await WriteJsonAsync(ctx, result);
+            }).WithSummary("检查通知模板编码是否已存在");
         }
 
         /// <summary>注册通知路由</summary>

@@ -76,6 +76,13 @@ namespace YTStdTenantPlatform.Endpoints
                 var result = await TenantConfigAppService.ToggleFeatureFlagAsync(0, user.UserId, id, enabled);
                 await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
             }).WithSummary("切换功能开关启停");
+
+            group.MapGet("/check-key-exists", async (HttpContext ctx, long tenantRefId, string featureKey, long? excludeId) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await TenantConfigAppService.CheckFeatureKeyExistsAsync(0, user.UserId, tenantRefId, featureKey, excludeId);
+                await WriteJsonAsync(ctx, result);
+            }).WithSummary("检查功能开关键是否已存在");
         }
 
         /// <summary>注册租户参数路由</summary>
@@ -109,6 +116,13 @@ namespace YTStdTenantPlatform.Endpoints
                 var result = await TenantConfigAppService.DeleteParameterAsync(0, user.UserId, id);
                 await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
             }).WithSummary("删除参数");
+
+            group.MapGet("/check-key-exists", async (HttpContext ctx, long tenantRefId, string paramKey, long? excludeId) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await TenantConfigAppService.CheckParamKeyExistsAsync(0, user.UserId, tenantRefId, paramKey, excludeId);
+                await WriteJsonAsync(ctx, result);
+            }).WithSummary("检查参数键是否已存在");
         }
 
         private static CurrentUser GetCurrentUser(HttpContext ctx) =>

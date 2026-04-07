@@ -79,6 +79,13 @@ namespace YTStdTenantPlatform.Endpoints
                 if (result.Code != 0) { await WriteJsonAsync(ctx, result, 400); return; }
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("禁用存储策略");
+
+            group.MapGet("/check-code-exists", async (HttpContext ctx, string strategyCode, long? excludeId) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await StorageAppService.CheckStrategyCodeExistsAsync(0, user.UserId, strategyCode, excludeId);
+                await WriteJsonAsync(ctx, result);
+            }).WithSummary("检查存储策略编码是否已存在");
         }
 
         /// <summary>注册租户文件路由</summary>

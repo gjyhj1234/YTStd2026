@@ -45,6 +45,13 @@ namespace YTStdTenantPlatform.Endpoints
                 ctx.Response.StatusCode = 201;
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("创建/更新资源配额");
+
+            group.MapGet("/check-type-exists", async (HttpContext ctx, long tenantRefId, string quotaType, long? excludeId) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await TenantResourceAppService.CheckQuotaTypeExistsAsync(0, user.UserId, tenantRefId, quotaType, excludeId);
+                await WriteJsonAsync(ctx, result);
+            }).WithSummary("检查配额类型是否已存在");
         }
 
         private static CurrentUser GetCurrentUser(HttpContext ctx) =>

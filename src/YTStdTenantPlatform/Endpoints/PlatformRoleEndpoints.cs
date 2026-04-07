@@ -87,6 +87,13 @@ namespace YTStdTenantPlatform.Endpoints
                 var result = await PlatformRoleAppService.BindMembersAsync(0, user.UserId, id, req);
                 await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
             }).WithSummary("角色成员管理（绑定用户）");
+
+            group.MapGet("/check-code-exists", async (HttpContext ctx, string code, long? excludeId) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await PlatformRoleAppService.CheckRoleCodeExistsAsync(0, user.UserId, code, excludeId);
+                await WriteJsonAsync(ctx, result);
+            }).WithSummary("检查角色编码是否已存在");
         }
 
         private static CurrentUser GetCurrentUser(HttpContext ctx) =>

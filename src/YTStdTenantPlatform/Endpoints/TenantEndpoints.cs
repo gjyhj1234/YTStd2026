@@ -71,6 +71,13 @@ namespace YTStdTenantPlatform.Endpoints
                 var result = await TenantLifecycleAppService.GetLifecycleEventsAsync(0, user.UserId, id, req);
                 await WriteJsonAsync(ctx, ApiResult<PagedResult<TenantLifecycleEventRepDTO>>.Ok(result));
             }).WithSummary("获取租户生命周期事件列表");
+
+            group.MapGet("/check-code-exists", async (HttpContext ctx, string code, long? excludeId) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await TenantLifecycleAppService.CheckTenantCodeExistsAsync(0, user.UserId, code, excludeId);
+                await WriteJsonAsync(ctx, result);
+            }).WithSummary("检查租户编码是否已存在");
         }
 
         private static CurrentUser GetCurrentUser(HttpContext ctx) =>

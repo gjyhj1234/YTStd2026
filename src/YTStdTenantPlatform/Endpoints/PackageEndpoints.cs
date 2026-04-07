@@ -79,6 +79,13 @@ namespace YTStdTenantPlatform.Endpoints
                 if (result.Code != 0) { await WriteJsonAsync(ctx, result, 400); return; }
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("禁用套餐");
+
+            group.MapGet("/check-code-exists", async (HttpContext ctx, string code, long? excludeId) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await PackageAppService.CheckPackageCodeExistsAsync(0, user.UserId, code, excludeId);
+                await WriteJsonAsync(ctx, result);
+            }).WithSummary("检查套餐编码是否已存在");
         }
 
         /// <summary>注册套餐版本路由</summary>
@@ -106,6 +113,13 @@ namespace YTStdTenantPlatform.Endpoints
                 ctx.Response.StatusCode = 201;
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("创建套餐版本");
+
+            group.MapGet("/check-code-exists", async (HttpContext ctx, long packageId, string versionCode, long? excludeId) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await PackageAppService.CheckVersionCodeExistsAsync(0, user.UserId, packageId, versionCode, excludeId);
+                await WriteJsonAsync(ctx, result);
+            }).WithSummary("检查套餐版本编码是否已存在");
         }
 
         /// <summary>注册套餐能力路由</summary>
@@ -133,6 +147,13 @@ namespace YTStdTenantPlatform.Endpoints
                 ctx.Response.StatusCode = 201;
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("创建/更新套餐能力");
+
+            group.MapGet("/check-key-exists", async (HttpContext ctx, long packageVersionId, string capabilityKey, long? excludeId) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await PackageAppService.CheckCapabilityKeyExistsAsync(0, user.UserId, packageVersionId, capabilityKey, excludeId);
+                await WriteJsonAsync(ctx, result);
+            }).WithSummary("检查套餐能力键是否已存在");
         }
 
         private static CurrentUser GetCurrentUser(HttpContext ctx) =>

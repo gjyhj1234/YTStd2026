@@ -71,6 +71,20 @@ namespace YTStdTenantPlatform.Endpoints
                 if (result.Code != 0) { await WriteJsonAsync(ctx, result, 400); return; }
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("禁用平台用户");
+
+            group.MapGet("/check-username-exists", async (HttpContext ctx, string username, long? excludeId) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await PlatformUserAppService.CheckUsernameExistsAsync(0, user.UserId, username, excludeId);
+                await WriteJsonAsync(ctx, result);
+            }).WithSummary("检查用户名是否已存在");
+
+            group.MapGet("/check-email-exists", async (HttpContext ctx, string email, long? excludeId) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await PlatformUserAppService.CheckEmailExistsAsync(0, user.UserId, email, excludeId);
+                await WriteJsonAsync(ctx, result);
+            }).WithSummary("检查邮箱是否已存在");
         }
 
         private static CurrentUser GetCurrentUser(HttpContext ctx) =>

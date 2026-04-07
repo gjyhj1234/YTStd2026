@@ -68,6 +68,13 @@ namespace YTStdTenantPlatform.Endpoints
                 var result = await BillingAppService.GetInvoiceItemsAsync(0, user.UserId, invoiceId, req);
                 await WriteJsonAsync(ctx, ApiResult<PagedResult<BillingInvoiceItemRepDTO>>.Ok(result));
             }).WithSummary("获取发票明细列表");
+
+            group.MapGet("/check-no-exists", async (HttpContext ctx, string invoiceNo, long? excludeId) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await BillingAppService.CheckInvoiceNoExistsAsync(0, user.UserId, invoiceNo, excludeId);
+                await WriteJsonAsync(ctx, result);
+            }).WithSummary("检查发票编号是否已存在");
         }
 
         /// <summary>注册支付订单路由</summary>
@@ -94,6 +101,13 @@ namespace YTStdTenantPlatform.Endpoints
                 ctx.Response.StatusCode = 201;
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("创建支付订单");
+
+            group.MapGet("/check-no-exists", async (HttpContext ctx, string orderNo, long? excludeId) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await BillingAppService.CheckOrderNoExistsAsync(0, user.UserId, orderNo, excludeId);
+                await WriteJsonAsync(ctx, result);
+            }).WithSummary("检查支付单号是否已存在");
         }
 
         /// <summary>注册退款路由</summary>
@@ -120,6 +134,13 @@ namespace YTStdTenantPlatform.Endpoints
                 ctx.Response.StatusCode = 201;
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("创建退款");
+
+            group.MapGet("/check-no-exists", async (HttpContext ctx, string refundNo, long? excludeId) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await BillingAppService.CheckRefundNoExistsAsync(0, user.UserId, refundNo, excludeId);
+                await WriteJsonAsync(ctx, result);
+            }).WithSummary("检查退款单号是否已存在");
         }
 
         private static CurrentUser GetCurrentUser(HttpContext ctx) =>
