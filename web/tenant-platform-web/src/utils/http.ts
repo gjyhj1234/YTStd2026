@@ -32,7 +32,7 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<ApiRe
     localStorage.removeItem('platform_token')
     localStorage.removeItem('platform_user')
     window.location.href = '/login'
-    throw new ApiError(2006, 'auth.token_invalid')
+    throw new ApiError(10006, 10006)
   }
 
   const result: ApiResult<T> = await response.json()

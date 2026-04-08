@@ -11,7 +11,7 @@ export const platformRolesHandlers = [
 
   http.get('/api/platform-roles/:id', ({ params }) => {
     const role = mockPlatformRoles.find((r) => r.Id === Number(params['id']))
-    if (!role) return HttpResponse.json(fail('error.role_not_found'), { status: 404 })
+    if (!role) return HttpResponse.json(fail(), { status: 404 })
     return HttpResponse.json(ok(role))
   }),
 
@@ -25,27 +25,27 @@ export const platformRolesHandlers = [
       Status: 'Active',
       CreatedAt: new Date().toISOString(),
     }
-    return HttpResponse.json(ok(newRole, 'operation.create_success'))
+    return HttpResponse.json(ok(newRole))
   }),
 
   http.put('/api/platform-roles/:id', async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>
-    return HttpResponse.json(ok(body, 'operation.update_success'))
+    return HttpResponse.json(ok(body))
   }),
 
   http.put('/api/platform-roles/:id/enable', () => {
-    return HttpResponse.json(ok(null, 'operation.enable_success'))
+    return HttpResponse.json(ok(null))
   }),
 
   http.put('/api/platform-roles/:id/disable', () => {
-    return HttpResponse.json(ok(null, 'operation.disable_success'))
+    return HttpResponse.json(ok(null))
   }),
 
   http.post('/api/platform-roles/:id/permissions', () => {
-    return HttpResponse.json(ok(null, 'operation.bind_permissions_success'))
+    return HttpResponse.json(ok(null))
   }),
 
   http.post('/api/platform-roles/:id/members', () => {
-    return HttpResponse.json(ok(null, 'operation.bind_members_success'))
+    return HttpResponse.json(ok(null))
   }),
 ]

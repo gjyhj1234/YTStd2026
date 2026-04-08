@@ -1,7 +1,7 @@
 /** 统一响应结构 */
 export interface ApiResult<T = void> {
   Code: number
-  Message: string
+  Message: number
   Data?: T
 }
 

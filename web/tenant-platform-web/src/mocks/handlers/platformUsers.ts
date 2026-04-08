@@ -22,19 +22,19 @@ export const platformUsersHandlers = [
       LastLoginAt: '',
       CreatedAt: new Date().toISOString(),
     }
-    return HttpResponse.json(ok(newUser, 'operation.create_success'))
+    return HttpResponse.json(ok(newUser))
   }),
 
   http.put('/api/platform-users/:id', async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>
-    return HttpResponse.json(ok(body, 'operation.update_success'))
+    return HttpResponse.json(ok(body))
   }),
 
   http.put('/api/platform-users/:id/enable', () => {
-    return HttpResponse.json(ok(null, 'operation.enable_success'))
+    return HttpResponse.json(ok(null))
   }),
 
   http.put('/api/platform-users/:id/disable', () => {
-    return HttpResponse.json(ok(null, 'operation.disable_success'))
+    return HttpResponse.json(ok(null))
   }),
 ]

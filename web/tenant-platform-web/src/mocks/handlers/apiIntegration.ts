@@ -25,11 +25,11 @@ export const apiIntegrationHandlers = [
       ExpiresAt: '2026-12-31T00:00:00Z',
       CreatedAt: new Date().toISOString(),
     }
-    return HttpResponse.json(ok(result, 'operation.create_success'))
+    return HttpResponse.json(ok(result))
   }),
 
   http.put('/api/tenant-api-keys/:id/disable', () => {
-    return HttpResponse.json(ok(null, 'operation.disable_success'))
+    return HttpResponse.json(ok(null))
   }),
 
   http.get('/api/tenant-api-usage-stats', ({ request }) => {
@@ -75,20 +75,20 @@ export const apiIntegrationHandlers = [
       Status: 'Active',
       CreatedAt: new Date().toISOString(),
     }
-    return HttpResponse.json(ok(newWebhook, 'operation.create_success'))
+    return HttpResponse.json(ok(newWebhook))
   }),
 
   http.put('/api/tenant-webhooks/:id', async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>
-    return HttpResponse.json(ok(body, 'operation.update_success'))
+    return HttpResponse.json(ok(body))
   }),
 
   http.put('/api/tenant-webhooks/:id/enable', () => {
-    return HttpResponse.json(ok(null, 'operation.enable_success'))
+    return HttpResponse.json(ok(null))
   }),
 
   http.put('/api/tenant-webhooks/:id/disable', () => {
-    return HttpResponse.json(ok(null, 'operation.disable_success'))
+    return HttpResponse.json(ok(null))
   }),
 
   http.get('/api/webhook-delivery-logs', ({ request }) => {

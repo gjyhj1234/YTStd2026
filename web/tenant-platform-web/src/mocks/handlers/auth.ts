@@ -6,13 +6,13 @@ export const authHandlers = [
   http.post('/api/auth/login', async ({ request }) => {
     const body = (await request.json()) as { Username: string; Password: string }
     if (body.Username === 'admin' && body.Password === 'admin123') {
-      return HttpResponse.json(ok(mockLoginResult, 'auth.login_success'))
+      return HttpResponse.json(ok(mockLoginResult))
     }
-    return HttpResponse.json(fail('auth.invalid_credentials', 2002), { status: 401 })
+    return HttpResponse.json(fail(10002), { status: 401 })
   }),
 
   http.post('/api/auth/refresh', () => {
-    return HttpResponse.json(ok(mockLoginResult, 'auth.refresh_success'))
+    return HttpResponse.json(ok(mockLoginResult))
   }),
 
   http.get('/api/auth/me', () => {

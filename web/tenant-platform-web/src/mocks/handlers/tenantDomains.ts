@@ -20,6 +20,6 @@ export const tenantDomainsHandlers = [
       VerificationStatus: 'Pending',
       CreatedAt: new Date().toISOString(),
     }
-    return HttpResponse.json(ok(newDomain, 'operation.create_success'))
+    return HttpResponse.json(ok(newDomain))
   }),
 ]

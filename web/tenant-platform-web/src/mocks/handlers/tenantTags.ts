@@ -18,10 +18,10 @@ export const tenantTagsHandlers = [
       TagCategory: body['TagCategory'] as string,
       CreatedAt: new Date().toISOString(),
     }
-    return HttpResponse.json(ok(newTag, 'operation.create_success'))
+    return HttpResponse.json(ok(newTag))
   }),
 
   http.post('/api/tenant-tags/bind', () => {
-    return HttpResponse.json(ok(null, 'operation.bind_success'))
+    return HttpResponse.json(ok(null))
   }),
 ]

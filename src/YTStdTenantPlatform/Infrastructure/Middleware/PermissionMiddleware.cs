@@ -54,7 +54,7 @@ namespace YTStdTenantPlatform.Infrastructure.Middleware
                     {
                         writer.WriteStartObject();
                         writer.WriteNumber("Code", 10006);
-                        writer.WriteString("Message", "");
+                        writer.WriteNumber("Message", 10006);
                         writer.WriteNull("Data");
                         writer.WriteEndObject();
                     },
@@ -91,7 +91,7 @@ namespace YTStdTenantPlatform.Infrastructure.Middleware
                     {
                         writer.WriteStartObject();
                         writer.WriteNumber("Code", 11001);
-                        writer.WriteString("Message", "");
+                        writer.WriteNumber("Message", 11001);
                         writer.WriteNull("Data");
                         writer.WriteEndObject();
                     },

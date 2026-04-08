@@ -1,9 +1,9 @@
-export function ok<T>(data: T, message = 'operation.success') {
-  return { Code: 0, Message: message, Data: data }
+export function ok<T>(data: T) {
+  return { Code: 0, Message: 0, Data: data }
 }
 
-export function fail(message = 'operation.failed', code = 1003) {
-  return { Code: code, Message: message, Data: null }
+export function fail(code = 50002) {
+  return { Code: code, Message: code, Data: null }
 }
 
 export function paged<T>(items: T[], page: number, pageSize: number) {

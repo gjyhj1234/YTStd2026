@@ -9,13 +9,13 @@ export const platformPermissionsHandlers = [
 
   http.get('/api/platform-permissions/by-code/:code', ({ params }) => {
     const perm = mockFlatPermissions.find((p) => p.Code === params['code'])
-    if (!perm) return HttpResponse.json(fail('error.permission_not_found'), { status: 404 })
+    if (!perm) return HttpResponse.json(fail(), { status: 404 })
     return HttpResponse.json(ok(perm))
   }),
 
   http.get('/api/platform-permissions/:id', ({ params }) => {
     const perm = mockFlatPermissions.find((p) => p.Id === Number(params['id']))
-    if (!perm) return HttpResponse.json(fail('error.permission_not_found'), { status: 404 })
+    if (!perm) return HttpResponse.json(fail(), { status: 404 })
     return HttpResponse.json(ok(perm))
   }),
 

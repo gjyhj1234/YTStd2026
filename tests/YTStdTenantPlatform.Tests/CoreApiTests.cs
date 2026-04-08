@@ -18,7 +18,7 @@ namespace YTStdTenantPlatform.Tests
         {
             var result = ApiResult.Ok();
             Assert.True(result.Code == 0);
-            Assert.Equal("", result.Message);
+            Assert.Equal(0, result.Message);
         }
 
         [Fact]
@@ -26,7 +26,7 @@ namespace YTStdTenantPlatform.Tests
         {
             var result = ApiResult.Fail(50002);
             Assert.False(result.Code == 0);
-            Assert.Equal("", result.Message);
+            Assert.Equal(50002, result.Message);
         }
 
         [Fact]
@@ -35,7 +35,7 @@ namespace YTStdTenantPlatform.Tests
             var result = ApiResult<long>.Ok(42L);
             Assert.True(result.Code == 0);
             Assert.Equal(42L, result.Data);
-            Assert.Equal("", result.Message);
+            Assert.Equal(0, result.Message);
         }
 
         [Fact]
@@ -43,7 +43,7 @@ namespace YTStdTenantPlatform.Tests
         {
             var result = ApiResult<long>.Fail(50002);
             Assert.False(result.Code == 0);
-            Assert.Equal("", result.Message);
+            Assert.Equal(50002, result.Message);
             Assert.Equal(0L, result.Data);
         }
 

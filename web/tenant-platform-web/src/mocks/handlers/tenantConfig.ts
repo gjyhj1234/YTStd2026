@@ -13,7 +13,7 @@ export const tenantConfigHandlers = [
     )
     if (!config)
       return HttpResponse.json(
-        fail('error.config_not_found'),
+        fail(),
         { status: 404 },
       )
     return HttpResponse.json(ok(config))
@@ -21,7 +21,7 @@ export const tenantConfigHandlers = [
 
   http.put('/api/tenant-system-configs/:tenantRefId', async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>
-    return HttpResponse.json(ok(body, 'operation.update_success'))
+    return HttpResponse.json(ok(body))
   }),
 
   http.get('/api/tenant-feature-flags', ({ request }) => {
@@ -41,11 +41,11 @@ export const tenantConfigHandlers = [
       Description: (body['Description'] as string) ?? '',
       CreatedAt: new Date().toISOString(),
     }
-    return HttpResponse.json(ok(flag, 'operation.create_success'))
+    return HttpResponse.json(ok(flag))
   }),
 
   http.put('/api/tenant-feature-flags/:id/toggle', () => {
-    return HttpResponse.json(ok(null, 'operation.toggle_success'))
+    return HttpResponse.json(ok(null))
   }),
 
   http.get('/api/tenant-parameters', ({ request }) => {
@@ -65,10 +65,10 @@ export const tenantConfigHandlers = [
       Description: (body['Description'] as string) ?? '',
       CreatedAt: new Date().toISOString(),
     }
-    return HttpResponse.json(ok(param, 'operation.create_success'))
+    return HttpResponse.json(ok(param))
   }),
 
   http.delete('/api/tenant-parameters/:id', () => {
-    return HttpResponse.json(ok(null, 'operation.delete_success'))
+    return HttpResponse.json(ok(null))
   }),
 ]

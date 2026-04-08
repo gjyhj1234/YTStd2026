@@ -17,7 +17,7 @@ export const storageHandlers = [
     const s = mockStorageStrategies.find((s) => s.Id === Number(params['id']))
     if (!s)
       return HttpResponse.json(
-        fail('error.storage_strategy_not_found'),
+        fail(),
         { status: 404 },
       )
     return HttpResponse.json(ok(s))
@@ -35,20 +35,20 @@ export const storageHandlers = [
       Status: 'Active',
       CreatedAt: new Date().toISOString(),
     }
-    return HttpResponse.json(ok(newStrategy, 'operation.create_success'))
+    return HttpResponse.json(ok(newStrategy))
   }),
 
   http.put('/api/storage-strategies/:id', async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>
-    return HttpResponse.json(ok(body, 'operation.update_success'))
+    return HttpResponse.json(ok(body))
   }),
 
   http.put('/api/storage-strategies/:id/enable', () => {
-    return HttpResponse.json(ok(null, 'operation.enable_success'))
+    return HttpResponse.json(ok(null))
   }),
 
   http.put('/api/storage-strategies/:id/disable', () => {
-    return HttpResponse.json(ok(null, 'operation.disable_success'))
+    return HttpResponse.json(ok(null))
   }),
 
   http.get('/api/tenant-files', ({ request }) => {
@@ -61,14 +61,14 @@ export const storageHandlers = [
     const f = mockTenantFiles.find((f) => f.Id === Number(params['id']))
     if (!f)
       return HttpResponse.json(
-        fail('error.file_not_found'),
+        fail(),
         { status: 404 },
       )
     return HttpResponse.json(ok(f))
   }),
 
   http.delete('/api/tenant-files/:id', () => {
-    return HttpResponse.json(ok(null, 'operation.delete_success'))
+    return HttpResponse.json(ok(null))
   }),
 
   http.get('/api/file-access-policies', ({ request }) => {
@@ -87,6 +87,6 @@ export const storageHandlers = [
       PermissionCode: body['PermissionCode'] as string,
       CreatedAt: new Date().toISOString(),
     }
-    return HttpResponse.json(ok(newPolicy, 'operation.create_success'))
+    return HttpResponse.json(ok(newPolicy))
   }),
 ]
