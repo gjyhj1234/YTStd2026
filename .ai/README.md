@@ -82,23 +82,61 @@
 │   │   ├── unit-test.md           # 单元测试
 │   │   ├── integration-test.md    # 集成测试
 │   │   └── postman-collection.md  # Postman 集合
-│   ├── 08-platform/               # 平台模块提示词
-│   │   ├── auth.md                # 认证
-│   │   ├── permission.md          # 权限
-│   │   ├── tenant.md              # 租户
-│   │   ├── menu.md                # 菜单
-│   │   ├── dictionary.md          # 字典
-│   │   ├── config.md              # 配置
-│   │   └── audit.md               # 审计
+│   ├── 08-platform/               # 租户平台业务提示词（业务专用）
+│   │   ├── README.md              # 业务总览与任务索引
+│   │   ├── database/              # 数据库设计
+│   │   │   ├── schema.md          # 表结构
+│   │   │   └── seed-data.md       # 初始化数据
+│   │   ├── backend/               # 后端 API（每模块一文件）
+│   │   │   ├── infrastructure.md  # 基础设施
+│   │   │   ├── error-codes.md     # 错误码
+│   │   │   ├── auth-api.md        # 认证
+│   │   │   ├── platform-user-api.md
+│   │   │   ├── platform-role-api.md
+│   │   │   ├── platform-permission-api.md
+│   │   │   ├── tenant-lifecycle-api.md
+│   │   │   ├── tenant-info-api.md
+│   │   │   ├── tenant-resource-api.md
+│   │   │   ├── tenant-config-api.md
+│   │   │   ├── menu-dictionary-api.md
+│   │   │   ├── package-api.md
+│   │   │   ├── subscription-api.md
+│   │   │   ├── billing-api.md
+│   │   │   ├── api-integration-api.md
+│   │   │   ├── platform-operation-api.md
+│   │   │   ├── audit-api.md
+│   │   │   ├── notification-api.md
+│   │   │   └── storage-api.md
+│   │   ├── frontend/              # 前端页面（每模块一文件）
+│   │   │   ├── scaffold.md
+│   │   │   ├── layout.md
+│   │   │   ├── dashboard-page.md
+│   │   │   ├── platform-user-page.md
+│   │   │   ├── ... (每模块一文件)
+│   │   │   └── i18n.md            # 前端国际化接入
+│   │   └── testing/               # 测试
+│   │       ├── backend-tests.md
+│   │       └── postman.md
 │   ├── 09-docs/                   # 文档提示词
 │   │   ├── api-doc.md             # API 文档
 │   │   └── architecture-doc.md    # 架构文档
 │   ├── 10-review/                 # 审查提示词
 │   │   ├── code-review.md         # 代码审查
 │   │   └── architecture-review.md # 架构审查
-│   └── 11-base-library/           # 底层框架工程提示词
-│       ├── README.md              # 底层工程保护规则与目录说明
-│       └── base-library-review.md # 底层工程统一代码审查
+│   ├── 11-base-library/           # 底层框架工程提示词
+│   │   ├── README.md              # 底层工程保护规则与目录说明
+│   │   ├── base-library-review.md # 底层工程统一代码审查
+│   │   ├── ytsti18n-refactor.md   # YTStdI18n 运行时重构
+│   │   └── ytsti18n-generator-refactor.md # YTStdI18n.Generator 重构
+│   │
+│   └── 12-business-template/     # 业务模块模板（可复用）
+│       ├── README.md              # 业务模块模板说明
+│       └── template/              # 可复制的模板目录
+│           ├── README.md          # 业务总览模板
+│           ├── database/          # 数据库模板
+│           ├── backend/           # 后端模板
+│           ├── frontend/          # 前端模板
+│           └── testing/           # 测试模板
 │
 ├── tasks/                         # 当前任务追踪（工作区）
 │   └── .gitkeep
@@ -156,16 +194,18 @@
 |------|------|------|
 | 00 | 治理 | 流程与阶段控制 |
 | 01 | 项目 | 解决方案与模块初始化 |
-| 02 | 后端 | 后端实现提示词 |
-| 03 | 前端 | 前端实现提示词 |
-| 04 | 数据库 | 数据库设计与数据 |
+| 02 | 后端 | 后端实现提示词（通用） |
+| 03 | 前端 | 前端实现提示词（通用） |
+| 04 | 数据库 | 数据库设计与数据（通用） |
 | 05 | 国际化 | i18n 相关（YTStdI18n.Generator 驱动） |
 | 06 | 生成器 | Source Generator 相关 |
-| 07 | 测试 | 测试与 Postman |
-| 08 | 平台 | 平台能力模块 |
+| 07 | 测试 | 测试与 Postman（通用） |
+| 08 | 租户平台 | 第一个业务系统（业务专用） |
 | 09 | 文档 | 文档生成 |
 | 10 | 审查 | 代码与架构审查 |
 | 11 | 底层框架 | 底层工程审查、优化与调整（受保护） |
+| 12 | 业务模板 | 可复用的业务模块开发模板 |
+| 13+ | 扩展业务 | 预留给 SaaS 业务、运营后台等新业务 |
 
 ---
 

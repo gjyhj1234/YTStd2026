@@ -23,22 +23,24 @@
 
 ## 阶段总览
 
-| 阶段 | 名称 | 目标 | 依赖 | 预估轮次 |
-|------|------|------|------|---------|
-| P0 | 协作规则建立 | 确认规则和目录结构 | 无 | 1 |
-| P1 | 数据库设计 | 数据字典与表结构确认 | P0 | 1-2 |
-| P2 | 实体建模 | 创建实体、枚举、触发生成器 | P1 | 2-3 |
-| P3 | 初始化数据 | 建表、种子数据、缓存预热 | P2 | 1-2 |
-| P4 | 后端基础设施 | 主程序骨架、中间件、认证 | P3 | 2-3 |
-| P5 | 核心后端 API | 平台管理、租户核心 API | P4 | 3-5 |
-| P6 | 扩展后端 API | 套餐、订阅、计费等扩展 API | P5 | 3-5 |
-| P7 | 后端测试 | 单元测试、集成测试 | P5-P6 | 2-3 |
-| P8 | Postman 测试 | 生成 Postman 测试集合 | P5-P6 | 1-2 |
-| P9 | 前端骨架 | 前端工程、登录、布局 | P5 | 2-3 |
-| P10 | 前端模块 | 业务页面、API 对接 | P6, P9 | 5-8 |
-| P11 | 前端国际化 | 全量 i18n 接入 | P10 | 2-3 |
-| P12 | 文档整理 | API 文档、架构文档 | P6, P10 | 1-2 |
-| P13 | 最终审查 | 全量校验、补漏、收尾 | 全部 | 1-2 |
+| 阶段 | 名称 | 目标 | 依赖 | 预估轮次 | 提示词 |
+|------|------|------|------|---------|--------|
+| P0 | 协作规则建立 | 确认规则和目录结构 | 无 | 1 | — |
+| P0.5 | 底层框架审查优化 | 审查优化底层工程 | P0 | 3-5 | `11-base-library/base-library-review.md` |
+| P0.6 | YTStdI18n 重构 | 重构 i18n 运行时 + Generator | P0.5 | 2-3 | `11-base-library/ytsti18n-*.md` |
+| P1 | 数据库设计 | 数据字典与表结构确认 | P0 | 1-2 | `08-platform/database/schema.md` |
+| P2 | 实体建模 | 创建实体、枚举、触发生成器 | P1 | 2-3 | `02-backend/entity-modeling.md` |
+| P3 | 初始化数据 | 建表、种子数据、缓存预热 | P2 | 1-2 | `08-platform/database/seed-data.md` |
+| P4 | 后端基础设施 | 主程序骨架、中间件、认证 | P3, P0.6 | 2-3 | `08-platform/backend/infrastructure.md` |
+| P5 | 核心后端 API | 平台管理、租户核心 API | P4 | 3-5 | `08-platform/backend/*-api.md`（核心） |
+| P6 | 扩展后端 API | 套餐、订阅、计费等扩展 API | P5 | 3-5 | `08-platform/backend/*-api.md`（扩展） |
+| P7 | 后端测试 | 单元测试、集成测试 | P5-P6 | 2-3 | `08-platform/testing/backend-tests.md` |
+| P8 | Postman 测试 | 生成 Postman 测试集合 | P5-P6 | 1-2 | `08-platform/testing/postman.md` |
+| P9 | 前端骨架 | 前端工程、登录、布局 | P5 | 2-3 | `08-platform/frontend/scaffold.md` + `layout.md` |
+| P10 | 前端模块 | 业务页面、API 对接 | P6, P9 | 5-8 | `08-platform/frontend/*-page.md` |
+| P11 | 前端国际化 | 全量 i18n 接入 | P10, P0.6 | 2-3 | `08-platform/frontend/i18n.md` |
+| P12 | 文档整理 | API 文档、架构文档 | P6, P10 | 1-2 | `09-docs/*.md` |
+| P13 | 最终审查 | 全量校验、补漏、收尾 | 全部 | 1-2 | `10-review/*.md` |
 
 ---
 
@@ -60,6 +62,51 @@
 - `dotnet test YTStd.slnx` 通过
 
 **人类介入点**：确认规则无需调整
+
+---
+
+### P0.5：底层框架审查与优化
+
+**目标**：对所有底层框架工程进行代码审查与优化。
+
+**前置阅读**：
+- `.ai/prompts/11-base-library/base-library-review.md`
+
+**执行内容**：
+1. 按依赖顺序审查：YTStdLogger → YTStdSqlBuilder → YTStdAdo → YTStdEntity → YTStdI18n
+2. 按 6 个维度审查：正确性、AOT 性能、代码规范、国际化、命名、测试覆盖
+3. 修复发现的问题
+4. 审查完成的工程进入受保护状态
+
+**验收**：
+- `dotnet build YTStd.slnx` 通过
+- `dotnet test YTStd.slnx` 通过
+- 所有 public 成员有中文 XML 文档注释
+
+---
+
+### P0.6：YTStdI18n + Generator 重构
+
+**目标**：根据最新国际化规范重构 YTStdI18n 运行时和 Generator。
+
+**前置阅读**：
+- `.ai/prompts/11-base-library/ytsti18n-refactor.md`
+- `.ai/prompts/11-base-library/ytsti18n-generator-refactor.md`
+
+**执行内容**：
+1. 先重构 `src/YTStdI18n/`（运行时）
+2. 再重构 `src/YTStdI18n.Generator/`（Source Generator）
+3. 验证 Generator 能正确生成后端代码和前端 JSON
+4. 更新测试
+
+**验收**：
+- `dotnet build YTStd.slnx` 通过
+- `dotnet test YTStd.slnx` 通过
+- Generator 生成的 K 常量类正确
+- Generator 生成的前端 JSON 正确
+- 增量生成策略正确
+
+**人类介入点**：确认 I18n API 变更
 
 ---
 
@@ -292,3 +339,38 @@ P6 扩展模块：
 4. 人类在标记的介入点确认后再继续
 5. 如果某个阶段的某个模块失败，不影响其他模块继续
 6. 优先完成平台底座（P0-P4），再完成业务模块（P5-P6）
+
+---
+
+## 多业务扩展
+
+本阶段计划以**租户平台**（08-platform）为首个业务。完成后可按相同模式扩展其他业务：
+
+1. 参照 `.ai/prompts/12-business-template/` 创建新业务目录（如 `13-saas-business/`）
+2. 复用底层框架（00-07、09-12 编号的通用提示词）
+3. 仅需编写新业务专用的数据库、后端 API、前端页面提示词
+4. 新业务独立推进，不影响已完成的租户平台
+
+### 可复用的通用层
+
+| 编号 | 内容 | 所有业务共享 |
+|------|------|:----------:|
+| 00 | 治理与流程 | ✓ |
+| 01 | 项目初始化 | ✓ |
+| 02 | 后端通用规范 | ✓ |
+| 03 | 前端通用规范 | ✓ |
+| 04 | 数据库通用规范 | ✓ |
+| 05 | 国际化通用规范 | ✓ |
+| 06 | 生成器通用规范 | ✓ |
+| 07 | 测试通用规范 | ✓ |
+| 09 | 文档规范 | ✓ |
+| 10 | 审查规范 | ✓ |
+| 11 | 底层框架 | ✓ |
+| 12 | 业务模板 | ✓ |
+
+### 业务专用层
+
+| 编号 | 内容 | 业务独立 |
+|------|------|:--------:|
+| 08 | 租户平台 | ✓ |
+| 13+ | 未来业务 | ✓ |
