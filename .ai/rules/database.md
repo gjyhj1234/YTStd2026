@@ -27,22 +27,31 @@
 
 ### 前缀体系
 
-| 前缀 | 适用范围 | 示例 |
-|------|---------|------|
-| `plt_` | 平台管理表 | `plt_user`, `plt_role`, `plt_permission` |
-| `tnt_` | 租户相关表 | `tnt_info`, `tnt_lifecycle_event`, `tnt_resource_quota` |
-| `saas_` | SaaS 业务表 | `saas_package`, `saas_subscription`, `saas_billing` |
-| `sys_` | 系统配置表 | `sys_config`, `sys_feature_flag`, `sys_dictionary` |
-| `log_` | 日志审计表 | `log_audit`, `log_operation`, `log_login` |
-| `ntf_` | 通知表 | `ntf_template`, `ntf_record` |
-| `api_` | API 集成表 | `api_key`, `api_quota`, `api_webhook` |
-| `stg_` | 存储表 | `stg_file`, `stg_policy` |
+#### 租户平台表（系统管理）
+
+| 前缀 | 适用范围 | 示例 | 说明 |
+|------|---------|------|------|
+| `sys_` | 租户平台所有表 | `sys_user`, `sys_role`, `sys_permission`, `sys_tenant`, `sys_config`, `sys_dictionary`, `sys_audit_log`, `sys_notification`, `sys_api_key`, `sys_file` | 租户后台统一前缀，涵盖平台管理、租户管理、系统配置、日志审计、通知、API 集成、存储等所有系统管理相关表。使用 `sys_` 前缀表示这些表不参与业务分表 |
+
+#### 业务模块表（后续 SaaS 业务扩展时使用）
+
+| 前缀 | 适用范围 | 示例 | 说明 |
+|------|---------|------|------|
+| `pat_` | 患者相关业务表 | `pat_patient`, `pat_medical_record` | 患者业务模块，会进行分表处理 |
+| `fee_` | 费用相关业务表 | `fee_charge`, `fee_invoice` | 费用业务模块，会进行分表处理 |
+| 其他 | 其他业务域 | 按业务域缩写定义 | 每个业务域使用独立的 2-4 字母前缀 |
+
+#### 前缀设计原则
+
+1. `sys_` 前缀表示**不需要分表**的系统管理表，包括但不限于：平台用户、角色、权限、菜单、租户、租户信息、资源配额、套餐、订阅、计费、配置、功能开关、字典、审计日志、操作日志、登录日志、通知模板、通知记录、API 密钥、API 配额、Webhook、文件存储
+2. 业务域前缀表示**可能需要分表**的业务数据表
+3. 新增业务模块时，由项目负责人确定业务前缀并记录到本文件
 
 ### 命名规则
 
 1. 前缀 + 业务名称
 2. 使用名词或名词短语
-3. 单数形式（`plt_user` 不是 `plt_users`）
+3. 单数形式（`sys_user` 不是 `sys_users`）
 4. 多个单词用下划线分隔
 
 ### 关联表命名
@@ -50,17 +59,17 @@
 多对多关联表使用 `{前缀}_{表A}_{表B}` 格式：
 
 ```
-plt_role_permission        # 角色-权限关联
-plt_user_role              # 用户-角色关联
-tnt_tag_relation           # 租户-标签关联
+sys_role_permission        # 角色-权限关联
+sys_user_role              # 用户-角色关联
+sys_tenant_tag             # 租户-标签关联
 ```
 
 ### 特殊表命名
 
 | 表类型 | 命名规则 | 示例 |
 |-------|---------|------|
-| 历史表 | `{原表名}_history` | `tnt_info_history` |
-| 日志表 | `log_{业务}` | `log_audit`, `log_login` |
+| 历史表 | `{原表名}_history` | `sys_tenant_history` |
+| 日志表 | `sys_{业务}_log` | `sys_audit_log`, `sys_login_log` |
 | 配置表 | `sys_{配置项}` | `sys_config`, `sys_feature_flag` |
 | 字典表 | `sys_dictionary` | 统一一张字典表 |
 | 审计表 | 实体框架自动生成 | 由 `[Entity]` 审计特性控制 |
@@ -78,7 +87,7 @@ tnt_tag_relation           # 租户-标签关联
 ### 外键引用字段
 
 - 命名格式：`{被引用表简称}_id`
-- 示例：`role_id`（引用 `plt_role.id`）、`package_id`（引用 `saas_package.id`）
+- 示例：`role_id`（引用 `sys_role.id`）、`package_id`（引用 `sys_package.id`）
 - 特殊情况：`tenant_ref_id`（引用租户主表，禁止使用裸 `tenant_id`）
 
 ### 租户引用字段
@@ -134,10 +143,10 @@ tnt_tag_relation           # 租户-标签关联
 
 | 索引类型 | 命名格式 | 示例 |
 |---------|---------|------|
-| 普通索引 | `idx_{表名}_{列名}` | `idx_plt_user_username` |
-| 唯一索引 | `uq_{表名}_{列名}` | `uq_plt_user_username` |
-| 组合索引 | `idx_{表名}_{列1}_{列2}` | `idx_plt_user_role_user_id_role_id` |
-| 外键约束 | `fk_{表名}_{引用表名}` | `fk_plt_user_role_role_id` |
+| 普通索引 | `idx_{表名}_{列名}` | `idx_sys_user_username` |
+| 唯一索引 | `uq_{表名}_{列名}` | `uq_sys_user_username` |
+| 组合索引 | `idx_{表名}_{列1}_{列2}` | `idx_sys_user_role_user_id_role_id` |
+| 外键约束 | `fk_{表名}_{引用表名}` | `fk_sys_user_role_role_id` |
 
 ---
 
@@ -153,7 +162,7 @@ tnt_tag_relation           # 租户-标签关联
 
 - 目标：表名在 30 字符以内
 - 上限：63 字符（PostgreSQL 限制）
-- 优先使用缩写前缀（`plt_`、`tnt_`、`saas_`）缩短表名
+- 优先使用缩写前缀（`sys_`、以及业务域前缀如 `pat_`、`fee_`）缩短表名
 - 如仍然过长，可缩写中间部分但必须保持可读性
 
 ---
