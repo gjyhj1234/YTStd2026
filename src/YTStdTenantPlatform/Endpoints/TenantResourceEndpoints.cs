@@ -31,7 +31,7 @@ namespace YTStdTenantPlatform.Endpoints
             {
                 var user = GetCurrentUser(ctx);
                 var result = await TenantResourceAppService.GetByIdAsync(0, user.UserId, id);
-                if (result == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.ResourceNotFound, Messages.ResourceNotFound), 404); return; }
+                if (result == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.ResourceNotFound), 404); return; }
                 await WriteJsonAsync(ctx, ApiResult<TenantResourceQuotaRepDTO>.Ok(result));
             }).WithSummary("获取配额详情");
 
@@ -39,9 +39,9 @@ namespace YTStdTenantPlatform.Endpoints
             {
                 var user = GetCurrentUser(ctx);
                 var req = await YTStdTenantPlatform.Infrastructure.Serialization.TenantPlatformJsonRequestReader.ReadAsync<SaveTenantResourceQuotaReqDTO>(ctx.Request, ctx.RequestAborted);
-                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody, Messages.InvalidRequestBody), 400); return; }
+                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody), 400); return; }
                 var result = await TenantResourceAppService.SaveAsync(0, user.UserId, req);
-                if (result.Code != 0) { await WriteJsonAsync(ctx, ApiResult.Fail(result.Code, result.Message), 400); return; }
+                if (result.Code != 0) { await WriteJsonAsync(ctx, ApiResult.Fail(result.Code), 400); return; }
                 ctx.Response.StatusCode = 201;
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("创建/更新资源配额");

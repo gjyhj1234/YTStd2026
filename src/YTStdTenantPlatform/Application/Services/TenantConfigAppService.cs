@@ -35,7 +35,7 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, long tenantRefId, UpdateTenantSystemConfigReqDTO req)
         {
             var (getResult, configs) = await TenantSystemConfigCRUD.GetListAsync(tenantId, operatorId);
-            if (!getResult.Success || configs == null) return ApiResult.Fail(ErrorCodes.ConfigQueryFailed, Messages.ConfigQueryFailed);
+            if (!getResult.Success || configs == null) return ApiResult.Fail(ErrorCodes.ConfigQueryFailed);
 
             TenantSystemConfig? target = null;
             foreach (var c in configs) { if (c.TenantRefId == tenantRefId) { target = c; break; } }
@@ -70,7 +70,7 @@ namespace YTStdTenantPlatform.Application.Services
 
             Logger.Info(tenantId, operatorId,
                 "[TenantConfigAppService] 更新系统配置: tenant=" + tenantRefId);
-            return ApiResult.Ok(Messages.OperationSuccess);
+            return ApiResult.Ok();
         }
 
         // ──────────────────────────────────────────────────────
@@ -114,7 +114,7 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, SaveTenantFeatureFlagReqDTO req)
         {
             if (string.IsNullOrWhiteSpace(req.FeatureKey))
-                return ApiResult<long>.Fail(ErrorCodes.FeatureKeyRequired, Messages.FeatureKeyRequired);
+                return ApiResult<long>.Fail(ErrorCodes.FeatureKeyRequired);
 
             var now = DateTime.UtcNow;
             var flag = new TenantFeatureFlag
@@ -130,7 +130,7 @@ namespace YTStdTenantPlatform.Application.Services
 
             var insResult = await TenantFeatureFlagCRUD.InsertAsync(tenantId, operatorId, flag);
             if (!insResult.Success)
-                return ApiResult<long>.Fail(ErrorCodes.FeatureFlagSaveFailed, Messages.FeatureFlagSaveFailed);
+                return ApiResult<long>.Fail(ErrorCodes.FeatureFlagSaveFailed);
 
             await PlatformCacheCoordinator.InvalidateFeatureFlagsAsync();
             Logger.Info(tenantId, operatorId,
@@ -143,21 +143,21 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, long id, bool enabled)
         {
             var (getResult, flags) = await TenantFeatureFlagCRUD.GetListAsync(tenantId, operatorId);
-            if (!getResult.Success || flags == null) return ApiResult.Fail(ErrorCodes.ConfigQueryFailed, Messages.ConfigQueryFailed);
+            if (!getResult.Success || flags == null) return ApiResult.Fail(ErrorCodes.ConfigQueryFailed);
 
             TenantFeatureFlag? target = null;
             foreach (var f in flags) { if (f.Id == id) { target = f; break; } }
-            if (target == null) return ApiResult.Fail(ErrorCodes.FeatureFlagNotFound, Messages.FeatureFlagNotFound);
+            if (target == null) return ApiResult.Fail(ErrorCodes.FeatureFlagNotFound);
 
             target.Enabled = enabled;
             target.UpdatedAt = DateTime.UtcNow;
             var updResult = await TenantFeatureFlagCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.FeatureFlagToggleFailed, Messages.FeatureFlagToggleFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.FeatureFlagToggleFailed);
 
             await PlatformCacheCoordinator.InvalidateFeatureFlagsAsync();
             Logger.Info(tenantId, operatorId,
                 "[TenantConfigAppService] 切换功能开关: " + target.FeatureKey + " → " + enabled);
-            return ApiResult.Ok(Messages.OperationSuccess);
+            return ApiResult.Ok();
         }
 
         // ──────────────────────────────────────────────────────
@@ -210,7 +210,7 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, SaveTenantParameterReqDTO req)
         {
             if (string.IsNullOrWhiteSpace(req.ParamKey))
-                return ApiResult<long>.Fail(ErrorCodes.ParamKeyRequired, Messages.ParamKeyRequired);
+                return ApiResult<long>.Fail(ErrorCodes.ParamKeyRequired);
 
             var now = DateTime.UtcNow;
             var param = new TenantParameter
@@ -226,7 +226,7 @@ namespace YTStdTenantPlatform.Application.Services
 
             var insResult = await TenantParameterCRUD.InsertAsync(tenantId, operatorId, param);
             if (!insResult.Success)
-                return ApiResult<long>.Fail(ErrorCodes.ParamSaveFailed, Messages.ParamSaveFailed);
+                return ApiResult<long>.Fail(ErrorCodes.ParamSaveFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[TenantConfigAppService] 保存参数: " + req.ParamKey);
@@ -238,10 +238,10 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, long id)
         {
             var delResult = await TenantParameterCRUD.DeleteAsync(tenantId, operatorId, id);
-            if (!delResult.Success) return ApiResult.Fail(ErrorCodes.ParamDeleteFailed, Messages.ParamDeleteFailed);
+            if (!delResult.Success) return ApiResult.Fail(ErrorCodes.ParamDeleteFailed);
 
             Logger.Info(tenantId, operatorId, "[TenantConfigAppService] 删除参数: id=" + id);
-            return ApiResult.Ok(Messages.OperationSuccess);
+            return ApiResult.Ok();
         }
 
         // ──────────────────────────────────────────────────────

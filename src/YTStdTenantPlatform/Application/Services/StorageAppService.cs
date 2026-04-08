@@ -64,7 +64,7 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, CreateStorageStrategyReqDTO req)
         {
             if (string.IsNullOrWhiteSpace(req.StrategyCode))
-                return ApiResult<long>.Fail(ErrorCodes.StorageStrategyNameRequired, Messages.StorageStrategyNameRequired);
+                return ApiResult<long>.Fail(ErrorCodes.StorageStrategyNameRequired);
 
             var now = DateTime.UtcNow;
             var entity = new StorageStrategy
@@ -81,7 +81,7 @@ namespace YTStdTenantPlatform.Application.Services
 
             var insResult = await StorageStrategyCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
-                return ApiResult<long>.Fail(ErrorCodes.StorageStrategyCreateFailed, Messages.StorageStrategyCreateFailed);
+                return ApiResult<long>.Fail(ErrorCodes.StorageStrategyCreateFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[StorageAppService] 创建存储策略: " + req.StrategyCode);
@@ -93,11 +93,11 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, long id, UpdateStorageStrategyReqDTO req)
         {
             var (getResult, strategies) = await StorageStrategyCRUD.GetListAsync(tenantId, operatorId);
-            if (!getResult.Success || strategies == null) return ApiResult.Fail(ErrorCodes.StorageStrategyQueryFailed, Messages.StorageStrategyQueryFailed);
+            if (!getResult.Success || strategies == null) return ApiResult.Fail(ErrorCodes.StorageStrategyQueryFailed);
 
             StorageStrategy? target = null;
             foreach (var s in strategies) { if (s.Id == id) { target = s; break; } }
-            if (target == null) return ApiResult.Fail(ErrorCodes.StorageStrategyNotFound, Messages.StorageStrategyNotFound);
+            if (target == null) return ApiResult.Fail(ErrorCodes.StorageStrategyNotFound);
 
             if (req.StrategyName != null) target.StrategyName = req.StrategyName;
             if (req.BucketName != null) target.BucketName = req.BucketName;
@@ -105,11 +105,11 @@ namespace YTStdTenantPlatform.Application.Services
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await StorageStrategyCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.StorageStrategyUpdateFailed, Messages.StorageStrategyUpdateFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.StorageStrategyUpdateFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[StorageAppService] 更新存储策略: " + target.StrategyCode);
-            return ApiResult.Ok(Messages.OperationSuccess);
+            return ApiResult.Ok();
         }
 
         /// <summary>设置存储策略状态（启用/禁用）</summary>
@@ -117,21 +117,21 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, long id, string status)
         {
             var (getResult, strategies) = await StorageStrategyCRUD.GetListAsync(tenantId, operatorId);
-            if (!getResult.Success || strategies == null) return ApiResult.Fail(ErrorCodes.StorageStrategyQueryFailed, Messages.StorageStrategyQueryFailed);
+            if (!getResult.Success || strategies == null) return ApiResult.Fail(ErrorCodes.StorageStrategyQueryFailed);
 
             StorageStrategy? target = null;
             foreach (var s in strategies) { if (s.Id == id) { target = s; break; } }
-            if (target == null) return ApiResult.Fail(ErrorCodes.StorageStrategyNotFound, Messages.StorageStrategyNotFound);
+            if (target == null) return ApiResult.Fail(ErrorCodes.StorageStrategyNotFound);
 
             target.Status = status;
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await StorageStrategyCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.StorageStrategyStatusChangeFailed, Messages.StorageStrategyStatusChangeFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.StorageStrategyStatusChangeFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[StorageAppService] 存储策略状态变更: " + target.StrategyCode + " → " + status);
-            return ApiResult.Ok(Messages.OperationSuccess);
+            return ApiResult.Ok();
         }
 
         // ──────────────────────────────────────────────────────
@@ -188,10 +188,10 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, long id)
         {
             var delResult = await TenantFileCRUD.DeleteAsync(tenantId, operatorId, id);
-            if (!delResult.Success) return ApiResult.Fail(ErrorCodes.FileDeleteFailed, Messages.FileDeleteFailed);
+            if (!delResult.Success) return ApiResult.Fail(ErrorCodes.FileDeleteFailed);
 
             Logger.Info(tenantId, operatorId, "[StorageAppService] 删除文件: id=" + id);
-            return ApiResult.Ok(Messages.OperationSuccess);
+            return ApiResult.Ok();
         }
 
         // ──────────────────────────────────────────────────────
@@ -239,11 +239,11 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, SaveFileAccessPolicyReqDTO req)
         {
             if (req.FileId <= 0)
-                return ApiResult<long>.Fail(ErrorCodes.InvalidParameter, Messages.InvalidParameter);
+                return ApiResult<long>.Fail(ErrorCodes.InvalidParameter);
             if (string.IsNullOrWhiteSpace(req.SubjectType))
-                return ApiResult<long>.Fail(ErrorCodes.InvalidParameter, Messages.InvalidParameter);
+                return ApiResult<long>.Fail(ErrorCodes.InvalidParameter);
             if (string.IsNullOrWhiteSpace(req.PermissionCode))
-                return ApiResult<long>.Fail(ErrorCodes.InvalidParameter, Messages.InvalidParameter);
+                return ApiResult<long>.Fail(ErrorCodes.InvalidParameter);
 
             var entity = new FileAccessPolicy
             {
@@ -256,7 +256,7 @@ namespace YTStdTenantPlatform.Application.Services
 
             var insResult = await FileAccessPolicyCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
-                return ApiResult<long>.Fail(ErrorCodes.FileAccessPolicySaveFailed, Messages.FileAccessPolicySaveFailed);
+                return ApiResult<long>.Fail(ErrorCodes.FileAccessPolicySaveFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[StorageAppService] 保存文件访问策略: fileId=" + req.FileId);

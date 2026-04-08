@@ -67,7 +67,7 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, CreateSaasPackageReqDTO req)
         {
             if (string.IsNullOrWhiteSpace(req.PackageCode))
-                return ApiResult<long>.Fail(ErrorCodes.PackageCodeRequired, Messages.PackageCodeRequired);
+                return ApiResult<long>.Fail(ErrorCodes.PackageCodeRequired);
 
             var now = DateTime.UtcNow;
             var entity = new SaasPackage
@@ -83,7 +83,7 @@ namespace YTStdTenantPlatform.Application.Services
 
             var insResult = await SaasPackageCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
-                return ApiResult<long>.Fail(ErrorCodes.PackageCreateFailed, Messages.PackageCreateFailed);
+                return ApiResult<long>.Fail(ErrorCodes.PackageCreateFailed);
 
             Logger.Info(tenantId, operatorId, "[PackageAppService] 创建套餐: " + req.PackageCode);
             return ApiResult<long>.Ok(insResult.Id);
@@ -94,21 +94,21 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, long id, UpdateSaasPackageReqDTO req)
         {
             var (getResult, packages) = await SaasPackageCRUD.GetListAsync(tenantId, operatorId);
-            if (!getResult.Success || packages == null) return ApiResult.Fail(ErrorCodes.PackageQueryFailed, Messages.PackageQueryFailed);
+            if (!getResult.Success || packages == null) return ApiResult.Fail(ErrorCodes.PackageQueryFailed);
 
             SaasPackage? target = null;
             foreach (var p in packages) { if (p.Id == id) { target = p; break; } }
-            if (target == null) return ApiResult.Fail(ErrorCodes.PackageNotFound, Messages.PackageNotFound);
+            if (target == null) return ApiResult.Fail(ErrorCodes.PackageNotFound);
 
             if (req.PackageName != null) target.PackageName = req.PackageName;
             if (req.Description != null) target.Description = req.Description;
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await SaasPackageCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.PackageUpdateFailed, Messages.PackageUpdateFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.PackageUpdateFailed);
 
             Logger.Info(tenantId, operatorId, "[PackageAppService] 更新套餐: " + target.PackageCode);
-            return ApiResult.Ok(Messages.OperationSuccess);
+            return ApiResult.Ok();
         }
 
         /// <summary>设置套餐状态（启用/禁用）</summary>
@@ -116,21 +116,21 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, long id, string status)
         {
             var (getResult, packages) = await SaasPackageCRUD.GetListAsync(tenantId, operatorId);
-            if (!getResult.Success || packages == null) return ApiResult.Fail(ErrorCodes.PackageQueryFailed, Messages.PackageQueryFailed);
+            if (!getResult.Success || packages == null) return ApiResult.Fail(ErrorCodes.PackageQueryFailed);
 
             SaasPackage? target = null;
             foreach (var p in packages) { if (p.Id == id) { target = p; break; } }
-            if (target == null) return ApiResult.Fail(ErrorCodes.PackageNotFound, Messages.PackageNotFound);
+            if (target == null) return ApiResult.Fail(ErrorCodes.PackageNotFound);
 
             target.Status = status;
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await SaasPackageCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.PackageStatusChangeFailed, Messages.PackageStatusChangeFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.PackageStatusChangeFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[PackageAppService] 套餐状态变更: " + target.PackageCode + " → " + status);
-            return ApiResult.Ok(Messages.OperationSuccess);
+            return ApiResult.Ok();
         }
 
         // ──────────────────────────────────────────────────────
@@ -170,7 +170,7 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, CreateSaasPackageVersionReqDTO req)
         {
             if (string.IsNullOrWhiteSpace(req.VersionCode))
-                return ApiResult<long>.Fail(ErrorCodes.PackageVersionCodeRequired, Messages.PackageVersionCodeRequired);
+                return ApiResult<long>.Fail(ErrorCodes.PackageVersionCodeRequired);
 
             var now = DateTime.UtcNow;
             var entity = new SaasPackageVersion
@@ -191,7 +191,7 @@ namespace YTStdTenantPlatform.Application.Services
 
             var insResult = await SaasPackageVersionCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
-                return ApiResult<long>.Fail(ErrorCodes.PackageVersionCreateFailed, Messages.PackageVersionCreateFailed);
+                return ApiResult<long>.Fail(ErrorCodes.PackageVersionCreateFailed);
 
             Logger.Info(tenantId, operatorId, "[PackageAppService] 创建版本: " + req.VersionCode);
             return ApiResult<long>.Ok(insResult.Id);
@@ -234,7 +234,7 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, SaveSaasPackageCapabilityReqDTO req)
         {
             if (string.IsNullOrWhiteSpace(req.CapabilityKey))
-                return ApiResult<long>.Fail(ErrorCodes.PackageCapabilityKeyRequired, Messages.PackageCapabilityKeyRequired);
+                return ApiResult<long>.Fail(ErrorCodes.PackageCapabilityKeyRequired);
 
             var now = DateTime.UtcNow;
             var entity = new SaasPackageCapability
@@ -250,7 +250,7 @@ namespace YTStdTenantPlatform.Application.Services
 
             var insResult = await SaasPackageCapabilityCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
-                return ApiResult<long>.Fail(ErrorCodes.PackageCapabilitySaveFailed, Messages.PackageCapabilitySaveFailed);
+                return ApiResult<long>.Fail(ErrorCodes.PackageCapabilitySaveFailed);
 
             Logger.Info(tenantId, operatorId, "[PackageAppService] 保存能力: " + req.CapabilityKey);
             return ApiResult<long>.Ok(insResult.Id);

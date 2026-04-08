@@ -46,9 +46,9 @@ namespace YTStdTenantPlatform.Endpoints
             {
                 var user = GetCurrentUser(ctx);
                 var req = await YTStdTenantPlatform.Infrastructure.Serialization.TenantPlatformJsonRequestReader.ReadAsync<CreateTenantGroupReqDTO>(ctx.Request, ctx.RequestAborted);
-                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody, Messages.InvalidRequestBody), 400); return; }
+                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody), 400); return; }
                 var result = await TenantInfoAppService.CreateGroupAsync(0, user.UserId, req);
-                if (result.Code != 0) { await WriteJsonAsync(ctx, ApiResult.Fail(result.Code, result.Message), 400); return; }
+                if (result.Code != 0) { await WriteJsonAsync(ctx, ApiResult.Fail(result.Code), 400); return; }
                 ctx.Response.StatusCode = 201;
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("创建租户分组");
@@ -71,9 +71,9 @@ namespace YTStdTenantPlatform.Endpoints
             {
                 var user = GetCurrentUser(ctx);
                 var req = await YTStdTenantPlatform.Infrastructure.Serialization.TenantPlatformJsonRequestReader.ReadAsync<CreateTenantDomainReqDTO>(ctx.Request, ctx.RequestAborted);
-                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody, Messages.InvalidRequestBody), 400); return; }
+                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody), 400); return; }
                 var result = await TenantInfoAppService.CreateDomainAsync(0, user.UserId, req);
-                if (result.Code != 0) { await WriteJsonAsync(ctx, ApiResult.Fail(result.Code, result.Message), 400); return; }
+                if (result.Code != 0) { await WriteJsonAsync(ctx, ApiResult.Fail(result.Code), 400); return; }
                 ctx.Response.StatusCode = 201;
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("创建租户域名");
@@ -97,9 +97,9 @@ namespace YTStdTenantPlatform.Endpoints
             {
                 var user = GetCurrentUser(ctx);
                 var req = await YTStdTenantPlatform.Infrastructure.Serialization.TenantPlatformJsonRequestReader.ReadAsync<CreateTenantTagReqDTO>(ctx.Request, ctx.RequestAborted);
-                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody, Messages.InvalidRequestBody), 400); return; }
+                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody), 400); return; }
                 var result = await TenantInfoAppService.CreateTagAsync(0, user.UserId, req);
-                if (result.Code != 0) { await WriteJsonAsync(ctx, ApiResult.Fail(result.Code, result.Message), 400); return; }
+                if (result.Code != 0) { await WriteJsonAsync(ctx, ApiResult.Fail(result.Code), 400); return; }
                 ctx.Response.StatusCode = 201;
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("创建标签");
@@ -108,7 +108,7 @@ namespace YTStdTenantPlatform.Endpoints
             {
                 var user = GetCurrentUser(ctx);
                 var req = await YTStdTenantPlatform.Infrastructure.Serialization.TenantPlatformJsonRequestReader.ReadAsync<TagBindReqDTO>(ctx.Request, ctx.RequestAborted);
-                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody, Messages.InvalidRequestBody), 400); return; }
+                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody), 400); return; }
                 var result = await TenantInfoAppService.BindTagsAsync(0, user.UserId, req);
                 await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
             }).WithSummary("批量绑定标签");

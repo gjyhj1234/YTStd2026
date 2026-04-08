@@ -61,8 +61,8 @@ namespace YTStdTenantPlatform.Infrastructure.Middleware
                     static (writer, traceId) =>
                     {
                         writer.WriteStartObject();
-                        writer.WriteNumber("Code", 1008);
-                        writer.WriteString("Message", "common.system_busy");
+                        writer.WriteNumber("Code", 50003);
+                        writer.WriteString("Message", "");
                         writer.WriteNull("Data");
                         writer.WriteEndObject();
                     },

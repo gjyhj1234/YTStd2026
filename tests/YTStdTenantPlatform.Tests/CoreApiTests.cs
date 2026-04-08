@@ -18,15 +18,15 @@ namespace YTStdTenantPlatform.Tests
         {
             var result = ApiResult.Ok();
             Assert.True(result.Code == 0);
-            Assert.Equal("operation.success", result.Message);
+            Assert.Equal("", result.Message);
         }
 
         [Fact]
         public void ApiResult_Fail_ReturnsFailure()
         {
-            var result = ApiResult.Fail(1003, "测试失败");
+            var result = ApiResult.Fail(50002);
             Assert.False(result.Code == 0);
-            Assert.Equal("测试失败", result.Message);
+            Assert.Equal("", result.Message);
         }
 
         [Fact]
@@ -35,15 +35,15 @@ namespace YTStdTenantPlatform.Tests
             var result = ApiResult<long>.Ok(42L);
             Assert.True(result.Code == 0);
             Assert.Equal(42L, result.Data);
-            Assert.Equal("operation.success", result.Message);
+            Assert.Equal("", result.Message);
         }
 
         [Fact]
         public void ApiResultT_Fail_ReturnsFailureAndNoData()
         {
-            var result = ApiResult<long>.Fail(1003, "创建失败");
+            var result = ApiResult<long>.Fail(50002);
             Assert.False(result.Code == 0);
-            Assert.Equal("创建失败", result.Message);
+            Assert.Equal("", result.Message);
             Assert.Equal(0L, result.Data);
         }
 

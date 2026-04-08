@@ -39,7 +39,7 @@ namespace YTStdTenantPlatform.Endpoints
             {
                 var user = GetCurrentUser(ctx);
                 var result = await AuditAppService.GetOperationLogByIdAsync(0, user.UserId, id);
-                if (result == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.ResourceNotFound, Messages.ResourceNotFound), 404); return; }
+                if (result == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.ResourceNotFound), 404); return; }
                 await WriteJsonAsync(ctx, ApiResult<OperationLogRepDTO>.Ok(result));
             }).WithSummary("获取操作日志详情");
         }
@@ -62,7 +62,7 @@ namespace YTStdTenantPlatform.Endpoints
             {
                 var user = GetCurrentUser(ctx);
                 var result = await AuditAppService.GetAuditLogByIdAsync(0, user.UserId, id);
-                if (result == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.ResourceNotFound, Messages.ResourceNotFound), 404); return; }
+                if (result == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.ResourceNotFound), 404); return; }
                 await WriteJsonAsync(ctx, ApiResult<AuditLogRepDTO>.Ok(result));
             }).WithSummary("获取审计日志详情");
         }
@@ -85,7 +85,7 @@ namespace YTStdTenantPlatform.Endpoints
             {
                 var user = GetCurrentUser(ctx);
                 var result = await AuditAppService.GetSystemLogByIdAsync(0, user.UserId, id);
-                if (result == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.ResourceNotFound, Messages.ResourceNotFound), 404); return; }
+                if (result == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.ResourceNotFound), 404); return; }
                 await WriteJsonAsync(ctx, ApiResult<SystemLogRepDTO>.Ok(result));
             }).WithSummary("获取系统日志详情");
         }

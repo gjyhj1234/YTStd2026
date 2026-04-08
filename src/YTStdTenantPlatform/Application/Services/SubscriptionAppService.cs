@@ -64,9 +64,9 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, CreateSubscriptionReqDTO req)
         {
             if (req.TenantRefId <= 0)
-                return ApiResult<long>.Fail(ErrorCodes.InvalidParameter, Messages.InvalidParameter);
+                return ApiResult<long>.Fail(ErrorCodes.InvalidParameter);
             if (req.PackageVersionId <= 0)
-                return ApiResult<long>.Fail(ErrorCodes.InvalidParameter, Messages.InvalidParameter);
+                return ApiResult<long>.Fail(ErrorCodes.InvalidParameter);
 
             var now = DateTime.UtcNow;
             var entity = new TenantSubscription
@@ -85,7 +85,7 @@ namespace YTStdTenantPlatform.Application.Services
 
             var insResult = await TenantSubscriptionCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
-                return ApiResult<long>.Fail(ErrorCodes.SubscriptionCreateFailed, Messages.SubscriptionCreateFailed);
+                return ApiResult<long>.Fail(ErrorCodes.SubscriptionCreateFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[SubscriptionAppService] 创建订阅: tenant=" + req.TenantRefId);
@@ -97,22 +97,22 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, long id)
         {
             var (getResult, subscriptions) = await TenantSubscriptionCRUD.GetListAsync(tenantId, operatorId);
-            if (!getResult.Success || subscriptions == null) return ApiResult.Fail(ErrorCodes.SubscriptionQueryFailed, Messages.SubscriptionQueryFailed);
+            if (!getResult.Success || subscriptions == null) return ApiResult.Fail(ErrorCodes.SubscriptionQueryFailed);
 
             TenantSubscription? target = null;
             foreach (var s in subscriptions) { if (s.Id == id) { target = s; break; } }
-            if (target == null) return ApiResult.Fail(ErrorCodes.SubscriptionNotFound, Messages.SubscriptionNotFound);
+            if (target == null) return ApiResult.Fail(ErrorCodes.SubscriptionNotFound);
 
             target.SubscriptionStatus = "cancelled";
             target.CancelledAt = DateTime.UtcNow;
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await TenantSubscriptionCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.SubscriptionCancelFailed, Messages.SubscriptionCancelFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.SubscriptionCancelFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[SubscriptionAppService] 取消订阅: id=" + id);
-            return ApiResult.Ok(Messages.OperationSuccess);
+            return ApiResult.Ok();
         }
 
         // ──────────────────────────────────────────────────────
@@ -145,7 +145,7 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, CreateTrialReqDTO req)
         {
             if (req.TenantRefId <= 0)
-                return ApiResult<long>.Fail(ErrorCodes.InvalidParameter, Messages.InvalidParameter);
+                return ApiResult<long>.Fail(ErrorCodes.InvalidParameter);
 
             var now = DateTime.UtcNow;
             var entity = new TenantTrial
@@ -161,7 +161,7 @@ namespace YTStdTenantPlatform.Application.Services
 
             var insResult = await TenantTrialCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
-                return ApiResult<long>.Fail(ErrorCodes.TrialCreateFailed, Messages.TrialCreateFailed);
+                return ApiResult<long>.Fail(ErrorCodes.TrialCreateFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[SubscriptionAppService] 创建试用: tenant=" + req.TenantRefId);

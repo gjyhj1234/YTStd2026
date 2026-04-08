@@ -40,7 +40,7 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, CreateTenantGroupReqDTO req)
         {
             if (string.IsNullOrWhiteSpace(req.GroupCode))
-                return ApiResult<long>.Fail(ErrorCodes.GroupCodeRequired, Messages.GroupCodeRequired);
+                return ApiResult<long>.Fail(ErrorCodes.GroupCodeRequired);
 
             var group = new TenantGroup
             {
@@ -54,7 +54,7 @@ namespace YTStdTenantPlatform.Application.Services
             };
 
             var insResult = await TenantGroupCRUD.InsertAsync(tenantId, operatorId, group);
-            if (!insResult.Success) return ApiResult<long>.Fail(ErrorCodes.GroupCreateFailed, Messages.GroupCreateFailed);
+            if (!insResult.Success) return ApiResult<long>.Fail(ErrorCodes.GroupCreateFailed);
 
             Logger.Info(tenantId, operatorId, "[TenantInfoAppService] 创建分组: " + req.GroupCode);
             return ApiResult<long>.Ok(insResult.Id);
@@ -85,7 +85,7 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, CreateTenantDomainReqDTO req)
         {
             if (string.IsNullOrWhiteSpace(req.Domain))
-                return ApiResult<long>.Fail(ErrorCodes.DomainRequired, Messages.DomainRequired);
+                return ApiResult<long>.Fail(ErrorCodes.DomainRequired);
 
             var domain = new TenantDomain
             {
@@ -98,7 +98,7 @@ namespace YTStdTenantPlatform.Application.Services
             };
 
             var insResult = await TenantDomainCRUD.InsertAsync(tenantId, operatorId, domain);
-            if (!insResult.Success) return ApiResult<long>.Fail(ErrorCodes.DomainCreateFailed, Messages.DomainCreateFailed);
+            if (!insResult.Success) return ApiResult<long>.Fail(ErrorCodes.DomainCreateFailed);
 
             Logger.Info(tenantId, operatorId, "[TenantInfoAppService] 创建域名: " + req.Domain);
             return ApiResult<long>.Ok(insResult.Id);
@@ -144,7 +144,7 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, CreateTenantTagReqDTO req)
         {
             if (string.IsNullOrWhiteSpace(req.TagKey))
-                return ApiResult<long>.Fail(ErrorCodes.TagKeyRequired, Messages.TagKeyRequired);
+                return ApiResult<long>.Fail(ErrorCodes.TagKeyRequired);
 
             var tag = new TenantTag
             {
@@ -156,7 +156,7 @@ namespace YTStdTenantPlatform.Application.Services
             };
 
             var insResult = await TenantTagCRUD.InsertAsync(tenantId, operatorId, tag);
-            if (!insResult.Success) return ApiResult<long>.Fail(ErrorCodes.TagCreateFailed, Messages.TagCreateFailed);
+            if (!insResult.Success) return ApiResult<long>.Fail(ErrorCodes.TagCreateFailed);
 
             Logger.Info(tenantId, operatorId, "[TenantInfoAppService] 创建标签: " + req.TagKey);
             return ApiResult<long>.Ok(insResult.Id);
@@ -179,7 +179,7 @@ namespace YTStdTenantPlatform.Application.Services
 
             Logger.Info(tenantId, operatorId,
                 "[TenantInfoAppService] 标签绑定: tenant=" + req.TenantRefId + " 标签数=" + req.TagIds.Length);
-            return ApiResult.Ok(Messages.OperationSuccess);
+            return ApiResult.Ok();
         }
 
         // ──────────────────────────────────────────────────────

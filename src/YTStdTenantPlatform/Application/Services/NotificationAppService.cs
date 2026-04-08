@@ -65,7 +65,7 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, CreateNotificationTemplateReqDTO req)
         {
             if (string.IsNullOrWhiteSpace(req.TemplateCode))
-                return ApiResult<long>.Fail(ErrorCodes.NotificationTemplateNameRequired, Messages.NotificationTemplateNameRequired);
+                return ApiResult<long>.Fail(ErrorCodes.NotificationTemplateNameRequired);
 
             var now = DateTime.UtcNow;
             var entity = new NotificationTemplate
@@ -82,7 +82,7 @@ namespace YTStdTenantPlatform.Application.Services
 
             var insResult = await NotificationTemplateCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
-                return ApiResult<long>.Fail(ErrorCodes.NotificationTemplateCreateFailed, Messages.NotificationTemplateCreateFailed);
+                return ApiResult<long>.Fail(ErrorCodes.NotificationTemplateCreateFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[NotificationAppService] 创建通知模板: " + req.TemplateCode);
@@ -94,11 +94,11 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, long id, UpdateNotificationTemplateReqDTO req)
         {
             var (getResult, templates) = await NotificationTemplateCRUD.GetListAsync(tenantId, operatorId);
-            if (!getResult.Success || templates == null) return ApiResult.Fail(ErrorCodes.NotificationTemplateQueryFailed, Messages.NotificationTemplateQueryFailed);
+            if (!getResult.Success || templates == null) return ApiResult.Fail(ErrorCodes.NotificationTemplateQueryFailed);
 
             NotificationTemplate? target = null;
             foreach (var t in templates) { if (t.Id == id) { target = t; break; } }
-            if (target == null) return ApiResult.Fail(ErrorCodes.NotificationTemplateNotFound, Messages.NotificationTemplateNotFound);
+            if (target == null) return ApiResult.Fail(ErrorCodes.NotificationTemplateNotFound);
 
             if (req.TemplateName != null) target.TemplateName = req.TemplateName;
             if (req.SubjectTemplate != null) target.SubjectTemplate = req.SubjectTemplate;
@@ -106,11 +106,11 @@ namespace YTStdTenantPlatform.Application.Services
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await NotificationTemplateCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.NotificationTemplateUpdateFailed, Messages.NotificationTemplateUpdateFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.NotificationTemplateUpdateFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[NotificationAppService] 更新通知模板: " + target.TemplateCode);
-            return ApiResult.Ok(Messages.OperationSuccess);
+            return ApiResult.Ok();
         }
 
         /// <summary>设置通知模板状态（启用/禁用）</summary>
@@ -118,21 +118,21 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, long id, string status)
         {
             var (getResult, templates) = await NotificationTemplateCRUD.GetListAsync(tenantId, operatorId);
-            if (!getResult.Success || templates == null) return ApiResult.Fail(ErrorCodes.NotificationTemplateQueryFailed, Messages.NotificationTemplateQueryFailed);
+            if (!getResult.Success || templates == null) return ApiResult.Fail(ErrorCodes.NotificationTemplateQueryFailed);
 
             NotificationTemplate? target = null;
             foreach (var t in templates) { if (t.Id == id) { target = t; break; } }
-            if (target == null) return ApiResult.Fail(ErrorCodes.NotificationTemplateNotFound, Messages.NotificationTemplateNotFound);
+            if (target == null) return ApiResult.Fail(ErrorCodes.NotificationTemplateNotFound);
 
             target.Status = status;
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await NotificationTemplateCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.NotificationTemplateStatusChangeFailed, Messages.NotificationTemplateStatusChangeFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.NotificationTemplateStatusChangeFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[NotificationAppService] 通知模板状态变更: " + target.TemplateCode + " → " + status);
-            return ApiResult.Ok(Messages.OperationSuccess);
+            return ApiResult.Ok();
         }
 
         // ──────────────────────────────────────────────────────
@@ -188,11 +188,11 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, CreateNotificationReqDTO req)
         {
             if (string.IsNullOrWhiteSpace(req.Recipient))
-                return ApiResult<long>.Fail(ErrorCodes.InvalidParameter, Messages.InvalidParameter);
+                return ApiResult<long>.Fail(ErrorCodes.InvalidParameter);
             if (string.IsNullOrWhiteSpace(req.Channel))
-                return ApiResult<long>.Fail(ErrorCodes.InvalidParameter, Messages.InvalidParameter);
+                return ApiResult<long>.Fail(ErrorCodes.InvalidParameter);
             if (string.IsNullOrWhiteSpace(req.Body))
-                return ApiResult<long>.Fail(ErrorCodes.InvalidParameter, Messages.InvalidParameter);
+                return ApiResult<long>.Fail(ErrorCodes.InvalidParameter);
 
             var entity = new Notification
             {
@@ -208,7 +208,7 @@ namespace YTStdTenantPlatform.Application.Services
 
             var insResult = await NotificationCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
-                return ApiResult<long>.Fail(ErrorCodes.NotificationCreateFailed, Messages.NotificationCreateFailed);
+                return ApiResult<long>.Fail(ErrorCodes.NotificationCreateFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[NotificationAppService] 创建通知: recipient=" + req.Recipient);
@@ -220,20 +220,20 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, long id)
         {
             var (getResult, notifications) = await NotificationCRUD.GetListAsync(tenantId, operatorId);
-            if (!getResult.Success || notifications == null) return ApiResult.Fail(ErrorCodes.NotificationQueryFailed, Messages.NotificationQueryFailed);
+            if (!getResult.Success || notifications == null) return ApiResult.Fail(ErrorCodes.NotificationQueryFailed);
 
             Notification? target = null;
             foreach (var n in notifications) { if (n.Id == id) { target = n; break; } }
-            if (target == null) return ApiResult.Fail(ErrorCodes.NotificationNotFound, Messages.NotificationNotFound);
+            if (target == null) return ApiResult.Fail(ErrorCodes.NotificationNotFound);
 
             target.ReadAt = DateTime.UtcNow;
 
             var updResult = await NotificationCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.NotificationMarkReadFailed, Messages.NotificationMarkReadFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.NotificationMarkReadFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[NotificationAppService] 标记通知已读: id=" + id);
-            return ApiResult.Ok(Messages.OperationSuccess);
+            return ApiResult.Ok();
         }
 
         // ──────────────────────────────────────────────────────

@@ -77,9 +77,9 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, CreatePlatformRoleReqDTO req)
         {
             if (string.IsNullOrWhiteSpace(req.Code))
-                return ApiResult<long>.Fail(ErrorCodes.RoleCodeRequired, Messages.RoleCodeRequired);
+                return ApiResult<long>.Fail(ErrorCodes.RoleCodeRequired);
             if (string.IsNullOrWhiteSpace(req.Name))
-                return ApiResult<long>.Fail(ErrorCodes.RoleNameRequired, Messages.RoleNameRequired);
+                return ApiResult<long>.Fail(ErrorCodes.RoleNameRequired);
 
             var now = DateTime.UtcNow;
             var role = new PlatformRole
@@ -96,7 +96,7 @@ namespace YTStdTenantPlatform.Application.Services
 
             var insResult = await PlatformRoleCRUD.InsertAsync(tenantId, operatorId, role);
             if (!insResult.Success)
-                return ApiResult<long>.Fail(ErrorCodes.RoleCreateFailed, Messages.RoleCreateFailed);
+                return ApiResult<long>.Fail(ErrorCodes.RoleCreateFailed);
 
             await PlatformCacheCoordinator.InvalidatePermissionsAsync();
             Logger.Info(tenantId, operatorId, "[PlatformRoleAppService] 创建角色: " + req.Code);
@@ -108,11 +108,11 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, long id, UpdatePlatformRoleReqDTO req)
         {
             var (getResult, roles) = await PlatformRoleCRUD.GetListAsync(tenantId, operatorId);
-            if (!getResult.Success || roles == null) return ApiResult.Fail(ErrorCodes.RoleQueryFailed, Messages.RoleQueryFailed);
+            if (!getResult.Success || roles == null) return ApiResult.Fail(ErrorCodes.RoleQueryFailed);
 
             PlatformRole? target = null;
             foreach (var r in roles) { if (r.Id == id) { target = r; break; } }
-            if (target == null) return ApiResult.Fail(ErrorCodes.RoleNotFound, Messages.RoleNotFound);
+            if (target == null) return ApiResult.Fail(ErrorCodes.RoleNotFound);
 
             if (req.Name != null) target.Name = req.Name;
             if (req.Description != null) target.Description = req.Description;
@@ -120,11 +120,11 @@ namespace YTStdTenantPlatform.Application.Services
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await PlatformRoleCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.RoleUpdateFailed, Messages.RoleUpdateFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.RoleUpdateFailed);
 
             await PlatformCacheCoordinator.InvalidatePermissionsAsync();
             Logger.Info(tenantId, operatorId, "[PlatformRoleAppService] 更新角色: " + target.Code);
-            return ApiResult.Ok(Messages.OperationSuccess);
+            return ApiResult.Ok();
         }
 
         /// <summary>启用/禁用角色</summary>
@@ -132,21 +132,21 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, long id, string status)
         {
             var (getResult, roles) = await PlatformRoleCRUD.GetListAsync(tenantId, operatorId);
-            if (!getResult.Success || roles == null) return ApiResult.Fail(ErrorCodes.RoleQueryFailed, Messages.RoleQueryFailed);
+            if (!getResult.Success || roles == null) return ApiResult.Fail(ErrorCodes.RoleQueryFailed);
 
             PlatformRole? target = null;
             foreach (var r in roles) { if (r.Id == id) { target = r; break; } }
-            if (target == null) return ApiResult.Fail(ErrorCodes.RoleNotFound, Messages.RoleNotFound);
+            if (target == null) return ApiResult.Fail(ErrorCodes.RoleNotFound);
 
             target.Status = status;
             target.UpdatedAt = DateTime.UtcNow;
             var updResult = await PlatformRoleCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.RoleStatusChangeFailed, Messages.RoleStatusChangeFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.RoleStatusChangeFailed);
 
             await PlatformCacheCoordinator.InvalidatePermissionsAsync();
             Logger.Info(tenantId, operatorId,
                 "[PlatformRoleAppService] 角色状态变更: " + target.Code + " → " + status);
-            return ApiResult.Ok(Messages.OperationSuccess);
+            return ApiResult.Ok();
         }
 
         /// <summary>角色授权（绑定权限）</summary>
@@ -169,7 +169,7 @@ namespace YTStdTenantPlatform.Application.Services
             await PlatformCacheCoordinator.InvalidatePermissionsAsync();
             Logger.Info(tenantId, operatorId,
                 "[PlatformRoleAppService] 角色授权: roleId=" + roleId + " 权限数=" + req.PermissionIds.Length);
-            return ApiResult.Ok(Messages.OperationSuccess);
+            return ApiResult.Ok();
         }
 
         /// <summary>角色成员管理（绑定用户）</summary>
@@ -192,7 +192,7 @@ namespace YTStdTenantPlatform.Application.Services
             await PlatformCacheCoordinator.InvalidateUserRolesAsync();
             Logger.Info(tenantId, operatorId,
                 "[PlatformRoleAppService] 角色成员: roleId=" + roleId + " 用户数=" + req.UserIds.Length);
-            return ApiResult.Ok(Messages.OperationSuccess);
+            return ApiResult.Ok();
         }
     }
 }

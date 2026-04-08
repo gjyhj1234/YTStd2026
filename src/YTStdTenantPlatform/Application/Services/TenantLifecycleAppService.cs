@@ -64,9 +64,9 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, CreateTenantReqDTO req)
         {
             if (string.IsNullOrWhiteSpace(req.TenantCode))
-                return ApiResult<long>.Fail(ErrorCodes.TenantCodeRequired, Messages.TenantCodeRequired);
+                return ApiResult<long>.Fail(ErrorCodes.TenantCodeRequired);
             if (string.IsNullOrWhiteSpace(req.TenantName))
-                return ApiResult<long>.Fail(ErrorCodes.TenantNameRequired, Messages.TenantNameRequired);
+                return ApiResult<long>.Fail(ErrorCodes.TenantNameRequired);
 
             var now = DateTime.UtcNow;
             var tenant = new Tenant
@@ -90,7 +90,7 @@ namespace YTStdTenantPlatform.Application.Services
 
             var insResult = await TenantCRUD.InsertAsync(tenantId, operatorId, tenant);
             if (!insResult.Success)
-                return ApiResult<long>.Fail(ErrorCodes.TenantCreateFailed, Messages.TenantCreateFailed);
+                return ApiResult<long>.Fail(ErrorCodes.TenantCreateFailed);
 
             // 记录生命周期事件
             await RecordLifecycleEventAsync(tenantId, operatorId, insResult.Id, "created", null, "pending", "新建租户", operatorId);
@@ -104,11 +104,11 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, long id, UpdateTenantReqDTO req)
         {
             var (getResult, tenants) = await TenantCRUD.GetListAsync(tenantId, operatorId);
-            if (!getResult.Success || tenants == null) return ApiResult.Fail(ErrorCodes.TenantQueryFailed, Messages.TenantQueryFailed);
+            if (!getResult.Success || tenants == null) return ApiResult.Fail(ErrorCodes.TenantQueryFailed);
 
             Tenant? target = null;
             foreach (var t in tenants) { if (t.Id == id && t.DeletedAt == null) { target = t; break; } }
-            if (target == null) return ApiResult.Fail(ErrorCodes.TenantNotFound, Messages.TenantNotFound);
+            if (target == null) return ApiResult.Fail(ErrorCodes.TenantNotFound);
 
             if (req.TenantName != null) target.TenantName = req.TenantName;
             if (req.EnterpriseName != null) target.EnterpriseName = req.EnterpriseName;
@@ -118,10 +118,10 @@ namespace YTStdTenantPlatform.Application.Services
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await TenantCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.TenantUpdateFailed, Messages.TenantUpdateFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.TenantUpdateFailed);
 
             Logger.Info(tenantId, operatorId, "[TenantLifecycleAppService] 更新租户: " + target.TenantCode);
-            return ApiResult.Ok(Messages.OperationSuccess);
+            return ApiResult.Ok();
         }
 
         /// <summary>租户状态流转</summary>
@@ -129,18 +129,18 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, long id, TenantStatusChangeReqDTO req)
         {
             var (getResult, tenants) = await TenantCRUD.GetListAsync(tenantId, operatorId);
-            if (!getResult.Success || tenants == null) return ApiResult.Fail(ErrorCodes.TenantQueryFailed, Messages.TenantQueryFailed);
+            if (!getResult.Success || tenants == null) return ApiResult.Fail(ErrorCodes.TenantQueryFailed);
 
             Tenant? target = null;
             foreach (var t in tenants) { if (t.Id == id && t.DeletedAt == null) { target = t; break; } }
-            if (target == null) return ApiResult.Fail(ErrorCodes.TenantNotFound, Messages.TenantNotFound);
+            if (target == null) return ApiResult.Fail(ErrorCodes.TenantNotFound);
 
             var fromStatus = target.LifecycleStatus;
             var toStatus = req.TargetStatus;
 
             // 状态流转校验
             if (!IsValidTransition(fromStatus, toStatus))
-                return ApiResult.Fail(ErrorCodes.TenantStatusTransitionDenied, Messages.TenantStatusTransitionDenied);
+                return ApiResult.Fail(ErrorCodes.TenantStatusTransitionDenied);
 
             target.LifecycleStatus = toStatus;
             target.UpdatedAt = DateTime.UtcNow;
@@ -162,14 +162,14 @@ namespace YTStdTenantPlatform.Application.Services
             }
 
             var updResult = await TenantCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.TenantStatusChangeFailed, Messages.TenantStatusChangeFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.TenantStatusChangeFailed);
 
             await RecordLifecycleEventAsync(tenantId, operatorId, id, "status_changed",
                 fromStatus, toStatus, req.Reason, operatorId);
 
             Logger.Info(tenantId, operatorId,
                 "[TenantLifecycleAppService] 租户状态变更: " + target.TenantCode + " " + fromStatus + " → " + toStatus);
-            return ApiResult.Ok(Messages.OperationSuccess);
+            return ApiResult.Ok();
         }
 
         /// <summary>获取租户生命周期事件列表</summary>

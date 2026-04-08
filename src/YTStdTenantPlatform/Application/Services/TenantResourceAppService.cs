@@ -61,9 +61,9 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, SaveTenantResourceQuotaReqDTO req)
         {
             if (string.IsNullOrWhiteSpace(req.QuotaType))
-                return ApiResult<long>.Fail(ErrorCodes.QuotaTypeRequired, Messages.QuotaTypeRequired);
+                return ApiResult<long>.Fail(ErrorCodes.QuotaTypeRequired);
             if (req.QuotaLimit <= 0)
-                return ApiResult<long>.Fail(ErrorCodes.QuotaLimitInvalid, Messages.QuotaLimitInvalid);
+                return ApiResult<long>.Fail(ErrorCodes.QuotaLimitInvalid);
 
             var now = DateTime.UtcNow;
             var quota = new TenantResourceQuota
@@ -79,7 +79,7 @@ namespace YTStdTenantPlatform.Application.Services
 
             var insResult = await TenantResourceQuotaCRUD.InsertAsync(tenantId, operatorId, quota);
             if (!insResult.Success)
-                return ApiResult<long>.Fail(ErrorCodes.QuotaSaveFailed, Messages.QuotaSaveFailed);
+                return ApiResult<long>.Fail(ErrorCodes.QuotaSaveFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[TenantResourceAppService] 保存配额: tenant=" + req.TenantRefId + " type=" + req.QuotaType);
