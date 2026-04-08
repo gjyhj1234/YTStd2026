@@ -9,16 +9,16 @@ namespace YTStdTenantPlatform.Application.Dtos
         /// <summary>响应代码：0=成功，非0=错误码（对应 ErrorCodes 常量）</summary>
         public int Code { get; set; }
 
-        /// <summary>消息键，用于前端国际化展示（对应 Messages 常量）</summary>
+        /// <summary>消息（保留字段，默认为空）</summary>
         public string Message { get; set; } = "";
 
         /// <summary>成功结果</summary>
-        public static ApiResult Ok(string message = "operation.success")
-            => new ApiResult { Code = 0, Message = message };
+        public static ApiResult Ok()
+            => new ApiResult { Code = 0, Message = "" };
 
         /// <summary>失败结果</summary>
-        public static ApiResult Fail(int code, string message)
-            => new ApiResult { Code = code, Message = message };
+        public static ApiResult Fail(int code)
+            => new ApiResult { Code = code, Message = "" };
     }
 
     /// <summary>统一 API 响应包装（带数据）</summary>
@@ -27,19 +27,19 @@ namespace YTStdTenantPlatform.Application.Dtos
         /// <summary>响应代码：0=成功，非0=错误码（对应 ErrorCodes 常量）</summary>
         public int Code { get; set; }
 
-        /// <summary>消息键，用于前端国际化展示（对应 Messages 常量）</summary>
+        /// <summary>消息（保留字段，默认为空）</summary>
         public string Message { get; set; } = "";
 
         /// <summary>响应数据</summary>
         public T? Data { get; set; }
 
         /// <summary>成功结果</summary>
-        public static ApiResult<T> Ok(T data, string message = "operation.success")
-            => new ApiResult<T> { Code = 0, Message = message, Data = data };
+        public static ApiResult<T> Ok(T data)
+            => new ApiResult<T> { Code = 0, Message = "", Data = data };
 
         /// <summary>失败结果</summary>
-        public static ApiResult<T> Fail(int code, string message)
-            => new ApiResult<T> { Code = code, Message = message };
+        public static ApiResult<T> Fail(int code)
+            => new ApiResult<T> { Code = code, Message = "" };
     }
 
     /// <summary>分页请求</summary>
