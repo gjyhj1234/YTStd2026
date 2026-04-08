@@ -99,7 +99,7 @@
 每个表的文档格式：
 
 ```markdown
-### plt_user（平台用户）
+### sys_user（平台用户）
 
 | 列名 | 类型 | 可空 | 默认值 | 说明 |
 |------|------|:----:|-------|------|
@@ -109,10 +109,10 @@
 | created_at | timestamptz | ✗ | — | 创建时间 |
 
 **索引**：
-- `uq_plt_user_username`：`username`（唯一）
+- `uq_sys_user_username`：`username`（唯一）
 
 **关联**：
-- `plt_user_role`：用户-角色关联
+- `sys_user_role`：用户-角色关联
 ```
 
 ---

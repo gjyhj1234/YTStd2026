@@ -12,13 +12,11 @@
 YTStd2026/
 ├── .ai/                          # AI 提示词体系（本目录）
 ├── .github/                      # GitHub 配置
-│   ├── copilot-instructions.md   # Copilot 全局指令
-│   ├── prompts/                  # 旧提示词（历史参考）
+│   ├── copilot-instructions.md   # Copilot 全局指令（指向 .ai/ 体系）
 │   └── workflows/                # CI/CD 工作流
 ├── docs/                         # 项目文档
 │   ├── architecture.md           # 仓库架构说明
 │   ├── existing-projects-reference.md # 已有项目 API 参考
-│   ├── prompt-authoring-guide.md # 提示词编写指南（旧）
 │   ├── reconstruction/           # 重建文档
 │   ├── standards/                # 标准文档
 │   └── TenantPlatform/           # 租户平台文档
@@ -118,4 +116,4 @@ YTStd2026/
 | 路由 | `src/router/index.ts` | — |
 | 状态 | `src/store/{module}.ts` | camelCase |
 | 工具 | `src/utils/{name}.ts` | camelCase |
-| 国际化 | `src/locales/{locale}.json` | 如 `zh-CN.json` |
+| 国际化 | `src/locales/` | 分目录：generated/ + components/ + global/ + format/ |

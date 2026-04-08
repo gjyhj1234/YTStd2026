@@ -69,9 +69,9 @@ I18n.T(int tenantId, int key);
 
 ```csharp
 // 实体特性
-[Entity(TableName = "plt_user", Description = "平台用户")]
+[Entity(TableName = "sys_user", Description = "平台用户")]
 [Column(Name = "username", DbType = "varchar(50)", Description = "用户名")]
-[Index(Name = "idx_plt_user_username", Columns = "username", IsUnique = true)]
+[Index(Name = "idx_sys_user_username", Columns = "username", IsUnique = true)]
 [DetailOf(typeof(ParentEntity))]  // 主从关系
 ```
 

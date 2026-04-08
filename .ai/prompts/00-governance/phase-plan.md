@@ -70,7 +70,7 @@
 **执行内容**：
 1. 审查 `docs/TenantPlatform/database_dictionary.md`
 2. 按 `.ai/rules/database.md` 验证命名规范
-3. 验证前缀体系（plt_、tnt_、saas_、sys_、log_、ntf_、api_、stg_）
+3. 验证前缀体系（sys_ 统一前缀）
 4. 验证字段命名（审计字段、布尔字段、状态字段、时间字段）
 5. 验证索引命名
 6. 补全缺失的表或字段
@@ -101,11 +101,11 @@
 5. 修正编译错误
 
 **按模块分批**：
-- 批次 1：平台管理实体（plt_user, plt_role, plt_permission, plt_user_role, plt_role_permission）
-- 批次 2：租户实体（tnt_info, tnt_lifecycle_event, tnt_group, tnt_domain, tnt_tag）
-- 批次 3：资源与配置实体（tnt_resource_quota, sys_config, sys_feature_flag）
-- 批次 4：SaaS 业务实体（saas_package, saas_subscription, saas_billing）
-- 批次 5：运营支撑实体（log_audit, ntf_template, api_key, stg_file）
+- 批次 1：平台管理实体（sys_user, sys_role, sys_permission, sys_user_role, sys_role_permission）
+- 批次 2：租户实体（sys_tenant, sys_tenant_lifecycle_event, sys_tenant_group, sys_tenant_domain, sys_tenant_tag）
+- 批次 3：资源与配置实体（sys_resource_quota, sys_config, sys_feature_flag）
+- 批次 4：业务支撑实体（sys_package, sys_subscription, sys_billing）
+- 批次 5：运营支撑实体（sys_audit_log, sys_notification_template, sys_api_key, sys_file）
 
 **验收**：
 - `dotnet build YTStd.slnx` 通过

@@ -18,7 +18,47 @@
 |-------|------|---------|
 | YTStdEntity.Generator | `src/YTStdEntity.Generator/` | DAL 层 CRUD 方法、描述器 |
 | YTStdSqlBuilder.Generator | `src/YTStdSqlBuilder.Generator/` | SQL 构建辅助代码 |
-| YTStdI18n.Generator | `src/YTStdI18n.Generator/` | 国际化常量索引 |
+| YTStdI18n.Generator | `src/YTStdI18n.Generator/` | 国际化常量索引 + 前端语言包 |
+
+---
+
+## YTStdI18n.Generator 前端语言包生成
+
+### 生成触发
+
+- `dotnet build` 时自动触发
+- 读取后端 `I18nResourceAttribute` 标注的资源类
+- 在前端 `locales/generated/` 目录下生成对应的语言包文件
+
+### 生成目标
+
+```text
+web/{project}/src/locales/generated/
+├── error/{模块}/zh-CN.json        # 后端错误消息翻译
+├── error/{模块}/en-US.json
+├── message/{模块}/zh-CN.json      # 后端业务消息翻译
+├── message/{模块}/en-US.json
+├── enum/{枚举名}/zh-CN.json       # 枚举显示名翻译
+├── enum/{枚举名}/en-US.json
+├── notification/{模块}/zh-CN.json  # 通知模板翻译
+└── notification/{模块}/en-US.json
+```
+
+### 增量生成策略（核心规则）
+
+Generator 在生成前端代码时**必须**执行以下判断：
+
+1. 遍历后端定义的所有常量 key
+2. 检查前端对应语言文件中该 key 是否已存在
+3. **已存在 → 不修改**（保留已有的翻译对应关系，因为它可能已被人工校正）
+4. **不存在 → 新增**（使用默认翻译值或标记为待翻译）
+5. **后端已删除 → 从 generated 文件中删除**
+
+### 禁止行为
+
+- 禁止覆盖已存在的 key 翻译
+- 禁止在非 `generated/` 目录下生成文件
+- 禁止将所有内容生成到单个文件（必须按模块分文件分目录）
 
 ---
 
@@ -94,11 +134,11 @@
 
 ---
 
-## 与旧提示词的对应关系
+## 相关规则文件
 
-| 旧提示词 | 新规范位置 |
-|---------|-----------|
-| `entity-prompt.md` | `.ai/rules/generator.md`（本文件）+ `.ai/prompts/02-backend/entity-modeling.md` |
-| `sql-builder-prompt.md` | `.ai/context/existing-modules.md` |
-| `ado-prompt.md` | `.ai/context/existing-modules.md` |
-| `i18n-prompt.md` | `.ai/rules/i18n.md` + `.ai/context/existing-modules.md` |
+| 规则/提示词 | 位置 |
+|-----------|------|
+| 实体建模提示词 | `.ai/prompts/02-backend/entity-modeling.md` |
+| 国际化规范 | `.ai/rules/i18n.md` |
+| 模块 API 参考 | `.ai/context/existing-modules.md` |
+| 底层工程审查 | `.ai/prompts/11-base-library/base-library-review.md` |

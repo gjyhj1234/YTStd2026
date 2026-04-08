@@ -23,9 +23,9 @@
 | C# 局部变量 | camelCase | `userId`, `roleList` |
 | C# 常量 | PascalCase | `ErrorCodes.UsernameExists` |
 | C# 命名空间 | PascalCase | `YTStdTenantPlatform.Application.Services` |
-| 数据库表名 | snake_case | `plt_user`, `tnt_info` |
+| 数据库表名 | snake_case | `sys_user`, `sys_tenant` |
 | 数据库列名 | snake_case | `username`, `display_name`, `created_at` |
-| 数据库索引名 | snake_case | `idx_plt_user_username` |
+| 数据库索引名 | snake_case | `idx_sys_user_username` |
 | API 路径 | kebab-case | `/api/platform-users`, `/api/tenant-lifecycle-events` |
 | JSON 属性名 | PascalCase | `Code`, `Message`, `Data`, `Items` |
 | TypeScript 类型名 | PascalCase | `PlatformUser`, `ApiResult` |

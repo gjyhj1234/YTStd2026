@@ -63,9 +63,9 @@ namespace YTStdTenantPlatform.Entity.TenantPlatform;
 /// <summary>
 /// 平台用户实体
 /// </summary>
-[Entity(TableName = "plt_user", Description = "平台管理员用户表")]
-[Index(Name = "uq_plt_user_username", Columns = "username", IsUnique = true)]
-[Index(Name = "uq_plt_user_email", Columns = "email", IsUnique = true)]
+[Entity(TableName = "sys_user", Description = "平台管理员用户表")]
+[Index(Name = "uq_sys_user_username", Columns = "username", IsUnique = true)]
+[Index(Name = "uq_sys_user_email", Columns = "email", IsUnique = true)]
 public class PlatformUser
 {
     /// <summary>

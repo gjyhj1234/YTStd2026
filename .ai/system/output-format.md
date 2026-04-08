@@ -129,8 +129,8 @@ Agent 修改已有文件时，必须说明：
 ```markdown
 | 实体名 | 表名 | 说明 | 索引 | 审计 |
 |-------|------|------|------|------|
-| PlatformUser | plt_user | 平台管理员 | username (唯一) | ✓ |
-| PlatformRole | plt_role | 平台角色 | code (唯一) | ✓ |
+| PlatformUser | sys_user | 平台管理员 | username (唯一) | ✓ |
+| PlatformRole | sys_role | 平台角色 | code (唯一) | ✓ |
 ```
 
 ---

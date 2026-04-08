@@ -61,7 +61,7 @@ src/{Project}/
 ### 实体特性
 
 ```csharp
-[Entity(TableName = "plt_user", Description = "平台用户")]
+[Entity(TableName = "sys_user", Description = "平台用户")]
 public class PlatformUser
 {
     [Column(Name = "id", DbType = "bigint", IsPrimaryKey = true, Description = "主键 ID")]

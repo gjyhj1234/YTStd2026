@@ -213,10 +213,15 @@ export const Permissions = {
 
 ## 国际化规范
 
-详见 `.ai/rules/i18n.md` 中的前端部分。
+详见 `.ai/rules/i18n.md` 中的完整规范。
 
 核心要求：
 - 所有用户可见文本使用 `$t()` 或 `t()`
-- 资源文件位于 `src/locales/`
-- 支持 zh-CN（基准）、en-US、ms-MY、zh-TW
+- 资源文件位于 `src/locales/`，按三层目录组织
+  - `generated/` — 由 YTStdI18n.Generator 自动生成（禁止手改）
+  - `components/` — 组件级语言文件（与 views 路径强绑定）
+  - `global/` — 全局资源（菜单、按钮、验证等）
+  - `format/` — 日期、数字、货币格式化工具
+- 支持 zh-CN（基准）、en-US、ms-MY、zh-TW、ja-JP
 - DevExtreme 组件本地化需单独配置
+- 新增组件时必须同步创建对应的语言文件目录

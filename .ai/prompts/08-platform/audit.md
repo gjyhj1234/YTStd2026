@@ -31,7 +31,7 @@
 
 - `Application/Services/AuditAppService.cs`
 - `Endpoints/AuditEndpoints.cs`
-- 表：`log_audit`、`log_operation`、`log_login`
+- 表：`sys_audit_log`、`sys_operation_log`、`sys_login_log`
 
 ---
 
@@ -39,9 +39,9 @@
 
 | 类型 | 表 | 记录内容 |
 |------|---|---------|
-| 审计日志 | `log_audit` | 数据变更记录 |
-| 操作日志 | `log_operation` | 关键业务操作 |
-| 登录日志 | `log_login` | 登录/登出事件 |
+| 审计日志 | `sys_audit_log` | 数据变更记录 |
+| 操作日志 | `sys_operation_log` | 关键业务操作 |
+| 登录日志 | `sys_login_log` | 登录/登出事件 |
 | 系统日志 | 文件 | 应用运行日志（由 YTStdLogger 处理） |
 
 ---

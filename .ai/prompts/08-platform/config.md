@@ -49,7 +49,7 @@
 | 系统配置 | `sys_config` | 密码策略、登录策略、安全策略 |
 | 功能开关 | `sys_feature_flag` | MFA 开关、自助注册开关 |
 | UI 品牌 | `sys_config` | 平台名称、Logo URL |
-| 通知模板 | `ntf_template` | 邮件模板、短信模板 |
+| 通知模板 | `sys_notification_template` | 邮件模板、短信模板 |
 
 ---
 

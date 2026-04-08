@@ -24,11 +24,11 @@
 
 ### 1.3 实体建模（分批）
 
-- 批次 1：平台管理实体（plt_*）
-- 批次 2：租户实体（tnt_*）
-- 批次 3：资源与配置实体（sys_*）
-- 批次 4：SaaS 业务实体（saas_*）
-- 批次 5：运营支撑实体（log_*、ntf_*、api_*、stg_*）
+- 批次 1：平台管理实体（sys_user、sys_role、sys_permission 等）
+- 批次 2：租户实体（sys_tenant、sys_tenant_info 等）
+- 批次 3：资源与配置实体（sys_config、sys_dictionary 等）
+- 批次 4：业务支撑实体（sys_package、sys_subscription、sys_billing 等）
+- 批次 5：运营支撑实体（sys_audit_log、sys_notification、sys_api_key、sys_file 等）
 - 每批编译验证 Source Generator
 
 ---
