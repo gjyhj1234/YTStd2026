@@ -28,4 +28,10 @@ public class LangTests
     {
         Assert.Equal((byte)3, (byte)Lang.ZhTw);
     }
+
+    [Fact]
+    public void LangEnum_MsMy_HasCorrectValue()
+    {
+        Assert.Equal((byte)4, (byte)Lang.MsMy);
+    }
 }

@@ -8,7 +8,7 @@ public class I18nSampleTests
 {
     public I18nSampleTests()
     {
-        // Initialize for each test
+        // 每次测试前初始化
         I18n.Init(Lang.ZhCn);
         I18n.Register();
     }
@@ -16,102 +16,98 @@ public class I18nSampleTests
     [Fact]
     public void KConstants_HaveCorrectValues()
     {
-        // Verify generated K constants
-        Assert.Equal(0, K.Common.Success);
-        Assert.Equal(1, K.Common.Failed);
-        Assert.Equal(2, K.Common.NotFound);
-        Assert.Equal(3, K.Common.Unauthorized);
-        Assert.Equal(4, K.Common.Forbidden);
-        Assert.Equal(5, K.Common.ValidationError);
-
-        Assert.Equal(0, K.User.LoginSuccess);
-        Assert.Equal(1, K.User.LoginFailed);
-        Assert.Equal(2, K.User.AccountLocked);
-        Assert.Equal(3, K.User.PasswordTooShort);
-
-        Assert.Equal(0, K.Db.ConnectionFailed);
-        Assert.Equal(1, K.Db.QueryTimeout);
-        Assert.Equal(2, K.Db.InsertFailed);
-        Assert.Equal(3, K.Db.UpdateFailed);
-        Assert.Equal(4, K.Db.DeleteFailed);
+        // 验证 K 常量索引从 0 递增
+        Assert.Equal(0, K.Success);
+        Assert.Equal(1, K.Failed);
+        Assert.Equal(2, K.NotFound);
+        Assert.Equal(3, K.Unauthorized);
+        Assert.Equal(4, K.Forbidden);
+        Assert.Equal(5, K.ValidationError);
+        Assert.Equal(6, K.LoginSuccess);
+        Assert.Equal(7, K.LoginFailed);
+        Assert.Equal(8, K.AccountLocked);
+        Assert.Equal(9, K.PasswordTooShort);
+        Assert.Equal(10, K.ConnectionFailed);
+        Assert.Equal(11, K.QueryTimeout);
+        Assert.Equal(12, K.InsertFailed);
+        Assert.Equal(13, K.UpdateFailed);
+        Assert.Equal(14, K.DeleteFailed);
     }
 
     [Fact]
-    public void Common_ZhCn_ReturnsChineseTranslation()
+    public void T_ZhCn_ReturnsChineseTranslation()
     {
         I18n.DefaultLang = Lang.ZhCn;
-        Assert.Equal("操作成功", K.Common.Success.Common());
-        Assert.Equal("操作失败", K.Common.Failed.Common());
-        Assert.Equal("未找到数据", K.Common.NotFound.Common());
+        Assert.Equal("操作成功", I18n.T(0, K.Success));
+        Assert.Equal("操作失败", I18n.T(0, K.Failed));
+        Assert.Equal("未找到数据", I18n.T(0, K.NotFound));
     }
 
     [Fact]
-    public void Common_En_ReturnsEnglishTranslation()
+    public void T_En_ReturnsEnglishTranslation()
     {
         I18n.DefaultLang = Lang.En;
-        Assert.Equal("Operation successful", K.Common.Success.Common());
-        Assert.Equal("Operation failed", K.Common.Failed.Common());
-        Assert.Equal("Data not found", K.Common.NotFound.Common());
+        Assert.Equal("Operation successful", I18n.T(0, K.Success));
+        Assert.Equal("Operation failed", I18n.T(0, K.Failed));
+        Assert.Equal("Data not found", I18n.T(0, K.NotFound));
     }
 
     [Fact]
-    public void Common_WithLangParam_ReturnsCorrectTranslation()
+    public void T_UserMessages_ZhCn()
     {
-        Assert.Equal("操作成功", K.Common.Success.Common(Lang.ZhCn));
-        Assert.Equal("Operation successful", K.Common.Success.Common(Lang.En));
+        I18n.DefaultLang = Lang.ZhCn;
+        Assert.Equal("登录成功", I18n.T(0, K.LoginSuccess));
+        Assert.Equal("用户名或密码错误", I18n.T(0, K.LoginFailed));
+        Assert.Equal("账户已被锁定", I18n.T(0, K.AccountLocked));
+        Assert.Equal("密码长度不能少于 8 位", I18n.T(0, K.PasswordTooShort));
     }
 
     [Fact]
-    public void Common_WithTenantId_UsesTenantLang()
+    public void T_UserMessages_En()
     {
+        I18n.DefaultLang = Lang.En;
+        Assert.Equal("Login successful", I18n.T(0, K.LoginSuccess));
+        Assert.Equal("Invalid username or password", I18n.T(0, K.LoginFailed));
+        Assert.Equal("Account has been locked", I18n.T(0, K.AccountLocked));
+        Assert.Equal("Password must be at least 8 characters", I18n.T(0, K.PasswordTooShort));
+    }
+
+    [Fact]
+    public void T_DbMessages_ZhCn()
+    {
+        I18n.DefaultLang = Lang.ZhCn;
+        Assert.Equal("数据库连接失败", I18n.T(0, K.ConnectionFailed));
+        Assert.Equal("新增数据失败", I18n.T(0, K.InsertFailed));
+    }
+
+    [Fact]
+    public void T_DbMessages_En()
+    {
+        I18n.DefaultLang = Lang.En;
+        Assert.Equal("Database connection failed", I18n.T(0, K.ConnectionFailed));
+        Assert.Equal("Insert data failed", I18n.T(0, K.InsertFailed));
+    }
+
+    [Fact]
+    public void T_WithTenantId_UsesTenantLang()
+    {
+        I18n.DefaultLang = Lang.ZhCn;
         I18n.SetTenantLang(1001, Lang.En);
-        Assert.Equal("Operation successful", K.Common.Success.Common(1001));
-    }
-
-    [Fact]
-    public void User_ZhCn_ReturnsChineseTranslation()
-    {
-        I18n.DefaultLang = Lang.ZhCn;
-        Assert.Equal("登录成功", K.User.LoginSuccess.User());
-        Assert.Equal("用户名或密码错误", K.User.LoginFailed.User());
-    }
-
-    [Fact]
-    public void User_En_ReturnsEnglishTranslation()
-    {
-        I18n.DefaultLang = Lang.En;
-        Assert.Equal("Login successful", K.User.LoginSuccess.User());
-        Assert.Equal("Invalid username or password", K.User.LoginFailed.User());
-    }
-
-    [Fact]
-    public void Db_ZhCn_ReturnsChineseTranslation()
-    {
-        I18n.DefaultLang = Lang.ZhCn;
-        Assert.Equal("数据库连接失败", K.Db.ConnectionFailed.Db());
-        Assert.Equal("新增数据失败", K.Db.InsertFailed.Db());
-    }
-
-    [Fact]
-    public void Db_En_ReturnsEnglishTranslation()
-    {
-        I18n.DefaultLang = Lang.En;
-        Assert.Equal("Database connection failed", K.Db.ConnectionFailed.Db());
-        Assert.Equal("Insert data failed", K.Db.InsertFailed.Db());
+        Assert.Equal("Operation successful", I18n.T(1001, K.Success));
     }
 
     [Fact]
     public void LanguageSwitching_WorksAtRuntime()
     {
         I18n.DefaultLang = Lang.ZhCn;
-        Assert.Equal("操作成功", K.Common.Success.Common());
+        Assert.Equal("操作成功", I18n.T(0, K.Success));
 
         I18n.DefaultLang = Lang.En;
-        Assert.Equal("Operation successful", K.Common.Success.Common());
+        Assert.Equal("Operation successful", I18n.T(0, K.Success));
 
-        // Switch back
+        // 切回
         I18n.DefaultLang = Lang.ZhCn;
-        Assert.Equal("操作成功", K.Common.Success.Common());
+        Assert.Equal("操作成功", I18n.T(0, K.Success));
     }
 
     [Fact]
@@ -120,18 +116,28 @@ public class I18nSampleTests
         I18n.DefaultLang = Lang.ZhCn;
         I18n.SetTenantLang(2001, Lang.En);
 
-        // Global uses Chinese
-        Assert.Equal("操作成功", K.Common.Success.Common());
-        // Tenant 2001 uses English
-        Assert.Equal("Operation successful", K.Common.Success.Common(2001));
+        // 全局使用中文
+        Assert.Equal("操作成功", I18n.T(0, K.Success));
+        // 租户 2001 使用英文
+        Assert.Equal("Operation successful", I18n.T(2001, K.Success));
     }
 
     [Fact]
-    public void StringInterpolation_WorksWithTranslation()
+    public void T_FallbackToZhCn_WhenLangNotRegistered()
     {
-        I18n.DefaultLang = Lang.ZhCn;
-        string userName = "张三";
-        string msg = $"{K.User.LoginSuccess.User()}，{userName}";
-        Assert.Equal("登录成功，张三", msg);
+        // 日语未注册，应回退到简体中文
+        I18n.SetTenantLang(3001, Lang.Ja);
+        Assert.Equal("操作成功", I18n.T(3001, K.Success));
+    }
+
+    [Fact]
+    public void T_ReturnsEmpty_WhenNotInitialized()
+    {
+        I18nCore.Init(Lang.ZhCn);
+        // 未调用 Register()，translations 为 null
+        Assert.Equal(string.Empty, I18nCore.T(0, 0));
+
+        // 恢复
+        I18n.Register();
     }
 }
