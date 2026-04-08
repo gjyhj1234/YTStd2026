@@ -1,0 +1,1 @@
+根据.ai/prompts/08-platform/README.md的各个步骤，分别添加子任务，然后进行检查并重构代码
