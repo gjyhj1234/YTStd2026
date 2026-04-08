@@ -18,9 +18,9 @@
 | YTStdAdo | `src/YTStdAdo/` | ✓ 完成 | 数据库访问层 |
 | YTStdEntity | `src/YTStdEntity/` | ✓ 完成 | 实体框架 |
 | YTStdEntity.Generator | `src/YTStdEntity.Generator/` | ✓ 完成 | 实体 Source Generator |
-| YTStdI18n | `src/YTStdI18n/` | ✓ 完成 | 国际化 |
-| YTStdI18n.Generator | `src/YTStdI18n.Generator/` | ✓ 完成 | 国际化 Source Generator |
-| YTStdTenantPlatform | `src/YTStdTenantPlatform/` | ✓ 完成 | 租户平台主程序 |
+| YTStdI18n | `src/YTStdI18n/` | 需要重构 | 国际化 |
+| YTStdI18n.Generator | `src/YTStdI18n.Generator/` | 需要重构 | 国际化 Source Generator |
+| YTStdTenantPlatform | `src/YTStdTenantPlatform/` | 需要重构 | 租户平台主程序 |
 
 ---
 
