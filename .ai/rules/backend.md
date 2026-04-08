@@ -90,7 +90,7 @@ public class PlatformUser
 ### 服务实现规则
 
 1. 所有 `InsertAsync` 前必须获取 ID：`entity.Id = await DB.GetNextLongIdAsync();`
-2. 所有错误消息使用 `Messages.XXX` 常量
+2. 所有错误消息使用 `Messages.XXX` 整形常量（`const int`）
 3. 所有 `Logger.Debug` 使用 `Func<string>` 延迟求值
 4. 唯一性验证使用 `GetListAsync` + 内存 foreach 循环
 5. 错误码使用 `ErrorCodes.XXX` 常量

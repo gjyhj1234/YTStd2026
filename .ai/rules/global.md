@@ -57,7 +57,7 @@
 - 异常捕获必须记录日志
 - 后端错误响应统一使用 `ApiResult<T>` 格式
 - 错误码统一使用 `ErrorCodes` 常量
-- 错误消息统一使用 `Messages` 常量（i18n key）
+- 错误消息统一使用 `Messages` 整形常量（`const int`，前端根据 Code 翻译）
 
 ---
 

@@ -38,8 +38,8 @@
 | 目录名 | kebab-case | `platform-users/`, `tenant-lifecycle/` |
 | 国际化 key | dot.separated | `user.username_exists`, `common.save` |
 | 权限码 | dot.separated | `platform.user.list`, `tenant.lifecycle.create` |
-| 错误码常量 | PascalCase | `ErrorCodes.UsernameExists` |
-| 消息常量 | PascalCase | `Messages.UsernameExists` |
+| 错误码常量 | PascalCase | `ErrorCodes.UsernameExists`（`const int`） |
+| 消息常量 | PascalCase | `Messages.UsernameExists`（`const int`） |
 | 配置键 | PascalCase | `ConnectionStrings:Default` |
 
 ---

@@ -218,7 +218,7 @@ export const Permissions = {
 核心要求：
 - 所有用户可见文本使用 `$t()` 或 `t()`
 - 资源文件位于 `src/locales/`，按三层目录组织
-  - `generated/` — 由 YTStdI18n.Generator 自动生成（禁止手改）
+  - `generated/` — 由 YTStdI18n.Generator 自动生成（允许手动编辑翻译，Generator 不覆盖已有 key）
   - `components/` — 组件级语言文件（与 views 路径强绑定）
   - `global/` — 全局资源（菜单、按钮、验证等）
   - `format/` — 日期、数字、货币格式化工具

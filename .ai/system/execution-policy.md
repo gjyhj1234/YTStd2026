@@ -60,7 +60,7 @@
 1. 所有公开类型、方法、DTO 必须有中文 XML 注释
 2. 所有 `Logger.Debug` 调用必须使用 `Func<string>` 延迟求值重载
 3. 所有 `InsertAsync` 调用前必须通过 `DB.GetNextLongIdAsync()` 显式获取 ID
-4. 所有错误消息必须使用 `Messages.XXX` 常量（i18n key）
+4. 所有错误消息必须使用 `Messages.XXX` 整形常量（`const int`）
 5. 每个后端接口模块完成时，必须同步生成对应的 Postman 测试脚本
 6. 每个前端模块必须包含功能说明与操作指引
 7. 每次修改后必须验证编译通过

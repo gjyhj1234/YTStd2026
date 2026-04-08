@@ -32,7 +32,7 @@
 
 - `src/locales/index.ts` — i18n 初始化入口（vue-i18n 配置）
 - `src/locales/merge.ts` — 合并 generated + global + components 的加载逻辑
-- `src/locales/generated/**` — 由 Generator 自动生成（禁止手写）
+- `src/locales/generated/**` — 由 Generator 自动生成（允许手动编辑翻译，Generator 不覆盖已有 key）
 - `src/locales/components/{Module}/{Component}/zh-CN.json` — 组件级语言文件
 - `src/locales/components/{Module}/{Component}/en-US.json` — 组件级语言文件
 - `src/locales/global/{类别}/zh-CN.json` — 全局资源
@@ -170,19 +170,21 @@ t('global.validation.required') // "此字段为必填项"
 
 ## 后端错误消息翻译
 
-后端返回 i18n key，前端负责翻译后显示：
+后端返回整形常量 Code，前端根据 Code 查找对应的 i18n key 进行翻译显示：
 
 ```typescript
 // utils/http.ts
 function handleError(result: ApiResult) {
   if (result.Code !== 0) {
-    const message = t(result.Message) || result.Message;
+    // 前端根据后端返回的整形 Code 查找 generated 语言包中的翻译
+    const messageKey = getMessageKeyByCode(result.Code);
+    const message = t(messageKey) || String(result.Code);
     showNotification({ message, type: 'error' });
   }
 }
 ```
 
-后端 `result.Message` 值如 `"user.username_exists"` 对应 `locales/generated/error/user/zh-CN.json` 中的 key。
+后端 `result.Code` 为整形常量（如 `2001`），前端通过 YTStdI18n.Generator 生成的映射关系找到对应 i18n key 后翻译。
 
 ---
 
@@ -193,7 +195,7 @@ function handleError(result: ApiResult) {
 - 所有新增的后端 Messages 必须在前端 generated 中有翻译（由 Generator 保证）
 - DevExtreme 组件通过 DevExtreme 自身 locale 机制处理，不通过 vue-i18n
 - 每个组件的语言文件路径必须与组件路径一一对应
-- 禁止手动修改 `locales/generated/` 目录下的文件
+- generated 目录允许手动编辑翻译内容（校正翻译），但 Generator 不会覆盖已有 key 的值
 - 同一目录下 zh-CN.json 和 en-US.json 的 key 集合必须完全一致
 
 ---
@@ -202,7 +204,7 @@ function handleError(result: ApiResult) {
 
 - 禁止在组件模板中硬编码中文
 - 禁止使用 `v-html` 渲染翻译内容（除非明确需要富文本且已消毒）
-- 禁止手动修改 `locales/generated/` 目录
+- 禁止由前端开发者在 generated 目录新增或删除 key（key 管理由 Generator 负责，翻译内容可手动编辑）
 - 禁止跨组件复用 key（每个组件有独立的 key 空间）
 - 禁止在单个 JSON 文件中放置所有语言资源（必须分文件分目录）
 - 禁止缺少 zh-CN.json 文件

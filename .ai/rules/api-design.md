@@ -162,14 +162,14 @@ public static class ErrorCodes
 
 ### 错误消息
 
-所有错误消息必须定义在 `Application/Constants/Messages.cs` 中，使用 i18n key：
+所有错误消息必须定义在 `Application/Constants/Messages.cs` 中，使用整形常量（`const int`），后端不包含任何 i18n key 字符串：
 
 ```csharp
 public static class Messages
 {
-    public const string Success = "common.success";
-    public const string InvalidCredentials = "auth.invalid_credentials";
-    public const string UsernameExists = "user.username_exists";
+    public const int Success = 0;
+    public const int InvalidCredentials = 1001;
+    public const int UsernameExists = 2001;
 }
 ```
 

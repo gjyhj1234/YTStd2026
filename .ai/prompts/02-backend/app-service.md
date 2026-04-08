@@ -100,7 +100,7 @@ public class PlatformUserAppService
 ## 约束
 
 - 所有 `InsertAsync` 前必须 `entity.Id = await DB.GetNextLongIdAsync()`
-- 所有错误消息使用 `Messages.XXX`
+- 所有错误消息使用 `Messages.XXX` 整形常量
 - 所有 `Logger.Debug` 使用 `Func<string>` 重载
 - 唯一性验证使用 `GetListAsync` + foreach 模式
 - 返回值使用 `ApiResult<T>`

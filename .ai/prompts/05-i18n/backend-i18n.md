@@ -43,7 +43,7 @@
 1. 扫描目标模块中所有 `ApiResult.Fail()` 调用
 2. 检查 message 参数是否使用 `Messages.XXX` 常量
 3. 扫描所有硬编码中文字符串，替换为 Messages 常量
-4. 在 Messages.cs 中添加缺失的常量，常量值为 dot.separated 格式的 i18n key
+4. 在 Messages.cs 中添加缺失的常量，常量类型为 `const int`（后端不包含 i18n key 字符串）
 5. 扫描所有枚举定义，确保枚举值不附带显示名文本（枚举值为 int）
 6. 确认 `I18nResourceAttribute` 已标注到对应资源类
 7. 执行 `dotnet build YTStd.slnx` 触发 Generator
@@ -58,7 +58,7 @@
 ### 错误消息
 
 ```csharp
-// 正确 — 使用 Messages 常量（i18n key 字符串）
+// 正确 — 使用 Messages 整形常量（后端不包含字符串）
 return ApiResult.Fail(ErrorCodes.UsernameExists, Messages.UsernameExists);
 
 // 错误 — 硬编码中文
@@ -125,8 +125,8 @@ web/{project}/src/locales/generated/
 
 ## 约束
 
-- 所有 `ApiResult.Fail()` 必须使用 `Messages.XXX` 常量
-- Messages 常量值为 dot.separated 格式的 i18n key
+- 所有 `ApiResult.Fail()` 必须使用 `Messages.XXX` 整形常量
+- Messages 常量为 `const int` 类型，后端不保留任何 i18n key 字符串
 - 后端不保留任何用户可见的文本字符串
 - 枚举值为整形，不附带 `[Description]` 等文本属性
 - 日志消息不需要国际化
@@ -137,18 +137,18 @@ web/{project}/src/locales/generated/
 ## 禁止事项
 
 - 禁止硬编码中文字符串作为 API 错误消息
-- 禁止直接使用字符串字面量作为 i18n key
+- 禁止使用字符串字面量作为 i18n key（后端仅使用整形常量）
 - 禁止在日志中使用 i18n（日志不国际化）
 - 禁止枚举定义中包含 `[Description]` 中文文本
-- 禁止后端 API 响应中返回翻译后的文本（只返回 key）
-- 禁止手动创建或修改 `locales/generated/` 目录下的文件
+- 禁止后端 API 响应中返回翻译后的文本（只返回整形 Code）
+- generated 目录允许手动编辑翻译内容（校正翻译），但 Generator 不会覆盖已有 key 的值
 
 ---
 
 ## 验收标准
 
-- [ ] 所有 `ApiResult.Fail()` 使用 Messages 常量
-- [ ] Messages 常量值为合法 i18n key
+- [ ] 所有 `ApiResult.Fail()` 使用 Messages 整形常量
+- [ ] Messages 常量为 `const int` 类型
 - [ ] 所有枚举值无 `[Description]` 文本属性
 - [ ] 后端 API 响应不包含中文文本（仅 key）
 - [ ] `I18nResourceAttribute` 已标注到所有资源类

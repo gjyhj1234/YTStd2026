@@ -50,7 +50,7 @@
 
 - 服务位于 `Application/Services/{Module}AppService.cs`
 - 所有 `InsertAsync` 调用前使用 `DB.GetNextLongIdAsync()` 获取 ID
-- 所有错误消息使用 `Messages.XXX` 常量
+- 所有错误消息使用 `Messages.XXX` 整形常量（`const int`）
 - 所有 `Logger.Debug` 使用 `Func<string>` 延迟求值重载
 - 有唯一索引的实体有 check-exists 验证
 - 唯一性验证使用 `GetListAsync` + 内存循环模式

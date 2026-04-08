@@ -80,7 +80,7 @@ Generator 在生成前端代码时**必须**执行以下判断：
 | 8 | 应用服务 | `Application/Services/{Module}AppService.cs` | CRUD 服务 |
 | 9 | API 端点 | `Endpoints/{Module}Endpoints.cs` | HTTP API |
 | 10 | 错误码 | `Application/Constants/ErrorCodes.cs` | 新增错误码 |
-| 11 | 消息常量 | `Application/Constants/Messages.cs` | 新增 i18n key |
+| 11 | 消息常量 | `Application/Constants/Messages.cs` | 新增整形常量（`const int`） |
 | 12 | 权限码 | 权限初始化数据中 | 菜单/API/操作权限 |
 | 13 | 初始化数据 | `Infrastructure/Initialization/` | 种子数据 |
 
