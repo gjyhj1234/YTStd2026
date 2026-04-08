@@ -4,9 +4,9 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>平台用户</summary>
-[Entity(TableName = "platform_users", NeedAuditTable = true)]
-[Index("uq_platform_users_username", "username", Kind = IndexKind.Unique)]
-[Index("uq_platform_users_email", "email", Kind = IndexKind.Unique)]
+[Entity(TableName = "sys_user", NeedAuditTable = true)]
+[Index("uq_sys_user_username", "username", Kind = IndexKind.Unique)]
+[Index("uq_sys_user_email", "email", Kind = IndexKind.Unique)]
 public class PlatformUser
 {
     /// <summary>主键</summary>

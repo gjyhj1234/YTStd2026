@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>租户数据作业</summary>
-[Entity(TableName = "tenant_data_jobs")]
-[Index("idx_tenant_data_jobs_tenant_type", "tenant_ref_id", "job_type")]
+[Entity(TableName = "sys_tenant_data_job")]
+[Index("idx_sys_tenant_data_job_tenant_type", "tenant_ref_id", "job_type")]
 public class TenantDataJob
 {
     /// <summary>主键</summary>

@@ -4,7 +4,7 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>多因素认证设置</summary>
-[Entity(TableName = "platform_mfa_settings", NeedAuditTable = true)]
+[Entity(TableName = "sys_mfa_setting", NeedAuditTable = true)]
 public class PlatformMfaSetting
 {
     /// <summary>主键</summary>

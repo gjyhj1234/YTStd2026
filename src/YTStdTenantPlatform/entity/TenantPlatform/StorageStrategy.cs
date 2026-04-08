@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>存储策略</summary>
-[Entity(TableName = "storage_strategies", NeedAuditTable = true)]
-[Index("uq_storage_strategies_strategy_code", "strategy_code", Kind = IndexKind.Unique)]
+[Entity(TableName = "sys_storage_strategy", NeedAuditTable = true)]
+[Index("uq_sys_storage_strategy_strategy_code", "strategy_code", Kind = IndexKind.Unique)]
 public class StorageStrategy
 {
     /// <summary>主键</summary>

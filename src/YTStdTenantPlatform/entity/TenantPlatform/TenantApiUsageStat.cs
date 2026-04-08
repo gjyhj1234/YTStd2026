@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>租户 API 用量统计</summary>
-[Entity(TableName = "tenant_api_usage_stats")]
-[Index("idx_api_usage_tenant_date", "tenant_ref_id", "stat_date")]
+[Entity(TableName = "sys_api_usage_stat")]
+[Index("idx_sys_api_usage_stat_tenant_date", "tenant_ref_id", "stat_date")]
 public class TenantApiUsageStat
 {
     /// <summary>主键</summary>

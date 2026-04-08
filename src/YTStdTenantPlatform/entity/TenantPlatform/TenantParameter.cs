@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>租户参数</summary>
-[Entity(TableName = "tenant_parameters", NeedAuditTable = true)]
-[Index("uq_tenant_parameters_tenant_param", "tenant_ref_id", "param_key", Kind = IndexKind.Unique)]
+[Entity(TableName = "sys_parameter", NeedAuditTable = true)]
+[Index("uq_sys_parameter_tenant_param", "tenant_ref_id", "param_key", Kind = IndexKind.Unique)]
 public class TenantParameter
 {
     /// <summary>主键</summary>

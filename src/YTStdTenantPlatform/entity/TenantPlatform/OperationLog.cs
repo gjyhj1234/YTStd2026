@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>操作日志</summary>
-[Entity(TableName = "operation_logs")]
-[Index("idx_operation_logs_tenant_time", "tenant_ref_id", "created_at")]
+[Entity(TableName = "sys_operation_log")]
+[Index("idx_sys_operation_log_tenant_time", "tenant_ref_id", "created_at")]
 public class OperationLog
 {
     /// <summary>主键</summary>

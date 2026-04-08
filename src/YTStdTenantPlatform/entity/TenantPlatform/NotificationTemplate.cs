@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>通知模板</summary>
-[Entity(TableName = "notification_templates", NeedAuditTable = true)]
-[Index("uq_notification_templates_template_code", "template_code", Kind = IndexKind.Unique)]
+[Entity(TableName = "sys_notification_template", NeedAuditTable = true)]
+[Index("uq_sys_notification_template_template_code", "template_code", Kind = IndexKind.Unique)]
 public class NotificationTemplate
 {
     /// <summary>主键</summary>

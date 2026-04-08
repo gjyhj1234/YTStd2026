@@ -4,9 +4,9 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>租户功能开关</summary>
-[Entity(TableName = "tenant_feature_flags", NeedAuditTable = true)]
-[Index("uq_tenant_feature_flags_tenant_feature", "tenant_ref_id", "feature_key", Kind = IndexKind.Unique)]
-[Index("idx_feature_flags_tenant_enabled", "tenant_ref_id", "enabled")]
+[Entity(TableName = "sys_feature_flag", NeedAuditTable = true)]
+[Index("uq_sys_feature_flag_tenant_feature", "tenant_ref_id", "feature_key", Kind = IndexKind.Unique)]
+[Index("idx_sys_feature_flag_tenant_enabled", "tenant_ref_id", "enabled")]
 public class TenantFeatureFlag
 {
     /// <summary>主键</summary>

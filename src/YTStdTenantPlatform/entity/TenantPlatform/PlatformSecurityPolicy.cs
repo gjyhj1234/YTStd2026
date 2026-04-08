@@ -4,7 +4,7 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>安全策略</summary>
-[Entity(TableName = "platform_security_policies", NeedAuditTable = true)]
+[Entity(TableName = "sys_security_policy", NeedAuditTable = true)]
 public class PlatformSecurityPolicy
 {
     /// <summary>主键</summary>

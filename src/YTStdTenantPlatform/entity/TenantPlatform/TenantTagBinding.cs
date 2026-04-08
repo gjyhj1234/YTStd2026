@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>租户标签绑定</summary>
-[Entity(TableName = "tenant_tag_bindings")]
-[Index("uq_tenant_tag_bindings_tenant_tag", "tenant_ref_id", "tag_id", Kind = IndexKind.Unique)]
+[Entity(TableName = "sys_tenant_tag_binding")]
+[Index("uq_sys_tenant_tag_binding_tenant_tag", "tenant_ref_id", "tag_id", Kind = IndexKind.Unique)]
 public class TenantTagBinding
 {
     /// <summary>主键</summary>

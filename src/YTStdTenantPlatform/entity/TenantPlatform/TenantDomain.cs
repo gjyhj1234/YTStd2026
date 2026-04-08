@@ -4,9 +4,9 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>租户域名</summary>
-[Entity(TableName = "tenant_domains", NeedAuditTable = true)]
-[Index("uq_tenant_domains_domain", "domain", Kind = IndexKind.Unique)]
-[Index("uq_tenant_domains_tenant_domain", "tenant_ref_id", "domain", Kind = IndexKind.Unique)]
+[Entity(TableName = "sys_tenant_domain", NeedAuditTable = true)]
+[Index("uq_sys_tenant_domain_domain", "domain", Kind = IndexKind.Unique)]
+[Index("uq_sys_tenant_domain_tenant_domain", "tenant_ref_id", "domain", Kind = IndexKind.Unique)]
 public class TenantDomain
 {
     /// <summary>主键</summary>

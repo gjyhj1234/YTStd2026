@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>平台角色权限关联</summary>
-[Entity(TableName = "platform_role_permissions")]
-[Index("uq_platform_role_permissions_role_permission", "role_id", "permission_id", Kind = IndexKind.Unique)]
+[Entity(TableName = "sys_role_permission")]
+[Index("uq_sys_role_permission_role_permission", "role_id", "permission_id", Kind = IndexKind.Unique)]
 public class PlatformRolePermission
 {
     /// <summary>主键</summary>

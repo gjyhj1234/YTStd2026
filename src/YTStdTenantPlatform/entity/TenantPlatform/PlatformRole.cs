@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>平台角色</summary>
-[Entity(TableName = "platform_roles", NeedAuditTable = true)]
-[Index("uq_platform_roles_code", "code", Kind = IndexKind.Unique)]
+[Entity(TableName = "sys_role", NeedAuditTable = true)]
+[Index("uq_sys_role_code", "code", Kind = IndexKind.Unique)]
 public class PlatformRole
 {
     /// <summary>主键</summary>

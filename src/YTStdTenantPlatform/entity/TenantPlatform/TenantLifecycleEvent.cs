@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>租户生命周期事件</summary>
-[Entity(TableName = "tenant_lifecycle_events")]
-[Index("idx_tenant_lifecycle_events_tenant_time", "tenant_ref_id", "occurred_at")]
+[Entity(TableName = "sys_tenant_lifecycle_event")]
+[Index("idx_sys_tenant_lifecycle_event_tenant_time", "tenant_ref_id", "occurred_at")]
 public class TenantLifecycleEvent
 {
     /// <summary>主键</summary>

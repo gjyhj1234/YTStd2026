@@ -4,7 +4,7 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>租户 Webhook</summary>
-[Entity(TableName = "tenant_webhooks", NeedAuditTable = true)]
+[Entity(TableName = "sys_webhook", NeedAuditTable = true)]
 public class TenantWebhook
 {
     /// <summary>主键</summary>

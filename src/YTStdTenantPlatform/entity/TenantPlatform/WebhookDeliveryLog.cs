@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>Webhook 投递日志</summary>
-[Entity(TableName = "webhook_delivery_logs")]
-[Index("idx_webhook_delivery_status_time", "delivery_status", "created_at")]
+[Entity(TableName = "sys_webhook_delivery_log")]
+[Index("idx_sys_webhook_delivery_log_status_time", "delivery_status", "created_at")]
 public class WebhookDeliveryLog
 {
     /// <summary>主键</summary>

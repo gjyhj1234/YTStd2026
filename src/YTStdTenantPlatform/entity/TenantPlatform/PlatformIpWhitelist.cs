@@ -4,7 +4,7 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>IP 白名单</summary>
-[Entity(TableName = "platform_ip_whitelists", NeedAuditTable = true)]
+[Entity(TableName = "sys_ip_whitelist", NeedAuditTable = true)]
 public class PlatformIpWhitelist
 {
     /// <summary>主键</summary>

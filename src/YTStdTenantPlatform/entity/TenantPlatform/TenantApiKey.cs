@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>租户 API 密钥</summary>
-[Entity(TableName = "tenant_api_keys", NeedAuditTable = true)]
-[Index("uq_tenant_api_keys_access_key", "access_key", Kind = IndexKind.Unique)]
+[Entity(TableName = "sys_api_key", NeedAuditTable = true)]
+[Index("uq_sys_api_key_access_key", "access_key", Kind = IndexKind.Unique)]
 public class TenantApiKey
 {
     /// <summary>主键</summary>

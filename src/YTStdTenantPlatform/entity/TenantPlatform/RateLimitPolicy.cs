@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>限流策略</summary>
-[Entity(TableName = "rate_limit_policies", NeedAuditTable = true)]
-[Index("uq_rate_limit_policies_subject_type_key", "subject_type", "subject_key", Kind = IndexKind.Unique)]
+[Entity(TableName = "sys_rate_limit_policy", NeedAuditTable = true)]
+[Index("uq_sys_rate_limit_policy_subject_type_key", "subject_type", "subject_key", Kind = IndexKind.Unique)]
 public class RateLimitPolicy
 {
     /// <summary>主键</summary>

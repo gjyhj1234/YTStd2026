@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>平台登录日志</summary>
-[Entity(TableName = "platform_login_logs")]
-[Index("idx_platform_login_logs_user_time", "user_id", "occurred_at")]
+[Entity(TableName = "sys_login_log")]
+[Index("idx_sys_login_log_user_time", "user_id", "occurred_at")]
 public class PlatformLoginLog
 {
     /// <summary>主键</summary>

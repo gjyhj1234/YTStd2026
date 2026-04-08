@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>租户试用</summary>
-[Entity(TableName = "tenant_trials", NeedAuditTable = true)]
-[Index("uq_tenant_trials_tenant_started", "tenant_ref_id", "started_at", Kind = IndexKind.Unique)]
+[Entity(TableName = "sys_trial", NeedAuditTable = true)]
+[Index("uq_sys_trial_tenant_started", "tenant_ref_id", "started_at", Kind = IndexKind.Unique)]
 public class TenantTrial
 {
     /// <summary>主键</summary>

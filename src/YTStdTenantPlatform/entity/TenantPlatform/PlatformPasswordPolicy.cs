@@ -4,7 +4,7 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>密码策略</summary>
-[Entity(TableName = "platform_password_policies", NeedAuditTable = true)]
+[Entity(TableName = "sys_password_policy", NeedAuditTable = true)]
 public class PlatformPasswordPolicy
 {
     /// <summary>主键</summary>

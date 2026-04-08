@@ -4,7 +4,7 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>系统日志</summary>
-[Entity(TableName = "system_logs")]
+[Entity(TableName = "sys_system_log")]
 public class SystemLog
 {
     /// <summary>主键</summary>
