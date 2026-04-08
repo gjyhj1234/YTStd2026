@@ -111,8 +111,8 @@ namespace YTStdTenantPlatform.Bootstrap
                 var result = await HealthCheck.CheckAllAsync();
                 var statusCode = result.IsHealthy ? 200 : 503;
                 var apiResult = result.IsHealthy
-                    ? ApiResult.Ok(Messages.OperationSuccess)
-                    : ApiResult.Fail(ErrorCodes.OperationFailed, result.Message);
+                    ? ApiResult.Ok()
+                    : ApiResult.Fail(ErrorCodes.OperationFailed);
                 await TenantPlatformJsonResponseWriter.WriteAsync(ctx, apiResult, statusCode);
             }).WithSummary("综合健康检查");
 
@@ -121,8 +121,8 @@ namespace YTStdTenantPlatform.Bootstrap
                 var result = await HealthCheck.CheckDatabaseAsync();
                 var statusCode = result.IsHealthy ? 200 : 503;
                 var apiResult = result.IsHealthy
-                    ? ApiResult.Ok(Messages.OperationSuccess)
-                    : ApiResult.Fail(ErrorCodes.OperationFailed, result.Message);
+                    ? ApiResult.Ok()
+                    : ApiResult.Fail(ErrorCodes.OperationFailed);
                 await TenantPlatformJsonResponseWriter.WriteAsync(ctx, apiResult, statusCode);
             }).WithSummary("数据库健康检查");
 
@@ -131,8 +131,8 @@ namespace YTStdTenantPlatform.Bootstrap
                 var result = HealthCheck.CheckCache();
                 var statusCode = result.IsHealthy ? 200 : 503;
                 var apiResult = result.IsHealthy
-                    ? ApiResult.Ok(Messages.OperationSuccess)
-                    : ApiResult.Fail(ErrorCodes.OperationFailed, result.Message);
+                    ? ApiResult.Ok()
+                    : ApiResult.Fail(ErrorCodes.OperationFailed);
                 await TenantPlatformJsonResponseWriter.WriteAsync(ctx, apiResult, statusCode);
             }).WithSummary("缓存健康检查");
         }
@@ -157,7 +157,7 @@ namespace YTStdTenantPlatform.Bootstrap
                 if (request == null || string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
                 {
                     await TenantPlatformJsonResponseWriter.WriteAsync(context,
-                        ApiResult<LoginRepDTO>.Fail(ErrorCodes.AuthCredentialsRequired, Messages.AuthCredentialsRequired), 400);
+                        ApiResult<LoginRepDTO>.Fail(ErrorCodes.AuthCredentialsRequired), 400);
                     return;
                 }
 
@@ -171,7 +171,7 @@ namespace YTStdTenantPlatform.Bootstrap
                 {
                     Logger.Error(0, 0, "[RouteRegistration] 查询平台用户失败: " + queryResult.ErrorMessage);
                     await TenantPlatformJsonResponseWriter.WriteAsync(context,
-                        ApiResult<LoginRepDTO>.Fail(ErrorCodes.SystemBusy, Messages.SystemBusy), 500);
+                        ApiResult<LoginRepDTO>.Fail(ErrorCodes.SystemBusy), 500);
                     return;
                 }
 
@@ -195,7 +195,7 @@ namespace YTStdTenantPlatform.Bootstrap
                 {
                     await RecordLoginAsync(null, username, remoteIp, userAgent, "password", "failed", "用户名或密码错误");
                     await TenantPlatformJsonResponseWriter.WriteAsync(context,
-                        ApiResult<LoginRepDTO>.Fail(ErrorCodes.AuthInvalidCredentials, Messages.AuthInvalidCredentials), 401);
+                        ApiResult<LoginRepDTO>.Fail(ErrorCodes.AuthInvalidCredentials), 401);
                     return;
                 }
 
@@ -203,7 +203,7 @@ namespace YTStdTenantPlatform.Bootstrap
                 {
                     await RecordLoginAsync(matchedUser, username, remoteIp, userAgent, "password", "disabled", "账户已禁用");
                     await TenantPlatformJsonResponseWriter.WriteAsync(context,
-                        ApiResult<LoginRepDTO>.Fail(ErrorCodes.AuthAccountDisabled, Messages.AuthAccountDisabled), 403);
+                        ApiResult<LoginRepDTO>.Fail(ErrorCodes.AuthAccountDisabled), 403);
                     return;
                 }
 
@@ -213,7 +213,7 @@ namespace YTStdTenantPlatform.Bootstrap
                     await PlatformUserCRUD.UpdateAsync(0, 0, matchedUser);
                     await RecordLoginAsync(matchedUser, username, remoteIp, userAgent, "password", "locked", "账户已锁定");
                     await TenantPlatformJsonResponseWriter.WriteAsync(context,
-                        ApiResult<LoginRepDTO>.Fail(ErrorCodes.AuthAccountLocked, Messages.AuthAccountLocked), 423);
+                        ApiResult<LoginRepDTO>.Fail(ErrorCodes.AuthAccountLocked), 423);
                     return;
                 }
 
@@ -237,9 +237,8 @@ namespace YTStdTenantPlatform.Bootstrap
                     var isLocked = string.Equals(matchedUser.Status, "locked", StringComparison.Ordinal);
                     await RecordLoginAsync(matchedUser, username, remoteIp, userAgent, "password", isLocked ? "locked" : "failed", "用户名或密码错误");
                     var errCode = isLocked ? ErrorCodes.AuthAccountLocked : ErrorCodes.AuthInvalidCredentials;
-                    var errMsg = isLocked ? Messages.AuthAccountLocked : Messages.AuthInvalidCredentials;
                     await TenantPlatformJsonResponseWriter.WriteAsync(context,
-                        ApiResult<LoginRepDTO>.Fail(errCode, errMsg), isLocked ? 423 : 401);
+                        ApiResult<LoginRepDTO>.Fail(errCode), isLocked ? 423 : 401);
                     return;
                 }
 
@@ -255,7 +254,7 @@ namespace YTStdTenantPlatform.Bootstrap
                 {
                     Logger.Error(0, 0, "[RouteRegistration] 更新登录状态失败: " + updateResult.ErrorMessage);
                     await TenantPlatformJsonResponseWriter.WriteAsync(context,
-                        ApiResult<LoginRepDTO>.Fail(ErrorCodes.AuthLoginUpdateFailed, Messages.AuthLoginUpdateFailed), 500);
+                        ApiResult<LoginRepDTO>.Fail(ErrorCodes.AuthLoginUpdateFailed), 500);
                     return;
                 }
 
@@ -293,9 +292,8 @@ namespace YTStdTenantPlatform.Bootstrap
                     Permissions = loginPermissions,
                     IsSuperAdmin = loginIsSuperAdmin
                 };
-                var loginMsg = requirePasswordReset ? Messages.AuthLoginSuccessPasswordExpired : Messages.AuthLoginSuccess;
                 await TenantPlatformJsonResponseWriter.WriteAsync(context,
-                    ApiResult<LoginRepDTO>.Ok(loginData, loginMsg));
+                    ApiResult<LoginRepDTO>.Ok(loginData));
             }).WithSummary("平台用户登录");
 
             group.MapPost("/refresh", async (HttpContext context, CancellationToken cancellationToken) =>
@@ -322,7 +320,7 @@ namespace YTStdTenantPlatform.Bootstrap
                 if (currentUser == null)
                 {
                     await TenantPlatformJsonResponseWriter.WriteAsync(context,
-                        ApiResult<LoginRepDTO>.Fail(ErrorCodes.AuthTokenInvalid, Messages.AuthTokenInvalid), 401);
+                        ApiResult<LoginRepDTO>.Fail(ErrorCodes.AuthTokenInvalid), 401);
                     return;
                 }
 
@@ -340,7 +338,7 @@ namespace YTStdTenantPlatform.Bootstrap
                     IsSuperAdmin = currentUser.IsSuperAdmin
                 };
                 await TenantPlatformJsonResponseWriter.WriteAsync(context,
-                    ApiResult<LoginRepDTO>.Ok(refreshData, Messages.AuthRefreshSuccess));
+                    ApiResult<LoginRepDTO>.Ok(refreshData));
             }).WithSummary("刷新访问令牌");
 
             group.MapGet("/me", async (HttpContext context) =>
@@ -357,7 +355,7 @@ namespace YTStdTenantPlatform.Bootstrap
                     IsSuperAdmin = currentUser.IsSuperAdmin
                 };
                 await TenantPlatformJsonResponseWriter.WriteAsync(context,
-                    ApiResult<CurrentUserRepDTO>.Ok(meData, Messages.OperationSuccess));
+                    ApiResult<CurrentUserRepDTO>.Ok(meData));
             }).WithSummary("获取当前登录用户信息");
         }
 
