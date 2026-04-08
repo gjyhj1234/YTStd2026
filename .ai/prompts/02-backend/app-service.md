@@ -33,7 +33,6 @@
 
 - `Application/Services/{Module}AppService.cs`
 - `Application/Constants/ErrorCodes.cs` 更新
-- `Application/Constants/Messages.cs` 更新
 
 ---
 
@@ -45,7 +44,7 @@
 4. 实现更新方法（UpdateAsync）— 必须包含存在性检查
 5. 实现删除方法（DeleteAsync）
 6. 实现状态变更方法（EnableAsync、DisableAsync）— 如适用
-7. 更新 ErrorCodes 和 Messages
+7. Update ErrorCodes
 8. 编写 Logger.Debug 日志（使用 Func<string> 重载）
 9. 执行 `dotnet build` 验证
 
@@ -72,7 +71,7 @@ public class PlatformUserAppService
         {
             if (item.Username == dto.Username)
             {
-                return ApiResult.Fail<long>(ErrorCodes.UsernameExists, Messages.UsernameExists);
+                return ApiResult.Fail<long>(ErrorCodes.UsernameExists);
             }
         }
 
@@ -86,7 +85,7 @@ public class PlatformUserAppService
         var result = await DB.InsertAsync(entity);
         if (!result.Success)
         {
-            return ApiResult.Fail<long>(ErrorCodes.OperationFailed, Messages.OperationFailed);
+            return ApiResult.Fail<long>(ErrorCodes.OperationFailed);
         }
 
         Logger.Debug(tenantId, userId, () => $"[CreateAsync] 用户创建成功: Id={entity.Id}");
@@ -100,7 +99,7 @@ public class PlatformUserAppService
 ## 约束
 
 - 所有 `InsertAsync` 前必须 `entity.Id = await DB.GetNextLongIdAsync()`
-- 所有错误消息使用 `Messages.XXX` 整形常量
+- 所有 `ApiResult.Fail()` 仅传 `ErrorCodes.XXX`（不传 message 参数）
 - 所有 `Logger.Debug` 使用 `Func<string>` 重载
 - 唯一性验证使用 `GetListAsync` + foreach 模式
 - 返回值使用 `ApiResult<T>`
@@ -121,6 +120,6 @@ public class PlatformUserAppService
 - [ ] 服务方法签名包含 `tenantId` 和 `userId`
 - [ ] 所有创建操作有 ID 生成
 - [ ] 所有唯一字段有验证
-- [ ] 错误码和消息常量已定义
+- [ ] 错误码常量已定义
 - [ ] Debug 日志使用委托重载
 - [ ] 编译通过

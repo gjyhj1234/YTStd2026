@@ -36,10 +36,9 @@
 | TS/JS 文件名 | camelCase | `platformUser.ts`, `http.ts` |
 | CSS 类名 | kebab-case | `user-list`, `form-container` |
 | 目录名 | kebab-case | `platform-users/`, `tenant-lifecycle/` |
-| 国际化 key | dot.separated | `user.username_exists`, `common.save` |
+| 国际化 key | 中文原文 | `用户列表`, `保存`, `用户名` |
 | 权限码 | dot.separated | `platform.user.list`, `tenant.lifecycle.create` |
 | 错误码常量 | PascalCase | `ErrorCodes.UsernameExists`（`const int`） |
-| 消息常量 | PascalCase | `Messages.UsernameExists`（`const int`） |
 | 配置键 | PascalCase | `ConnectionStrings:Default` |
 
 ---
@@ -100,26 +99,23 @@
 
 ### 格式
 
-`{模块}.{子模块}.{具体项}`
+前端使用中文作为 key（最终方案）。
 
 ### 示例
 
 ```
-common.save                    # 通用 - 保存
-common.cancel                  # 通用 - 取消
-menu.platform_management       # 菜单 - 平台管理
-user.username_exists           # 用户 - 用户名已存在
-tenant.status_invalid          # 租户 - 状态无效
-auth.invalid_credentials       # 认证 - 无效凭证
-validation.field_required      # 验证 - 字段必填
+用户列表                        # 页面标题
+用户名                          # 字段标签
+保存                            # 按钮
+确认删除                        # 操作提示
 ```
 
 ### 规则
 
-- key 使用 dot.separated 格式
-- 模块名使用英文小写
-- 具体项使用 snake_case
-- 禁止使用中文作为 key
+- key 使用中文原文
+- 同文本只允许一个 key（禁止同词多义）
+- 禁止使用 dot.separated 英文 key（如 `user.username_exists`）
+- 禁止歧义词
 
 ---
 

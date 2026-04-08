@@ -50,7 +50,7 @@
 
 - 服务位于 `Application/Services/{Module}AppService.cs`
 - 所有 `InsertAsync` 调用前使用 `DB.GetNextLongIdAsync()` 获取 ID
-- 所有错误消息使用 `Messages.XXX` 整形常量（`const int`）
+- 所有 `ApiResult.Fail()` 仅传 `ErrorCodes.XXX`（不传 message 参数）
 - 所有 `Logger.Debug` 使用 `Func<string>` 延迟求值重载
 - 有唯一索引的实体有 check-exists 验证
 - 唯一性验证使用 `GetListAsync` + 内存循环模式
@@ -116,7 +116,7 @@
 ## 前端国际化任务完成标准
 
 - 语言资源文件位于 `src/locales/`
-- 所有用户可见文本使用 `$t()` 或 `t()` 函数
+- 所有用户可见文本使用 `t()` 函数（key 为中文）
 - 支持至少中文（zh-CN）和英文（en-US）
 - DevExtreme 组件本地化正确
 - 日期、数字、货币格式化随 locale 切换

@@ -37,7 +37,7 @@
 - 组件必须使用 TypeScript + Composition API
 - Props 必须有完整的类型定义
 - 必须使用 DevExtreme Vue 组件（如适用）
-- 所有文本使用 `$t()` 国际化
+- 所有文本使用 `t()` 国际化（key 为中文）
 
 ---
 

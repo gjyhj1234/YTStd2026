@@ -46,9 +46,12 @@ web/{project}/
 │   ├── layouts/           # 布局
 │   │   └── MainLayout.vue
 │   ├── locales/           # 国际化
-│   │   ├── zh-CN.json
-│   │   ├── en-US.json
-│   │   └── index.ts
+│   │   ├── generated/    # Generator 生成（Code→文本映射）
+│   │   ├── common/       # 全局复用资源
+│   │   ├── runtime/      # t()/gt()/loader
+│   │   │   ├── t.ts
+│   │   │   ├── gt.ts
+│   │   │   └── loader.ts
 │   ├── router/            # 路由
 │   │   └── index.ts
 │   ├── store/             # 状态管理
@@ -84,7 +87,7 @@ web/{project}/
 8. 实现登录页和认证状态管理
 9. 实现通用组件（FunctionDescriptionCard、OperationGuideDrawer）
 10. 实现首页/仪表盘
-11. 创建国际化基础资源（zh-CN、en-US）
+11. 创建国际化基础结构（common/ + runtime/）
 12. 执行 `npm run build` 验证
 
 ---

@@ -41,8 +41,7 @@
 6. `src/views/{module}/DetailView.vue` — 详情页/抽屉
 7. `src/router/index.ts` 更新 — 路由注册
 8. `src/constants/permissions.ts` 更新 — 权限码
-9. `src/locales/zh-CN.json` 更新 — 中文资源
-10. `src/locales/en-US.json` 更新 — 英文资源
+9. 组件级语言文件 — `{Component}.vue.zh-CN.json` + `{Component}.vue.en-US.json`
 
 ---
 
@@ -57,7 +56,7 @@
 7. 添加操作指引内容
 8. 注册路由并配置权限守卫
 9. 更新权限码常量
-10. 更新国际化资源（zh-CN、en-US）
+10. 创建组件级语言文件（`{Component}.vue.zh-CN.json` + `{Component}.vue.en-US.json`）
 11. 执行 `npm run build` 验证
 
 ---
@@ -92,13 +91,13 @@
 
 - 类型使用 PascalCase
 - 权限控制到按钮级
-- 所有用户可见文本使用 `$t()`
+- 所有用户可见文本使用 `t()`，key 为中文
 
 ---
 
 ## 禁止事项
 
-- 禁止在组件中硬编码中文文本（必须使用 i18n）
+- 禁止在组件中硬编码中文文本（必须使用 `t()`）
 - 禁止省略权限检查
 - 禁止省略功能说明和操作指引
 

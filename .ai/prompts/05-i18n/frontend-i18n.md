@@ -2,7 +2,7 @@
 
 ## 目标
 
-为前端项目接入完整的国际化支持，覆盖 YTStdI18n.Generator 生成的语言包、组件级语言包、全局资源、格式化工具和 DevExtreme 组件本地化。
+为前端项目接入完整的国际化支持，覆盖 YTStdI18n.Generator 生成的语言包、组件级语言文件、全局 common 资源和 DevExtreme 组件本地化。
 
 ---
 
@@ -14,7 +14,7 @@
 
 ## 前置阅读
 
-- `.ai/rules/i18n.md` — 完整国际化规范（必须通读，包含目录结构、key 命名、校验规则等）
+- `.ai/rules/i18n.md` — 完整国际化规范（必须通读，包含目录结构、key 设计、t()/gt() 实现等）
 - `.ai/rules/frontend.md` — 前端开发规范
 
 ---
@@ -22,7 +22,7 @@
 ## 输入
 
 - 已完成的前端页面和组件清单
-- 后端 Messages 常量清单
+- 后端 ErrorCodes 常量清单
 - 后端枚举定义清单
 - `locales/generated/` 下 YTStdI18n.Generator 已生成的语言包
 
@@ -30,60 +30,49 @@
 
 ## 输出
 
-- `src/locales/index.ts` — i18n 初始化入口（vue-i18n 配置）
-- `src/locales/merge.ts` — 合并 generated + global + components 的加载逻辑
-- `src/locales/generated/**` — 由 Generator 自动生成（允许手动编辑翻译，Generator 不覆盖已有 key）
-- `src/locales/components/{Module}/{Component}/zh-CN.json` — 组件级语言文件
-- `src/locales/components/{Module}/{Component}/en-US.json` — 组件级语言文件
-- `src/locales/global/{类别}/zh-CN.json` — 全局资源
-- `src/locales/global/{类别}/en-US.json` — 全局资源
-- `src/locales/format/datetime.ts` — 日期时间格式化
-- `src/locales/format/number.ts` — 数字格式化
-- `src/locales/format/currency.ts` — 货币格式化
-- 页面和组件中的硬编码文本替换为 `$t()` / `t()` 调用
+- `src/locales/runtime/t.ts` — t() 实现（组件 → common → generated → fallback）
+- `src/locales/runtime/gt.ts` — gt() 实现（仅查 common）
+- `src/locales/runtime/loader.ts` — 语言文件加载器
+- `src/locales/generated/{locale}.json` — 由 Generator 自动生成（允许手动编辑翻译，Generator 不覆盖已有 key）
+- `src/locales/common/zh-CN.json` — 全局复用资源
+- `src/locales/common/en-US.json` — 全局复用资源
+- `{Component}.vue.zh-CN.json` — 组件级语言文件（紧贴 .vue 文件）
+- `{Component}.vue.en-US.json` — 组件级语言文件
+- 页面和组件中的硬编码文本替换为 `t()` 调用
 - DevExtreme 组件本地化配置
 
 ---
 
 ## 执行步骤
 
-### 第 1 步：初始化 i18n 基础设施
+### 第 1 步：实现 t()/gt() 运行时
 
-1. 创建 `src/locales/index.ts` — 配置 vue-i18n 实例，支持回退到 zh-CN
-2. 创建 `src/locales/merge.ts` — 实现 generated + global + components 三层合并
-3. 合并优先级：generated（最低） < global < components（最高）
+1. 创建 `src/locales/runtime/t.ts` — 实现 t() 分层解析：组件 → common → generated → key
+2. 创建 `src/locales/runtime/gt.ts` — 实现 gt() 仅查 common
+3. 创建 `src/locales/runtime/loader.ts` — 语言文件加载逻辑
 
 ### 第 2 步：确认 generated 目录
 
-1. 执行 `dotnet build YTStd.slnx` 确保 Generator 已生成 `locales/generated/` 下的语言包
-2. 检查 `generated/error/`、`generated/message/`、`generated/enum/`、`generated/notification/` 目录结构正确
-3. 确认每个模块每种语言有独立的 JSON 文件
+1. 执行 `dotnet build YTStd.slnx` 确保 Generator 已生成 `locales/generated/{locale}.json`
+2. 确认 JSON 格式为 `{ "100001": "用户不存在", ... }`（Code → 文本映射）
 
-### 第 3 步：创建全局资源
+### 第 3 步：创建全局 common 资源
 
-在 `locales/global/` 下按类别创建：
+在 `locales/common/` 下创建：
 
-- `menu/zh-CN.json` + `menu/en-US.json` — 菜单文本
-- `button/zh-CN.json` + `button/en-US.json` — 通用按钮文本
-- `validation/zh-CN.json` + `validation/en-US.json` — 验证消息
-- `guide/zh-CN.json` + `guide/en-US.json` — 操作指引通用文本
-- `description/zh-CN.json` + `description/en-US.json` — 功能描述通用文本
+- `zh-CN.json` — 中文全局复用文本
+- `en-US.json` — 英文全局复用文本
+
+包含全局复用的文本：按钮文本、表单标签、状态名称、通用操作等。
 
 ### 第 4 步：逐组件创建语言文件
 
 对每个已完成的页面组件：
 
-1. 确认组件路径（如 `src/views/User/List.vue`）
-2. 创建对应语言目录（`locales/components/User/List/`）
-3. 创建 `zh-CN.json` 和 `en-US.json`
-4. 在 JSON 中定义该组件使用的所有 key
-5. 在组件中将硬编码文本替换为 `t('User.List.xxx')`
-
-通用组件规则：
-
-```text
-src/components/Dialog.vue → locales/components/Common/Dialog/zh-CN.json
-```
+1. 确认组件路径（如 `src/views/User/User.vue`）
+2. 创建紧贴的语言文件（`User.vue.zh-CN.json` + `User.vue.en-US.json`）
+3. 在 JSON 中声明 key：自有文本写值，复用文本写 `null`
+4. 在组件中将硬编码文本替换为 `t('中文key')`
 
 ### 第 5 步：配置 DevExtreme 组件本地化
 
@@ -102,127 +91,114 @@ locale('zh');
 3. 再回退到系统默认语言（zh-CN）
 4. 切换后立即生效，无需刷新
 
-### 第 7 步：创建格式化工具
+### 第 7 步：校验与构建
 
-- `locales/format/datetime.ts` — 基于 `Intl.DateTimeFormat` 的日期时间格式化
-- `locales/format/number.ts` — 基于 `Intl.NumberFormat` 的数字格式化
-- `locales/format/currency.ts` — 基于 `Intl.NumberFormat` 的货币格式化
-
-### 第 8 步：校验与构建
-
-1. 检查所有 components 目录与 views 目录的一一对应
-2. 检查 zh-CN.json 和 en-US.json 的 key 一致性
-3. 检查 generated 中的 key 与后端常量一一对应
+1. 检查所有组件 `.vue` 文件旁有对应的 `.vue.{locale}.json`
+2. 检查 null 值在 common 中有对应 key
+3. 检查 zh-CN.json 和 en-US.json 的 key 一致性
 4. 执行 `npm run build` 验证
 
 ---
 
-## 组件级 key 结构示例
+## 组件级语言文件示例
 
 ```json
-// locales/components/User/List/zh-CN.json
+// src/views/User/User.vue.zh-CN.json
 {
-  "title": "用户列表",
-  "columns.username": "用户名",
-  "columns.status": "状态",
-  "columns.created_at": "创建时间",
-  "form.username": "用户名",
-  "form.password": "密码",
-  "button.create": "新增用户",
-  "button.batch_enable": "批量启用",
-  "description.title": "功能说明",
-  "description.content": "管理平台管理员账户...",
-  "guide.title": "操作指引",
-  "guide.step1": "点击新增按钮..."
+  "用户列表": "用户列表",
+  "用户名": null,
+  "状态": null,
+  "创建时间": "创建时间",
+  "新增用户": "新增用户",
+  "保存": null
 }
 ```
 
 使用方式：
 
 ```typescript
-t('User.List.title')           // "用户列表"
-t('User.List.columns.username') // "用户名"
+t('用户列表')     // → 从组件 JSON 获取 "用户列表"
+t('用户名')       // → null → 从 common 获取
+t('保存')         // → null → 从 common 获取
 ```
 
 ---
 
-## 全局资源 key 结构示例
+## common 资源示例
 
 ```json
-// locales/global/menu/zh-CN.json
+// locales/common/zh-CN.json
 {
-  "dashboard": "仪表盘",
-  "platform_management": "平台管理",
-  "platform_users": "用户管理",
-  "platform_roles": "角色管理"
+  "用户名": "用户名",
+  "状态": "状态",
+  "保存": "保存",
+  "取消": "取消",
+  "确认": "确认",
+  "删除": "删除"
+}
+
+// locales/common/en-US.json
+{
+  "用户名": "User Name",
+  "状态": "Status",
+  "保存": "Save",
+  "取消": "Cancel",
+  "确认": "Confirm",
+  "删除": "Delete"
 }
 ```
 
-使用方式：
-
-```typescript
-t('global.menu.dashboard')      // "仪表盘"
-t('global.button.save')         // "保存"
-t('global.validation.required') // "此字段为必填项"
-```
-
 ---
 
-## 后端错误消息翻译
+## 后端错误翻译
 
-后端返回整形常量 Code，前端根据 Code 查找对应的 i18n key 进行翻译显示：
+后端返回整形 Code，前端通过 t() 查找 generated 语言包翻译：
 
 ```typescript
-// utils/http.ts
 function handleError(result: ApiResult) {
   if (result.Code !== 0) {
-    // 前端根据后端返回的整形 Code 查找 generated 语言包中的翻译
-    const messageKey = getMessageKeyByCode(result.Code);
-    const message = t(messageKey) || String(result.Code);
+    const message = t(result.Code.toString());
     showNotification({ message, type: 'error' });
   }
 }
 ```
-
-后端 `result.Code` 为整形常量（如 `2001`），前端通过 YTStdI18n.Generator 生成的映射关系找到对应 i18n key 后翻译。
 
 ---
 
 ## 约束
 
 - 基准语言为 zh-CN
-- 回退链：当前 locale → zh-CN → 显示 key 本身
-- 所有新增的后端 Messages 必须在前端 generated 中有翻译（由 Generator 保证）
-- DevExtreme 组件通过 DevExtreme 自身 locale 机制处理，不通过 vue-i18n
-- 每个组件的语言文件路径必须与组件路径一一对应
+- 回退链：组件 → common → generated → key 本身（即中文原文）
+- 所有 key 使用中文，禁止使用 dot.separated 英文 key
+- 复用文本使用 `null` 声明，必须在 common 中存在
+- DevExtreme 组件通过 DevExtreme 自身 locale 机制处理，不通过 t()
 - generated 目录允许手动编辑翻译内容（校正翻译），但 Generator 不会覆盖已有 key 的值
-- 同一目录下 zh-CN.json 和 en-US.json 的 key 集合必须完全一致
+- 同一组件的 zh-CN.json 和 en-US.json 的 key 集合必须完全一致
 
 ---
 
 ## 禁止事项
 
-- 禁止在组件模板中硬编码中文
+- 禁止在组件模板中硬编码中文（必须使用 `t()`）
 - 禁止使用 `v-html` 渲染翻译内容（除非明确需要富文本且已消毒）
-- 禁止由前端开发者在 generated 目录新增或删除 key（key 管理由 Generator 负责，翻译内容可手动编辑）
-- 禁止跨组件复用 key（每个组件有独立的 key 空间）
-- 禁止在单个 JSON 文件中放置所有语言资源（必须分文件分目录）
+- 禁止在组件 JSON 中写 `gt('xxx')`（使用 `null` 代替）
+- 禁止使用 dot.separated 英文 key（使用中文 key）
 - 禁止缺少 zh-CN.json 文件
-- 禁止遗漏组件对应的语言文件目录
+- 禁止遗漏组件对应的语言文件
+- 禁止由前端开发者在 generated 目录新增或删除 key（key 管理由 Generator 负责，翻译内容可手动编辑）
 
 ---
 
 ## 验收标准
 
-- [ ] `src/locales/index.ts` 正确配置 vue-i18n
-- [ ] `src/locales/merge.ts` 正确实现三层合并（generated < global < components）
-- [ ] 所有用户可见文本使用 `$t()` 或 `t()`
-- [ ] 每个 views 组件有对应的 `locales/components/{Module}/{Component}/` 目录
-- [ ] 每个语言目录包含 zh-CN.json 和 en-US.json
+- [ ] `src/locales/runtime/t.ts` 正确实现 t() 分层解析
+- [ ] `src/locales/runtime/gt.ts` 正确实现 gt() 查 common
+- [ ] `src/locales/runtime/loader.ts` 正确加载语言文件
+- [ ] 所有用户可见文本使用 `t()`
+- [ ] 每个 .vue 组件旁有对应的 `.vue.zh-CN.json` 和 `.vue.en-US.json`
+- [ ] null 值在 common 中有对应 key
 - [ ] zh-CN.json 与 en-US.json 的 key 完全一致
-- [ ] `locales/generated/` 目录未被手动修改
 - [ ] DevExtreme 组件本地化正确
 - [ ] 语言切换功能正常（用户偏好 → 租户默认 → 系统默认）
-- [ ] 日期、数字、货币格式化支持多语言
-- [ ] 后端错误消息在前端 generated 中有翻译
+- [ ] 后端错误 Code 在 generated 中有翻译
 - [ ] `npm run build` 通过

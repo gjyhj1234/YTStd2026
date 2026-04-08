@@ -43,7 +43,7 @@
 - [ ] 无反射、无 dynamic、无 LINQ
 - [ ] 所有 InsertAsync 前有 ID 生成
 - [ ] 所有 Logger.Debug 使用 Func<string>
-- [ ] 所有错误消息使用 Messages 常量
+- [ ] 所有错误消息使用 ErrorCodes 常量（ApiResult.Fail 仅传 ErrorCodes.XXX）
 - [ ] JSON 使用 Utf8JsonWriter 或 JsonSerializerContext
 - [ ] 中间件响应使用 PascalCase
 - [ ] 无裸 TenantId

@@ -23,7 +23,7 @@ Agent 在标记任务完成之前，必须逐项自检：
 - [ ] 无反射、无 `dynamic`、无 LINQ
 - [ ] 所有 `InsertAsync` 前有 `DB.GetNextLongIdAsync()`
 - [ ] 所有 `Logger.Debug` 使用 `Func<string>` 重载
-- [ ] 所有错误消息使用 `Messages.XXX` 整形常量（`const int`）
+- [ ] 所有 `ApiResult.Fail()` 仅传 `ErrorCodes.XXX`（不传 message 参数）
 - [ ] 无裸 `TenantId` / `tenant_id` 字段名
 - [ ] 所有公开类型/方法有中文 XML 注释
 - [ ] JSON 使用 `Utf8JsonWriter` 或 `JsonSerializerContext`

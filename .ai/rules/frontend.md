@@ -21,7 +21,7 @@
 - 路由：vue-router
 - 状态管理：Pinia
 - HTTP：原生 fetch 封装
-- 国际化：vue-i18n
+- 国际化：自定义 t()/gt() 实现（`locales/runtime/t.ts`）
 - Mock：MSW 2.x + vite-plugin-mock-dev-server
 
 ---
@@ -216,12 +216,13 @@ export const Permissions = {
 详见 `.ai/rules/i18n.md` 中的完整规范。
 
 核心要求：
-- 所有用户可见文本使用 `$t()` 或 `t()`
-- 资源文件位于 `src/locales/`，按三层目录组织
+- 所有用户可见文本使用 `t()`，key 为中文
+- 组件语言文件紧贴 .vue 文件：`{Component}.vue.zh-CN.json`
+- 资源文件位于 `src/locales/`
   - `generated/` — 由 YTStdI18n.Generator 自动生成（允许手动编辑翻译，Generator 不覆盖已有 key）
-  - `components/` — 组件级语言文件（与 views 路径强绑定）
-  - `global/` — 全局资源（菜单、按钮、验证等）
-  - `format/` — 日期、数字、货币格式化工具
+  - `common/` — 全局复用资源
+  - `runtime/` — t()/gt()/loader 实现
+- 组件 JSON 中复用文本使用 `null`（由 t() 自动从 common 获取）
 - 支持 zh-CN（基准）、en-US、ms-MY、zh-TW、ja-JP
 - DevExtreme 组件本地化需单独配置
-- 新增组件时必须同步创建对应的语言文件目录
+- 新增组件时必须同步创建对应的语言文件

@@ -115,7 +115,7 @@ YTStdTenantPlatform ──→ 以上全部
 public class ApiResult<T>
 {
     public int Code { get; set; }      // 0=成功，非零=ErrorCodes 常量
-    public int Message { get; set; }   // Messages.XXX 整形常量（前端根据此 Code 查找翻译）
+    public int Message { get; set; }   // 整形 Code（前端根据此 Code 查找翻译）
     public T Data { get; set; }
 }
 ```

@@ -39,11 +39,10 @@
 3. `Application/Dtos/{Module}/` — DTO 文件
 4. `Application/Services/{Module}AppService.cs` — 应用服务
 5. `Application/Constants/ErrorCodes.cs` — 更新错误码
-6. `Application/Constants/Messages.cs` — 更新消息常量
-7. `Endpoints/{Module}Endpoints.cs` — API 端点
-8. `Bootstrap/RouteRegistration.cs` — 更新路由注册
-9. `Infrastructure/Initialization/Contributors/{Module}SeedContributor.cs` — 初始化数据
-10. `tests/{Module}Tests.cs` — 测试
+6. `Endpoints/{Module}Endpoints.cs` — API 端点
+7. `Bootstrap/RouteRegistration.cs` — 更新路由注册
+8. `Infrastructure/Initialization/Contributors/{Module}SeedContributor.cs` — 初始化数据
+9. `tests/{Module}Tests.cs` — 测试
 
 ---
 
@@ -54,7 +53,7 @@
 3. 执行 `dotnet build` 触发 Source Generator
 4. 创建 DTO（请求、响应、查询）
 5. 创建应用服务
-6. 更新 ErrorCodes 和 Messages
+6. 更新 ErrorCodes
 7. 创建 API 端点
 8. 更新路由注册
 9. 创建初始化数据贡献者

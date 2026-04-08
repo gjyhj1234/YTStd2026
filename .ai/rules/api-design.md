@@ -94,7 +94,7 @@ GET /api/platform-users?page=1&pageSize=20&keyword=admin&status=1
 ```json
 {
   "Code": 0,
-  "Message": "success",
+  "Message": 0,
   "Data": { ... }
 }
 ```
@@ -104,7 +104,7 @@ GET /api/platform-users?page=1&pageSize=20&keyword=admin&status=1
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | `Code` | `int` | 0=成功，非零=错误码 |
-| `Message` | `string` | 成功提示或 i18n 错误键 |
+| `Message` | `int` | 整形 Code（前端根据此 Code 翻译） |
 | `Data` | `T` | 业务数据（可选） |
 
 ### 分页响应
@@ -112,7 +112,7 @@ GET /api/platform-users?page=1&pageSize=20&keyword=admin&status=1
 ```json
 {
   "Code": 0,
-  "Message": "success",
+  "Message": 0,
   "Data": {
     "Items": [...],
     "Total": 100,
@@ -160,18 +160,19 @@ public static class ErrorCodes
 }
 ```
 
-### 错误消息
+### 错误处理
 
-所有错误消息必须定义在 `Application/Constants/Messages.cs` 中，使用整形常量（`const int`），后端不包含任何 i18n key 字符串：
+`ApiResult.Fail()` 仅接受 `ErrorCodes.XXX` 单个参数，不传 message：
 
 ```csharp
-public static class Messages
-{
-    public const int Success = 0;
-    public const int InvalidCredentials = 1001;
-    public const int UsernameExists = 2001;
-}
+// ✅ 正确
+return ApiResult.Fail(ErrorCodes.UsernameExists);
+
+// ❌ 禁止 — 不再允许 message 参数
+return ApiResult.Fail(ErrorCodes.UsernameExists, xxx);
 ```
+
+后端不存在 Messages 类，所有错误/提示统一通过 ErrorCodes 整形常量表达。
 
 ---
 

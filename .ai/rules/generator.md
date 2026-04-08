@@ -34,22 +34,16 @@
 
 ```text
 web/{project}/src/locales/generated/
-├── error/{模块}/zh-CN.json        # 后端错误消息翻译
-├── error/{模块}/en-US.json
-├── message/{模块}/zh-CN.json      # 后端业务消息翻译
-├── message/{模块}/en-US.json
-├── enum/{枚举名}/zh-CN.json       # 枚举显示名翻译
-├── enum/{枚举名}/en-US.json
-├── notification/{模块}/zh-CN.json  # 通知模板翻译
-└── notification/{模块}/en-US.json
+├── zh-CN.json    # { "100001": "用户不存在", ... }
+└── en-US.json    # { "100001": "User not found", ... }
 ```
 
 ### 增量生成策略（核心规则）
 
 Generator 在生成前端代码时**必须**执行以下判断：
 
-1. 遍历后端定义的所有常量 key
-2. 检查前端对应语言文件中该 key 是否已存在
+1. 遍历后端定义的所有整形 Code 常量
+2. 检查前端对应语言文件中该 Code 是否已存在
 3. **已存在 → 不修改**（保留已有的翻译对应关系，因为它可能已被人工校正）
 4. **不存在 → 新增**（使用默认翻译值或标记为待翻译）
 5. **后端已删除 → 从 generated 文件中删除**
@@ -58,7 +52,6 @@ Generator 在生成前端代码时**必须**执行以下判断：
 
 - 禁止覆盖已存在的 key 翻译
 - 禁止在非 `generated/` 目录下生成文件
-- 禁止将所有内容生成到单个文件（必须按模块分文件分目录）
 
 ---
 
@@ -80,7 +73,7 @@ Generator 在生成前端代码时**必须**执行以下判断：
 | 8 | 应用服务 | `Application/Services/{Module}AppService.cs` | CRUD 服务 |
 | 9 | API 端点 | `Endpoints/{Module}Endpoints.cs` | HTTP API |
 | 10 | 错误码 | `Application/Constants/ErrorCodes.cs` | 新增错误码 |
-| 11 | 消息常量 | `Application/Constants/Messages.cs` | 新增整形常量（`const int`） |
+| 11 | 错误码 | `Application/Constants/ErrorCodes.cs` | 新增错误码（`const int`） |
 | 12 | 权限码 | 权限初始化数据中 | 菜单/API/操作权限 |
 | 13 | 初始化数据 | `Infrastructure/Initialization/` | 种子数据 |
 

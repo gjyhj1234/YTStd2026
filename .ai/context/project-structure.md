@@ -37,7 +37,7 @@ YTStd2026/
 │       ├── Program.cs
 │       ├── Bootstrap/           # 启动引导
 │       ├── Application/         # 应用层
-│       │   ├── Constants/       # 常量（ErrorCodes, Messages）
+│       │   ├── Constants/       # 常量（ErrorCodes）
 │       │   ├── Dtos/            # 数据传输对象
 │       │   └── Services/        # 应用服务
 │       ├── Domain/              # 领域层
@@ -102,7 +102,7 @@ YTStd2026/
 | 中间件 | `src/{Project}/Infrastructure/Middleware/*.cs` | `{Name}Middleware.cs` |
 | 缓存 | `src/{Project}/Infrastructure/Cache/*.cs` | `{Name}Cache.cs` |
 | 初始化 | `src/{Project}/Infrastructure/Initialization/*.cs` | 按功能命名 |
-| 常量 | `src/{Project}/Application/Constants/*.cs` | `ErrorCodes.cs`, `Messages.cs` |
+| 常量 | `src/{Project}/Application/Constants/*.cs` | `ErrorCodes.cs` |
 | 测试 | `tests/{Project}.Tests/*.cs` | `{Module}Tests.cs` |
 
 ### 前端
@@ -116,4 +116,4 @@ YTStd2026/
 | 路由 | `src/router/index.ts` | — |
 | 状态 | `src/store/{module}.ts` | camelCase |
 | 工具 | `src/utils/{name}.ts` | camelCase |
-| 国际化 | `src/locales/` | 分目录：generated/ + components/ + global/ + format/ |
+| 国际化 | `src/locales/` | generated/ + common/ + runtime/ + 组件级 `.vue.{locale}.json` |
