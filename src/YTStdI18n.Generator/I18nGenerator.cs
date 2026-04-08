@@ -267,7 +267,6 @@ public sealed class I18nGenerator : IIncrementalGenerator
         foreach (var trivia in fieldDecl.GetLeadingTrivia())
         {
             string raw = trivia.ToFullString();
-            if (raw == null) continue;
 
             // 在任意类型的 trivia 中搜索 <summary>...</summary>
             int startIdx = raw.IndexOf("<summary>");
@@ -748,8 +747,9 @@ public sealed class I18nGenerator : IIncrementalGenerator
         {
             content = File.ReadAllText(filePath, Encoding.UTF8);
         }
-        catch
+        catch (IOException)
         {
+            // 文件无法读取时视为空文件，使用默认空 entries
             return;
         }
 
