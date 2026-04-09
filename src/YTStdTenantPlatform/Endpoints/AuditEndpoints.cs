@@ -70,7 +70,7 @@ namespace YTStdTenantPlatform.Endpoints
         /// <summary>注册系统日志路由</summary>
         private static void MapSystemLogEndpoints(WebApplication app)
         {
-            var group = app.MapGroup("/api/system-logs")
+            var group = app.MapGroup("/api/login-logs")
                 .WithTags("日志与审计");
 
             group.MapGet("/", async (HttpContext ctx, int? page, int? pageSize, string? keyword, string? status) =>
@@ -79,7 +79,7 @@ namespace YTStdTenantPlatform.Endpoints
                 var req = new PagedRequest { Page = page ?? 1, PageSize = pageSize ?? 20, Keyword = keyword, Status = status };
                 var result = await AuditAppService.GetSystemLogListAsync(0, user.UserId, req);
                 await WriteJsonAsync(ctx, ApiResult<PagedResult<SystemLogRepDTO>>.Ok(result));
-            }).WithSummary("获取系统日志分页列表");
+            }).WithSummary("获取登录日志分页列表");
 
             group.MapGet("/{id:long}", async (HttpContext ctx, long id) =>
             {
@@ -87,7 +87,7 @@ namespace YTStdTenantPlatform.Endpoints
                 var result = await AuditAppService.GetSystemLogByIdAsync(0, user.UserId, id);
                 if (result == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.ResourceNotFound), 404); return; }
                 await WriteJsonAsync(ctx, ApiResult<SystemLogRepDTO>.Ok(result));
-            }).WithSummary("获取系统日志详情");
+            }).WithSummary("获取登录日志详情");
         }
 
         private static CurrentUser GetCurrentUser(HttpContext ctx) =>

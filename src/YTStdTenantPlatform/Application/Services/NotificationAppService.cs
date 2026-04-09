@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using YTStdAdo;
 using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
@@ -71,6 +72,7 @@ namespace YTStdTenantPlatform.Application.Services
             var now = DateTime.UtcNow;
             var entity = new NotificationTemplate
             {
+                Id = await DB.GetNextLongIdAsync(),
                 TemplateCode = req.TemplateCode.Trim(),
                 TemplateName = req.TemplateName.Trim(),
                 Channel = req.Channel,
@@ -85,9 +87,9 @@ namespace YTStdTenantPlatform.Application.Services
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.NotificationTemplateCreateFailed);
 
-            Logger.Info(tenantId, operatorId,
-                "[NotificationAppService] 创建通知模板: " + req.TemplateCode);
-            return ApiResult<long>.Ok(insResult.Id);
+            Logger.Debug(tenantId, operatorId,
+                () => "[NotificationAppService] 创建通知模板: " + req.TemplateCode);
+            return ApiResult<long>.Ok(entity.Id);
         }
 
         /// <summary>更新通知模板</summary>
@@ -109,8 +111,8 @@ namespace YTStdTenantPlatform.Application.Services
             var updResult = await NotificationTemplateCRUD.UpdateAsync(tenantId, operatorId, target);
             if (!updResult.Success) return ApiResult.Fail(ErrorCodes.NotificationTemplateUpdateFailed);
 
-            Logger.Info(tenantId, operatorId,
-                "[NotificationAppService] 更新通知模板: " + target.TemplateCode);
+            Logger.Debug(tenantId, operatorId,
+                () => "[NotificationAppService] 更新通知模板: " + target.TemplateCode);
             return ApiResult.Ok();
         }
 
@@ -133,8 +135,22 @@ namespace YTStdTenantPlatform.Application.Services
             var updResult = await NotificationTemplateCRUD.UpdateAsync(tenantId, operatorId, target);
             if (!updResult.Success) return ApiResult.Fail(ErrorCodes.NotificationTemplateStatusChangeFailed);
 
-            Logger.Info(tenantId, operatorId,
-                "[NotificationAppService] 通知模板状态变更: " + target.TemplateCode + " → " + status);
+            Logger.Debug(tenantId, operatorId,
+                () => "[NotificationAppService] 通知模板状态变更: " + target.TemplateCode + " → " + status);
+            return ApiResult.Ok();
+        }
+
+        /// <summary>删除通知模板</summary>
+        public static async ValueTask<ApiResult> DeleteTemplateAsync(int tenantId, long operatorId, long id)
+        {
+            var (getResult, templates) = await NotificationTemplateCRUD.GetListAsync(tenantId, operatorId);
+            if (!getResult.Success || templates == null) return ApiResult.Fail(ErrorCodes.NotificationTemplateQueryFailed);
+            NotificationTemplate? target = null;
+            foreach (var t in templates) { if (t.Id == id) { target = t; break; } }
+            if (target == null) return ApiResult.Fail(ErrorCodes.NotificationTemplateNotFound);
+            var delResult = await NotificationTemplateCRUD.DeleteAsync(tenantId, operatorId, target.Id);
+            if (!delResult.Success) return ApiResult.Fail(ErrorCodes.NotificationTemplateDeleteFailed);
+            Logger.Debug(tenantId, operatorId, () => "[NotificationAppService] 删除模板: " + target.Id);
             return ApiResult.Ok();
         }
 
@@ -199,6 +215,7 @@ namespace YTStdTenantPlatform.Application.Services
 
             var entity = new Notification
             {
+                Id = await DB.GetNextLongIdAsync(),
                 TenantRefId = req.TenantRefId,
                 TemplateId = req.TemplateId,
                 Channel = req.Channel,
@@ -213,9 +230,9 @@ namespace YTStdTenantPlatform.Application.Services
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.NotificationCreateFailed);
 
-            Logger.Info(tenantId, operatorId,
-                "[NotificationAppService] 创建通知: recipient=" + req.Recipient);
-            return ApiResult<long>.Ok(insResult.Id);
+            Logger.Debug(tenantId, operatorId,
+                () => "[NotificationAppService] 创建通知: recipient=" + req.Recipient);
+            return ApiResult<long>.Ok(entity.Id);
         }
 
         /// <summary>标记通知为已读</summary>
@@ -234,8 +251,8 @@ namespace YTStdTenantPlatform.Application.Services
             var updResult = await NotificationCRUD.UpdateAsync(tenantId, operatorId, target);
             if (!updResult.Success) return ApiResult.Fail(ErrorCodes.NotificationMarkReadFailed);
 
-            Logger.Info(tenantId, operatorId,
-                "[NotificationAppService] 标记通知已读: id=" + id);
+            Logger.Debug(tenantId, operatorId,
+                () => "[NotificationAppService] 标记通知已读: id=" + id);
             return ApiResult.Ok();
         }
 

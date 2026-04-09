@@ -362,6 +362,8 @@ public static class ErrorCodes
     public const int NotificationNotFound = 19809;
     /// <summary>标记通知已读失败</summary>
     public const int NotificationMarkReadFailed = 19810;
+    /// <summary>删除通知模板失败</summary>
+    public const int NotificationTemplateDeleteFailed = 19811;
 
     // ── 文件存储 (19901-19999) ──
 

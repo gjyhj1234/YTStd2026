@@ -84,7 +84,7 @@ namespace YTStdTenantPlatform.Endpoints
         /// <summary>注册租户文件路由</summary>
         private static void MapFileEndpoints(WebApplication app)
         {
-            var group = app.MapGroup("/api/tenant-files")
+            var group = app.MapGroup("/api/files")
                 .WithTags("文件与存储");
 
             group.MapGet("/", async (HttpContext ctx, int? page, int? pageSize, string? keyword, long tenantRefId) =>

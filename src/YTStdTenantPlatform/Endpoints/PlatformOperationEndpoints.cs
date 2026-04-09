@@ -23,7 +23,7 @@ namespace YTStdTenantPlatform.Endpoints
         /// <summary>注册租户每日统计路由</summary>
         private static void MapDailyStatEndpoints(WebApplication app)
         {
-            var group = app.MapGroup("/api/tenant-daily-stats")
+            var group = app.MapGroup("/api/platform-operations/tenant-statistics")
                 .WithTags("平台运营");
 
             group.MapGet("/", async (HttpContext ctx, int? page, int? pageSize, string? keyword, long tenantRefId) =>
@@ -38,7 +38,7 @@ namespace YTStdTenantPlatform.Endpoints
         /// <summary>注册平台监控指标路由</summary>
         private static void MapMonitorMetricEndpoints(WebApplication app)
         {
-            var group = app.MapGroup("/api/platform-monitor-metrics")
+            var group = app.MapGroup("/api/platform-operations/monitor-metrics")
                 .WithTags("平台运营");
 
             group.MapGet("/", async (HttpContext ctx, int? page, int? pageSize, string? keyword) =>

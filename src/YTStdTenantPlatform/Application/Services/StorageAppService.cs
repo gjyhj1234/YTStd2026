@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using YTStdAdo;
 using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
@@ -70,6 +71,7 @@ namespace YTStdTenantPlatform.Application.Services
             var now = DateTime.UtcNow;
             var entity = new StorageStrategy
             {
+                Id = await DB.GetNextLongIdAsync(),
                 StrategyCode = req.StrategyCode.Trim(),
                 StrategyName = req.StrategyName.Trim(),
                 ProviderType = req.ProviderType,
@@ -84,9 +86,9 @@ namespace YTStdTenantPlatform.Application.Services
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.StorageStrategyCreateFailed);
 
-            Logger.Info(tenantId, operatorId,
-                "[StorageAppService] 创建存储策略: " + req.StrategyCode);
-            return ApiResult<long>.Ok(insResult.Id);
+            Logger.Debug(tenantId, operatorId,
+                () => "[StorageAppService] 创建存储策略: " + req.StrategyCode);
+            return ApiResult<long>.Ok(entity.Id);
         }
 
         /// <summary>更新存储策略</summary>
@@ -108,8 +110,8 @@ namespace YTStdTenantPlatform.Application.Services
             var updResult = await StorageStrategyCRUD.UpdateAsync(tenantId, operatorId, target);
             if (!updResult.Success) return ApiResult.Fail(ErrorCodes.StorageStrategyUpdateFailed);
 
-            Logger.Info(tenantId, operatorId,
-                "[StorageAppService] 更新存储策略: " + target.StrategyCode);
+            Logger.Debug(tenantId, operatorId,
+                () => "[StorageAppService] 更新存储策略: " + target.StrategyCode);
             return ApiResult.Ok();
         }
 
@@ -132,8 +134,8 @@ namespace YTStdTenantPlatform.Application.Services
             var updResult = await StorageStrategyCRUD.UpdateAsync(tenantId, operatorId, target);
             if (!updResult.Success) return ApiResult.Fail(ErrorCodes.StorageStrategyStatusChangeFailed);
 
-            Logger.Info(tenantId, operatorId,
-                "[StorageAppService] 存储策略状态变更: " + target.StrategyCode + " → " + status);
+            Logger.Debug(tenantId, operatorId,
+                () => "[StorageAppService] 存储策略状态变更: " + target.StrategyCode + " → " + status);
             return ApiResult.Ok();
         }
 
@@ -193,7 +195,7 @@ namespace YTStdTenantPlatform.Application.Services
             var delResult = await TenantFileCRUD.DeleteAsync(tenantId, operatorId, id);
             if (!delResult.Success) return ApiResult.Fail(ErrorCodes.FileDeleteFailed);
 
-            Logger.Info(tenantId, operatorId, "[StorageAppService] 删除文件: id=" + id);
+            Logger.Debug(tenantId, operatorId, () => "[StorageAppService] 删除文件: id=" + id);
             return ApiResult.Ok();
         }
 
@@ -250,6 +252,7 @@ namespace YTStdTenantPlatform.Application.Services
 
             var entity = new FileAccessPolicy
             {
+                Id = await DB.GetNextLongIdAsync(),
                 FileId = req.FileId,
                 SubjectType = req.SubjectType.Trim(),
                 SubjectId = req.SubjectId,
@@ -261,9 +264,9 @@ namespace YTStdTenantPlatform.Application.Services
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.FileAccessPolicySaveFailed);
 
-            Logger.Info(tenantId, operatorId,
-                "[StorageAppService] 保存文件访问策略: fileId=" + req.FileId);
-            return ApiResult<long>.Ok(insResult.Id);
+            Logger.Debug(tenantId, operatorId,
+                () => "[StorageAppService] 保存文件访问策略: fileId=" + req.FileId);
+            return ApiResult<long>.Ok(entity.Id);
         }
 
         // ──────────────────────────────────────────────────────
