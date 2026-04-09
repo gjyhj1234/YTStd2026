@@ -6,6 +6,7 @@ using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
 using YTStdTenantPlatform.Infrastructure.Cache;
 using YTStdTenantPlatform.Application.Constants;
+using YTStdTenantPlatform.Domain.Enums;
 
 namespace YTStdTenantPlatform.Application.Services
 {
@@ -123,7 +124,7 @@ namespace YTStdTenantPlatform.Application.Services
                 FeatureKey = req.FeatureKey.Trim(),
                 FeatureName = req.FeatureName.Trim(),
                 Enabled = req.Enabled,
-                RolloutType = req.RolloutType,
+                RolloutType = Enum.TryParse<FeatureFlagRolloutType>(req.RolloutType, true, out var rt) ? (int)rt : (int)FeatureFlagRolloutType.Full,
                 CreatedAt = now,
                 UpdatedAt = now
             };
@@ -265,7 +266,7 @@ namespace YTStdTenantPlatform.Application.Services
             {
                 Id = f.Id, TenantRefId = f.TenantRefId,
                 FeatureKey = f.FeatureKey, FeatureName = f.FeatureName,
-                Enabled = f.Enabled, RolloutType = f.RolloutType,
+                Enabled = f.Enabled, RolloutType = ((FeatureFlagRolloutType)f.RolloutType).ToString(),
                 UpdatedAt = f.UpdatedAt
             };
         }

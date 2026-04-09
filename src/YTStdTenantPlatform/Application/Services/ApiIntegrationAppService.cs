@@ -7,6 +7,7 @@ using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
 using YTStdTenantPlatform.Application.Constants;
+using YTStdTenantPlatform.Domain.Enums;
 
 namespace YTStdTenantPlatform.Application.Services
 {
@@ -63,7 +64,7 @@ namespace YTStdTenantPlatform.Application.Services
                 KeyName = req.KeyName.Trim(),
                 AccessKey = accessKey,
                 SecretHash = secretHash,
-                Status = "active",
+                Status = (int)TenantApiKeyStatus.Active,
                 ExpiresAt = req.ExpiresAt,
                 CreatedBy = operatorId,
                 CreatedAt = now,
@@ -95,7 +96,7 @@ namespace YTStdTenantPlatform.Application.Services
             foreach (var k in keys) { if (k.Id == id) { target = k; break; } }
             if (target == null) return ApiResult.Fail(ErrorCodes.ApiKeyNotFound);
 
-            target.Status = "disabled";
+            target.Status = (int)TenantApiKeyStatus.Disabled;
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await TenantApiKeyCRUD.UpdateAsync(tenantId, operatorId, target);
@@ -217,7 +218,7 @@ namespace YTStdTenantPlatform.Application.Services
                 TenantRefId = req.TenantRefId,
                 WebhookName = req.WebhookName.Trim(),
                 TargetUrl = req.TargetUrl.Trim(),
-                Status = "active",
+                Status = (int)ActiveDisabledStatus.Active,
                 CreatedAt = now,
                 UpdatedAt = now
             };
@@ -265,7 +266,9 @@ namespace YTStdTenantPlatform.Application.Services
             foreach (var w in webhooks) { if (w.Id == id) { target = w; break; } }
             if (target == null) return ApiResult.Fail(ErrorCodes.WebhookNotFound);
 
-            target.Status = status;
+            if (!Enum.TryParse<ActiveDisabledStatus>(status, true, out var parsedStatus))
+                return ApiResult.Fail(ErrorCodes.InvalidParameter);
+            target.Status = (int)parsedStatus;
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await TenantWebhookCRUD.UpdateAsync(tenantId, operatorId, target);
@@ -333,7 +336,7 @@ namespace YTStdTenantPlatform.Application.Services
         private static TenantApiKeyRepDTO MapApiKeyToDto(TenantApiKey k) => new TenantApiKeyRepDTO
         {
             Id = k.Id, TenantRefId = k.TenantRefId, KeyName = k.KeyName,
-            AccessKey = k.AccessKey, Status = k.Status,
+            AccessKey = k.AccessKey, Status = ((TenantApiKeyStatus)k.Status).ToString(),
             QuotaLimit = k.QuotaLimit, RateLimit = k.RateLimit,
             LastUsedAt = k.LastUsedAt, ExpiresAt = k.ExpiresAt,
             CreatedAt = k.CreatedAt
@@ -351,7 +354,7 @@ namespace YTStdTenantPlatform.Application.Services
         private static TenantWebhookRepDTO MapWebhookToDto(TenantWebhook w) => new TenantWebhookRepDTO
         {
             Id = w.Id, TenantRefId = w.TenantRefId, WebhookName = w.WebhookName,
-            TargetUrl = w.TargetUrl, Status = w.Status, CreatedAt = w.CreatedAt
+            TargetUrl = w.TargetUrl, Status = ((ActiveDisabledStatus)w.Status).ToString(), CreatedAt = w.CreatedAt
         };
     }
 }

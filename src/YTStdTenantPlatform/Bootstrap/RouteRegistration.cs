@@ -13,6 +13,7 @@ using YTStdTenantPlatform.Application.Constants;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Endpoints;
 using YTStdTenantPlatform.Entity.TenantPlatform;
+using YTStdTenantPlatform.Domain.Enums;
 using YTStdTenantPlatform.Infrastructure.Auth;
 using YTStdTenantPlatform.Infrastructure.Cache;
 using YTStdTenantPlatform.Infrastructure.Persistence;
@@ -199,7 +200,7 @@ namespace YTStdTenantPlatform.Bootstrap
                     return;
                 }
 
-                if (string.Equals(matchedUser.Status, "disabled", StringComparison.OrdinalIgnoreCase))
+                if (matchedUser.Status == (int)PlatformUserStatus.Disabled)
                 {
                     await RecordLoginAsync(matchedUser, username, remoteIp, userAgent, "password", "disabled", "账户已禁用");
                     await TenantPlatformJsonResponseWriter.WriteAsync(context,
@@ -209,7 +210,7 @@ namespace YTStdTenantPlatform.Bootstrap
 
                 if (matchedUser.LockedUntil.HasValue && matchedUser.LockedUntil.Value > now)
                 {
-                    matchedUser.Status = "locked";
+                    matchedUser.Status = (int)PlatformUserStatus.Locked;
                     await PlatformUserCRUD.UpdateAsync(0, 0, matchedUser);
                     await RecordLoginAsync(matchedUser, username, remoteIp, userAgent, "password", "locked", "账户已锁定");
                     await TenantPlatformJsonResponseWriter.WriteAsync(context,
@@ -217,9 +218,9 @@ namespace YTStdTenantPlatform.Bootstrap
                     return;
                 }
 
-                if (string.Equals(matchedUser.Status, "locked", StringComparison.OrdinalIgnoreCase) && (!matchedUser.LockedUntil.HasValue || matchedUser.LockedUntil.Value <= now))
+                if (matchedUser.Status == (int)PlatformUserStatus.Locked && (!matchedUser.LockedUntil.HasValue || matchedUser.LockedUntil.Value <= now))
                 {
-                    matchedUser.Status = "active";
+                    matchedUser.Status = (int)PlatformUserStatus.Active;
                     matchedUser.LockedUntil = null;
                 }
 
@@ -229,12 +230,12 @@ namespace YTStdTenantPlatform.Bootstrap
                     matchedUser.UpdatedAt = now;
                     if (matchedUser.FailedLoginCount >= lockThreshold)
                     {
-                        matchedUser.Status = "locked";
+                        matchedUser.Status = (int)PlatformUserStatus.Locked;
                         matchedUser.LockedUntil = now.AddMinutes(lockDurationMinutes);
                     }
 
                     await PlatformUserCRUD.UpdateAsync(0, 0, matchedUser);
-                    var isLocked = string.Equals(matchedUser.Status, "locked", StringComparison.Ordinal);
+                    var isLocked = matchedUser.Status == (int)PlatformUserStatus.Locked;
                     await RecordLoginAsync(matchedUser, username, remoteIp, userAgent, "password", isLocked ? "locked" : "failed", "用户名或密码错误");
                     var errCode = isLocked ? ErrorCodes.AuthAccountLocked : ErrorCodes.AuthInvalidCredentials;
                     await TenantPlatformJsonResponseWriter.WriteAsync(context,
@@ -242,7 +243,7 @@ namespace YTStdTenantPlatform.Bootstrap
                     return;
                 }
 
-                matchedUser.Status = "active";
+                matchedUser.Status = (int)PlatformUserStatus.Active;
                 matchedUser.FailedLoginCount = 0;
                 matchedUser.LockedUntil = null;
                 matchedUser.LastLoginAt = now;

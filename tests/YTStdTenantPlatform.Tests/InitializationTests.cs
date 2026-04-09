@@ -6,6 +6,7 @@ using YTStdTenantPlatform.Entity.TenantPlatform;
 using YTStdTenantPlatform.Infrastructure.Cache;
 using YTStdTenantPlatform.Infrastructure.Initialization;
 using YTStdTenantPlatform.Infrastructure.Initialization.SeedData;
+using YTStdTenantPlatform.Domain.Enums;
 
 namespace YTStdTenantPlatform.Tests
 {
@@ -26,7 +27,7 @@ namespace YTStdTenantPlatform.Tests
             Assert.NotNull(admin);
             Assert.Equal("admin@platform.local", admin.Email);
             Assert.Equal("超级管理员", admin.DisplayName);
-            Assert.Equal("active", admin.Status);
+            Assert.Equal((int)PlatformUserStatus.Active, admin.Status);
             Assert.False(admin.MfaEnabled);
             // 密码使用安全随机哈希，不得是明文占位符
             Assert.NotEmpty(admin.PasswordHash);
@@ -107,7 +108,7 @@ namespace YTStdTenantPlatform.Tests
             var superAdmin = roles.FirstOrDefault(r => r.Code == "super_admin");
             Assert.NotNull(superAdmin);
             Assert.Equal("超级管理员", superAdmin.Name);
-            Assert.Equal("active", superAdmin.Status);
+            Assert.Equal((int)PlatformRoleStatus.Active, superAdmin.Status);
         }
 
         [Fact]

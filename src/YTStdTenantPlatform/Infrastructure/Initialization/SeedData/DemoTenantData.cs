@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using YTStdTenantPlatform.Entity.TenantPlatform;
+using YTStdTenantPlatform.Domain.Enums;
 
 namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
 {
@@ -24,11 +25,11 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
                     ContactName = "张三",
                     ContactPhone = "13800000000",
                     ContactEmail = "demo@example.com",
-                    SourceType = "platform",
-                    LifecycleStatus = "active",
+                    SourceType = (int)TenantSourceType.Admin,
+                    LifecycleStatus = (int)TenantLifecycleStatus.Active,
                     DefaultLanguage = "zh-CN",
                     DefaultTimezone = "Asia/Shanghai",
-                    IsolationMode = "shared_database",
+                    IsolationMode = (int)TenantIsolationMode.SharedDatabase,
                     Enabled = true,
                     OpenedAt = now,
                     ActivatedAt = now,

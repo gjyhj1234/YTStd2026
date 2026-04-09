@@ -8,6 +8,7 @@ using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
 using YTStdTenantPlatform.Infrastructure.Cache;
 using YTStdTenantPlatform.Application.Constants;
+using YTStdTenantPlatform.Domain.Enums;
 
 namespace YTStdTenantPlatform.Application.Services
 {
@@ -74,7 +75,7 @@ namespace YTStdTenantPlatform.Application.Services
                 DisplayName = req.DisplayName,
                 PasswordHash = hash,
                 PasswordSalt = salt,
-                Status = "active",
+                Status = (int)PlatformUserStatus.Active,
                 MfaEnabled = false,
                 Remark = req.Remark,
                 CreatedAt = now,
@@ -133,7 +134,9 @@ namespace YTStdTenantPlatform.Application.Services
             }
             if (target == null) return ApiResult.Fail(ErrorCodes.UserNotFound);
 
-            target.Status = status;
+            if (!Enum.TryParse<PlatformUserStatus>(status, true, out var parsedStatus))
+                return ApiResult.Fail(ErrorCodes.InvalidParameter);
+            target.Status = (int)parsedStatus;
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await PlatformUserCRUD.UpdateAsync(tenantId, operatorId, target);
@@ -150,7 +153,7 @@ namespace YTStdTenantPlatform.Application.Services
         {
             Id = u.Id, Username = u.Username, Email = u.Email,
             Phone = u.Phone, DisplayName = u.DisplayName,
-            Status = u.Status, MfaEnabled = u.MfaEnabled,
+            Status = ((PlatformUserStatus)u.Status).ToString(), MfaEnabled = u.MfaEnabled,
             LastLoginAt = u.LastLoginAt, CreatedAt = u.CreatedAt
         };
 
@@ -162,7 +165,8 @@ namespace YTStdTenantPlatform.Application.Services
             {
                 if (u.DeletedAt != null) continue;
                 if (!string.IsNullOrEmpty(req.Status) &&
-                    !string.Equals(u.Status, req.Status, StringComparison.OrdinalIgnoreCase))
+                    (!Enum.TryParse<PlatformUserStatus>(req.Status, true, out var statusFilter) ||
+                     u.Status != (int)statusFilter))
                     continue;
                 if (!string.IsNullOrEmpty(req.Keyword) &&
                     u.Username.IndexOf(req.Keyword, StringComparison.OrdinalIgnoreCase) < 0 &&

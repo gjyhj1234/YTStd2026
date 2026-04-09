@@ -6,6 +6,7 @@ using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
 using YTStdTenantPlatform.Infrastructure.Cache;
 using YTStdTenantPlatform.Application.Constants;
+using YTStdTenantPlatform.Domain.Enums;
 
 namespace YTStdTenantPlatform.Application.Services
 {
@@ -24,7 +25,8 @@ namespace YTStdTenantPlatform.Application.Services
             foreach (var r in data)
             {
                 if (!string.IsNullOrEmpty(request.Status) &&
-                    !string.Equals(r.Status, request.Status, StringComparison.OrdinalIgnoreCase))
+                    (!Enum.TryParse<PlatformRoleStatus>(request.Status, true, out var statusFilter) ||
+                     r.Status != (int)statusFilter))
                     continue;
                 if (!string.IsNullOrEmpty(request.Keyword) &&
                     r.Name.IndexOf(request.Keyword, StringComparison.OrdinalIgnoreCase) < 0 &&
@@ -42,7 +44,7 @@ namespace YTStdTenantPlatform.Application.Services
                 items.Add(new PlatformRoleRepDTO
                 {
                     Id = r.Id, Code = r.Code, Name = r.Name,
-                    Description = r.Description, Status = r.Status,
+                    Description = r.Description, Status = ((PlatformRoleStatus)r.Status).ToString(),
                     CreatedAt = r.CreatedAt
                 });
             }
@@ -65,7 +67,7 @@ namespace YTStdTenantPlatform.Application.Services
                     return new PlatformRoleRepDTO
                     {
                         Id = r.Id, Code = r.Code, Name = r.Name,
-                        Description = r.Description, Status = r.Status,
+                        Description = r.Description, Status = ((PlatformRoleStatus)r.Status).ToString(),
                         CreatedAt = r.CreatedAt
                     };
             }
@@ -87,7 +89,7 @@ namespace YTStdTenantPlatform.Application.Services
                 Code = req.Code.Trim(),
                 Name = req.Name.Trim(),
                 Description = req.Description,
-                Status = "active",
+                Status = (int)PlatformRoleStatus.Active,
                 CreatedBy = operatorId,
                 UpdatedBy = operatorId,
                 CreatedAt = now,
@@ -138,7 +140,9 @@ namespace YTStdTenantPlatform.Application.Services
             foreach (var r in roles) { if (r.Id == id) { target = r; break; } }
             if (target == null) return ApiResult.Fail(ErrorCodes.RoleNotFound);
 
-            target.Status = status;
+            if (!Enum.TryParse<PlatformRoleStatus>(status, true, out var parsedStatus))
+                return ApiResult.Fail(ErrorCodes.InvalidParameter);
+            target.Status = (int)parsedStatus;
             target.UpdatedAt = DateTime.UtcNow;
             var updResult = await PlatformRoleCRUD.UpdateAsync(tenantId, operatorId, target);
             if (!updResult.Success) return ApiResult.Fail(ErrorCodes.RoleStatusChangeFailed);

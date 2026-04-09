@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using YTStdLogger.Core;
 using YTStdTenantPlatform.Entity.TenantPlatform;
+using YTStdTenantPlatform.Domain.Enums;
 
 namespace YTStdTenantPlatform.Infrastructure.Scheduling
 {
@@ -54,7 +55,7 @@ namespace YTStdTenantPlatform.Infrastructure.Scheduling
                 }
 
                 var webhook = FindWebhook(webhooks, deliveryLog.WebhookId);
-                if (webhook == null || !string.Equals(webhook.Status, "active", StringComparison.OrdinalIgnoreCase))
+                if (webhook == null || webhook.Status != (int)ActiveDisabledStatus.Active)
                 {
                     deliveryLog.RetryCount = deliveryLog.RetryCount + 1;
                     deliveryLog.ResponseBody = "Webhook 不存在或未启用";

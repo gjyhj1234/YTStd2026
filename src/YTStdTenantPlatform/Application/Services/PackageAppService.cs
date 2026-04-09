@@ -5,6 +5,7 @@ using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
 using YTStdTenantPlatform.Application.Constants;
+using YTStdTenantPlatform.Domain.Enums;
 
 namespace YTStdTenantPlatform.Application.Services
 {
@@ -27,7 +28,8 @@ namespace YTStdTenantPlatform.Application.Services
             foreach (var p in data)
             {
                 if (!string.IsNullOrEmpty(request.Status) &&
-                    !string.Equals(p.Status, request.Status, StringComparison.OrdinalIgnoreCase))
+                    (!Enum.TryParse<SaasPackageStatus>(request.Status, true, out var statusFilter) ||
+                     p.Status != (int)statusFilter))
                     continue;
                 if (!string.IsNullOrEmpty(request.Keyword) &&
                     p.PackageName.IndexOf(request.Keyword, StringComparison.OrdinalIgnoreCase) < 0 &&
@@ -75,7 +77,7 @@ namespace YTStdTenantPlatform.Application.Services
                 PackageCode = req.PackageCode.Trim(),
                 PackageName = req.PackageName.Trim(),
                 Description = req.Description,
-                Status = "active",
+                Status = (int)SaasPackageStatus.Active,
                 CreatedBy = operatorId,
                 CreatedAt = now,
                 UpdatedAt = now
@@ -122,7 +124,9 @@ namespace YTStdTenantPlatform.Application.Services
             foreach (var p in packages) { if (p.Id == id) { target = p; break; } }
             if (target == null) return ApiResult.Fail(ErrorCodes.PackageNotFound);
 
-            target.Status = status;
+            if (!Enum.TryParse<SaasPackageStatus>(status, true, out var parsedStatus))
+                return ApiResult.Fail(ErrorCodes.InvalidParameter);
+            target.Status = (int)parsedStatus;
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await SaasPackageCRUD.UpdateAsync(tenantId, operatorId, target);
@@ -263,7 +267,7 @@ namespace YTStdTenantPlatform.Application.Services
         private static SaasPackageRepDTO MapPackageToDto(SaasPackage p) => new SaasPackageRepDTO
         {
             Id = p.Id, PackageCode = p.PackageCode, PackageName = p.PackageName,
-            Description = p.Description, Status = p.Status, CreatedAt = p.CreatedAt
+            Description = p.Description, Status = ((SaasPackageStatus)p.Status).ToString(), CreatedAt = p.CreatedAt
         };
 
         private static SaasPackageVersionRepDTO MapVersionToDto(SaasPackageVersion v) => new SaasPackageVersionRepDTO

@@ -5,6 +5,7 @@ using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
 using YTStdTenantPlatform.Application.Constants;
+using YTStdTenantPlatform.Domain.Enums;
 
 namespace YTStdTenantPlatform.Application.Services
 {
@@ -152,7 +153,7 @@ namespace YTStdTenantPlatform.Application.Services
             {
                 TenantRefId = req.TenantRefId,
                 PackageVersionId = req.PackageVersionId,
-                Status = "active",
+                Status = (int)TrialStatus.Active,
                 StartedAt = now,
                 ExpiresAt = now.AddDays(30),
                 CreatedAt = now,
@@ -227,7 +228,7 @@ namespace YTStdTenantPlatform.Application.Services
         private static TenantTrialRepDTO MapTrialToDto(TenantTrial t) => new TenantTrialRepDTO
         {
             Id = t.Id, TenantRefId = t.TenantRefId, PackageVersionId = t.PackageVersionId,
-            Status = t.Status, StartedAt = t.StartedAt, ExpiresAt = t.ExpiresAt,
+            Status = ((TrialStatus)t.Status).ToString(), StartedAt = t.StartedAt, ExpiresAt = t.ExpiresAt,
             ConvertedSubscriptionId = t.ConvertedSubscriptionId, CreatedAt = t.CreatedAt
         };
     }

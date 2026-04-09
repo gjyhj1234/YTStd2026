@@ -5,6 +5,7 @@ using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
 using YTStdTenantPlatform.Application.Constants;
+using YTStdTenantPlatform.Domain.Enums;
 
 namespace YTStdTenantPlatform.Application.Services
 {
@@ -75,7 +76,7 @@ namespace YTStdTenantPlatform.Application.Services
                 Channel = req.Channel,
                 SubjectTemplate = req.SubjectTemplate,
                 BodyTemplate = req.BodyTemplate,
-                Status = "active",
+                Status = (int)ActiveDisabledStatus.Active,
                 CreatedAt = now,
                 UpdatedAt = now
             };
@@ -124,7 +125,9 @@ namespace YTStdTenantPlatform.Application.Services
             foreach (var t in templates) { if (t.Id == id) { target = t; break; } }
             if (target == null) return ApiResult.Fail(ErrorCodes.NotificationTemplateNotFound);
 
-            target.Status = status;
+            if (!Enum.TryParse<ActiveDisabledStatus>(status, true, out var parsedStatus))
+                return ApiResult.Fail(ErrorCodes.InvalidParameter);
+            target.Status = (int)parsedStatus;
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await NotificationTemplateCRUD.UpdateAsync(tenantId, operatorId, target);
@@ -244,7 +247,7 @@ namespace YTStdTenantPlatform.Application.Services
         {
             Id = t.Id, TemplateCode = t.TemplateCode, TemplateName = t.TemplateName,
             Channel = t.Channel, SubjectTemplate = t.SubjectTemplate,
-            BodyTemplate = t.BodyTemplate, Status = t.Status,
+            BodyTemplate = t.BodyTemplate, Status = ((ActiveDisabledStatus)t.Status).ToString(),
             CreatedAt = t.CreatedAt
         };
 

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using YTStdTenantPlatform.Entity.TenantPlatform;
 using YTStdTenantPlatform.Infrastructure.Serialization;
+using YTStdTenantPlatform.Domain.Enums;
 
 namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
 {
@@ -19,7 +20,7 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
                     PackageCode = "free",
                     PackageName = "免费版",
                     Description = "适合个人或小团队的免费入门套餐",
-                    Status = "active",
+                    Status = (int)SaasPackageStatus.Active,
                     CreatedAt = now,
                     UpdatedAt = now
                 },
@@ -28,7 +29,7 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
                     PackageCode = "standard",
                     PackageName = "标准版",
                     Description = "适合中小型企业的标准套餐",
-                    Status = "active",
+                    Status = (int)SaasPackageStatus.Active,
                     CreatedAt = now,
                     UpdatedAt = now
                 },
@@ -37,7 +38,7 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
                     PackageCode = "enterprise",
                     PackageName = "企业版",
                     Description = "适合大型企业的高级套餐，提供全量功能和专属支持",
-                    Status = "active",
+                    Status = (int)SaasPackageStatus.Active,
                     CreatedAt = now,
                     UpdatedAt = now
                 }

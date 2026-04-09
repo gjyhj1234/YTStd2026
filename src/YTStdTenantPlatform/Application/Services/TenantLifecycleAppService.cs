@@ -5,6 +5,7 @@ using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
 using YTStdTenantPlatform.Application.Constants;
+using YTStdTenantPlatform.Domain.Enums;
 
 namespace YTStdTenantPlatform.Application.Services
 {
@@ -24,7 +25,8 @@ namespace YTStdTenantPlatform.Application.Services
             {
                 if (t.DeletedAt != null) continue;
                 if (!string.IsNullOrEmpty(request.Status) &&
-                    !string.Equals(t.LifecycleStatus, request.Status, StringComparison.OrdinalIgnoreCase))
+                    (!Enum.TryParse<TenantLifecycleStatus>(request.Status, true, out var statusFilter) ||
+                     t.LifecycleStatus != (int)statusFilter))
                     continue;
                 if (!string.IsNullOrEmpty(request.Keyword) &&
                     t.TenantName.IndexOf(request.Keyword, StringComparison.OrdinalIgnoreCase) < 0 &&
@@ -77,9 +79,9 @@ namespace YTStdTenantPlatform.Application.Services
                 ContactName = req.ContactName,
                 ContactPhone = req.ContactPhone,
                 ContactEmail = req.ContactEmail,
-                SourceType = req.SourceType,
-                LifecycleStatus = "pending",
-                IsolationMode = req.IsolationMode,
+                SourceType = Enum.TryParse<TenantSourceType>(req.SourceType, true, out var src) ? (int)src : (int)TenantSourceType.SelfService,
+                LifecycleStatus = (int)TenantLifecycleStatus.Trial,
+                IsolationMode = Enum.TryParse<TenantIsolationMode>(req.IsolationMode, true, out var iso) ? (int)iso : (int)TenantIsolationMode.SharedDatabase,
                 DefaultLanguage = req.DefaultLanguage,
                 DefaultTimezone = req.DefaultTimezone,
                 Enabled = false,
@@ -93,7 +95,7 @@ namespace YTStdTenantPlatform.Application.Services
                 return ApiResult<long>.Fail(ErrorCodes.TenantCreateFailed);
 
             // 记录生命周期事件
-            await RecordLifecycleEventAsync(tenantId, operatorId, insResult.Id, "created", null, "pending", "新建租户", operatorId);
+            await RecordLifecycleEventAsync(tenantId, operatorId, insResult.Id, "created", null, TenantLifecycleStatus.Trial.ToString(), "新建租户", operatorId);
 
             Logger.Info(tenantId, operatorId, "[TenantLifecycleAppService] 创建租户: " + req.TenantCode);
             return ApiResult<long>.Ok(insResult.Id);
@@ -136,7 +138,9 @@ namespace YTStdTenantPlatform.Application.Services
             if (target == null) return ApiResult.Fail(ErrorCodes.TenantNotFound);
 
             var fromStatus = target.LifecycleStatus;
-            var toStatus = req.TargetStatus;
+            if (!Enum.TryParse<TenantLifecycleStatus>(req.TargetStatus, true, out var toStatusEnum))
+                return ApiResult.Fail(ErrorCodes.TenantStatusTransitionDenied);
+            var toStatus = (int)toStatusEnum;
 
             // 状态流转校验
             if (!IsValidTransition(fromStatus, toStatus))
@@ -145,17 +149,17 @@ namespace YTStdTenantPlatform.Application.Services
             target.LifecycleStatus = toStatus;
             target.UpdatedAt = DateTime.UtcNow;
 
-            if (string.Equals(toStatus, "active", StringComparison.OrdinalIgnoreCase))
+            if (toStatus == (int)TenantLifecycleStatus.Active)
             {
                 target.Enabled = true;
                 if (target.ActivatedAt == null) target.ActivatedAt = DateTime.UtcNow;
             }
-            else if (string.Equals(toStatus, "suspended", StringComparison.OrdinalIgnoreCase))
+            else if (toStatus == (int)TenantLifecycleStatus.Suspended)
             {
                 target.Enabled = false;
                 target.SuspendedAt = DateTime.UtcNow;
             }
-            else if (string.Equals(toStatus, "closed", StringComparison.OrdinalIgnoreCase))
+            else if (toStatus == (int)TenantLifecycleStatus.Closed)
             {
                 target.Enabled = false;
                 target.ClosedAt = DateTime.UtcNow;
@@ -165,10 +169,10 @@ namespace YTStdTenantPlatform.Application.Services
             if (!updResult.Success) return ApiResult.Fail(ErrorCodes.TenantStatusChangeFailed);
 
             await RecordLifecycleEventAsync(tenantId, operatorId, id, "status_changed",
-                fromStatus, toStatus, req.Reason, operatorId);
+                ((TenantLifecycleStatus)fromStatus).ToString(), toStatusEnum.ToString(), req.Reason, operatorId);
 
             Logger.Info(tenantId, operatorId,
-                "[TenantLifecycleAppService] 租户状态变更: " + target.TenantCode + " " + fromStatus + " → " + toStatus);
+                "[TenantLifecycleAppService] 租户状态变更: " + target.TenantCode + " " + ((TenantLifecycleStatus)fromStatus).ToString() + " → " + toStatusEnum.ToString());
             return ApiResult.Ok();
         }
 
@@ -210,19 +214,19 @@ namespace YTStdTenantPlatform.Application.Services
         }
 
         /// <summary>校验状态流转是否合法</summary>
-        private static bool IsValidTransition(string from, string to)
+        private static bool IsValidTransition(int from, int to)
         {
-            // pending → active
-            // active → suspended / closed
-            // suspended → active / closed
-            if (string.Equals(from, "pending", StringComparison.OrdinalIgnoreCase))
-                return string.Equals(to, "active", StringComparison.OrdinalIgnoreCase);
-            if (string.Equals(from, "active", StringComparison.OrdinalIgnoreCase))
-                return string.Equals(to, "suspended", StringComparison.OrdinalIgnoreCase) ||
-                       string.Equals(to, "closed", StringComparison.OrdinalIgnoreCase);
-            if (string.Equals(from, "suspended", StringComparison.OrdinalIgnoreCase))
-                return string.Equals(to, "active", StringComparison.OrdinalIgnoreCase) ||
-                       string.Equals(to, "closed", StringComparison.OrdinalIgnoreCase);
+            // Trial → Active
+            // Active → Suspended / Closed
+            // Suspended → Active / Closed
+            if (from == (int)TenantLifecycleStatus.Trial)
+                return to == (int)TenantLifecycleStatus.Active;
+            if (from == (int)TenantLifecycleStatus.Active)
+                return to == (int)TenantLifecycleStatus.Suspended ||
+                       to == (int)TenantLifecycleStatus.Closed;
+            if (from == (int)TenantLifecycleStatus.Suspended)
+                return to == (int)TenantLifecycleStatus.Active ||
+                       to == (int)TenantLifecycleStatus.Closed;
             return false;
         }
 
@@ -252,8 +256,8 @@ namespace YTStdTenantPlatform.Application.Services
             {
                 Id = t.Id, TenantCode = t.TenantCode, TenantName = t.TenantName,
                 EnterpriseName = t.EnterpriseName, ContactName = t.ContactName,
-                ContactEmail = t.ContactEmail, LifecycleStatus = t.LifecycleStatus,
-                IsolationMode = t.IsolationMode, Enabled = t.Enabled,
+                ContactEmail = t.ContactEmail, LifecycleStatus = ((TenantLifecycleStatus)t.LifecycleStatus).ToString(),
+                IsolationMode = ((TenantIsolationMode)t.IsolationMode).ToString(), Enabled = t.Enabled,
                 OpenedAt = t.OpenedAt, ExpiresAt = t.ExpiresAt, CreatedAt = t.CreatedAt
             };
         }

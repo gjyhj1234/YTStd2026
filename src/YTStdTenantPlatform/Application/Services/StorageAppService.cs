@@ -5,6 +5,7 @@ using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
 using YTStdTenantPlatform.Application.Constants;
+using YTStdTenantPlatform.Domain.Enums;
 
 namespace YTStdTenantPlatform.Application.Services
 {
@@ -74,7 +75,7 @@ namespace YTStdTenantPlatform.Application.Services
                 ProviderType = req.ProviderType,
                 BucketName = req.BucketName,
                 BasePath = req.BasePath,
-                Status = "active",
+                Status = (int)ActiveDisabledStatus.Active,
                 CreatedAt = now,
                 UpdatedAt = now
             };
@@ -123,7 +124,9 @@ namespace YTStdTenantPlatform.Application.Services
             foreach (var s in strategies) { if (s.Id == id) { target = s; break; } }
             if (target == null) return ApiResult.Fail(ErrorCodes.StorageStrategyNotFound);
 
-            target.Status = status;
+            if (!Enum.TryParse<ActiveDisabledStatus>(status, true, out var parsedStatus))
+                return ApiResult.Fail(ErrorCodes.InvalidParameter);
+            target.Status = (int)parsedStatus;
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await StorageStrategyCRUD.UpdateAsync(tenantId, operatorId, target);
@@ -271,7 +274,7 @@ namespace YTStdTenantPlatform.Application.Services
         {
             Id = s.Id, StrategyCode = s.StrategyCode, StrategyName = s.StrategyName,
             ProviderType = s.ProviderType, BucketName = s.BucketName,
-            BasePath = s.BasePath, Status = s.Status, CreatedAt = s.CreatedAt
+            BasePath = s.BasePath, Status = ((ActiveDisabledStatus)s.Status).ToString(), CreatedAt = s.CreatedAt
         };
 
         private static TenantFileRepDTO MapFileToDto(TenantFile f) => new TenantFileRepDTO
