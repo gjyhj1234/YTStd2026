@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using YTStdAdo;
 using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
@@ -69,6 +70,7 @@ namespace YTStdTenantPlatform.Application.Services
 
             var user = new PlatformUser
             {
+                Id = await DB.GetNextLongIdAsync(),
                 Username = req.Username.Trim(),
                 Email = req.Email.Trim(),
                 Phone = req.Phone,

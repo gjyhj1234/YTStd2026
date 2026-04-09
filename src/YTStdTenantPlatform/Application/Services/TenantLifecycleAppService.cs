@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using YTStdAdo;
 using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
@@ -73,6 +74,7 @@ namespace YTStdTenantPlatform.Application.Services
             var now = DateTime.UtcNow;
             var tenant = new Tenant
             {
+                Id = await DB.GetNextLongIdAsync(),
                 TenantCode = req.TenantCode.Trim(),
                 TenantName = req.TenantName.Trim(),
                 EnterpriseName = req.EnterpriseName,
@@ -311,6 +313,7 @@ namespace YTStdTenantPlatform.Application.Services
         {
             var evt = new TenantLifecycleEvent
             {
+                Id = await DB.GetNextLongIdAsync(),
                 TenantRefId = tenantRefId,
                 EventType = eventType,
                 FromStatus = fromStatus,

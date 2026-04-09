@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using YTStdAdo;
 using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
@@ -86,6 +87,7 @@ namespace YTStdTenantPlatform.Application.Services
             var now = DateTime.UtcNow;
             var role = new PlatformRole
             {
+                Id = await DB.GetNextLongIdAsync(),
                 Code = req.Code.Trim(),
                 Name = req.Name.Trim(),
                 Description = req.Description,
@@ -162,6 +164,7 @@ namespace YTStdTenantPlatform.Application.Services
             {
                 var rp = new PlatformRolePermission
                 {
+                    Id = await DB.GetNextLongIdAsync(),
                     RoleId = roleId,
                     PermissionId = permId,
                     GrantedBy = operatorId,
@@ -185,6 +188,7 @@ namespace YTStdTenantPlatform.Application.Services
             {
                 var rm = new PlatformRoleMember
                 {
+                    Id = await DB.GetNextLongIdAsync(),
                     RoleId = roleId,
                     UserId = userId,
                     AssignedBy = operatorId,

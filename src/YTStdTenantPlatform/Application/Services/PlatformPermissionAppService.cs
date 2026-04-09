@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using YTStdAdo;
 using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
@@ -85,6 +86,7 @@ namespace YTStdTenantPlatform.Application.Services
             var now = DateTime.UtcNow;
             var perm = new PlatformPermission
             {
+                Id = await DB.GetNextLongIdAsync(),
                 Code = req.Code.Trim(),
                 Name = req.Name?.Trim() ?? "",
                 PermissionType = req.PermissionType ?? "",
