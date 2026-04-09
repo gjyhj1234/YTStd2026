@@ -37,17 +37,32 @@
 - 遵守所有适用的规则文件
 - 不超出任务边界
 
-### 步骤 4：验证
+### 步骤 4：编译验证
 
 - 执行构建验证：`dotnet build YTStd.slnx`（后端）/ `npm run build`（前端）
 - 执行测试验证：`dotnet test YTStd.slnx`（后端）/ `npm run test`（前端，如有）
-- 检查输出是否满足任务的验收标准
 - 检查是否引入了新的编译警告或错误
+- **注意：编译和测试通过不是最终验收标准，必须继续执行步骤 4.5**
+
+### 步骤 4.5：代码搜索审查（强制）
+
+**此步骤不可跳过。** 编译通过后，必须执行 `.ai/system/self-review-protocol.md` 中定义的自动化代码搜索审查：
+
+1. 使用 `grep` 搜索验证所有 `InsertAsync` 前有 `GetNextLongIdAsync`
+2. 使用 `grep` 搜索验证所有 `ApiResult.Fail` 仅传 `ErrorCodes.XXX`
+3. 使用 `grep` 搜索验证所有 `Logger.Debug` 使用 `Func<string>` 重载
+4. 使用 `grep` 搜索验证无 LINQ / 反射 / dynamic 违规
+5. 使用 `grep` 搜索验证无裸 `TenantId`
+6. 验证 XML 注释完整性
+7. 如有 Postman 变更，验证 Postman 路由与代码端点一致性
+
+**如发现违规，必须立即修复，然后返回步骤 4 重新编译验证。**
 
 ### 步骤 5：收尾
 
 - 输出会话总结
 - 标记已完成和未完成的内容
+- 记录自动化代码审查结果（必须包含审查通过/不通过的具体数据）
 - 记录风险点和待确认事项
 - 给出下一步建议
 

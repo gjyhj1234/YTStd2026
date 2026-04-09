@@ -245,6 +245,66 @@
 - [x] 22. `testing/backend-tests.md` — 补齐测试（D1 ✅ | D2 ✅ | D3 ✅）
 - [x] 23. `testing/postman.md` — 更新 Postman 集合（D4 ✅）
 
+---
+
+## ⚠️ 人工审查发现的问题（2026-04-09 第 6 轮 — 提示词优化专项）
+
+### 问题 1：B 阶段多个 AppService 缺少 GetNextLongIdAsync
+
+**严重级别：严重**
+
+B 阶段（核心模块后端重构）中以下服务的 `InsertAsync` 调用前缺少 `entity.Id = await DB.GetNextLongIdAsync()`：
+
+| 文件 | 缺失行号（InsertAsync 位置） | 涉及实体 |
+|------|---------------------------|---------|
+| `PlatformUserAppService.cs` | :85 | PlatformUser |
+| `PlatformRoleAppService.cs` | :99, :170, :193 | PlatformRole, RolePermission, RoleMember |
+| `PlatformPermissionAppService.cs` | :98 | PlatformPermission |
+| `TenantLifecycleAppService.cs` | :93, :322 | Tenant, TenantLifecycleEvent |
+| `TenantInfoAppService.cs` | :57, :134, :211, :240 | TenantGroup, TenantDomain, TenantTag, TenantTagBinding |
+| `TenantConfigAppService.cs` | :87, :230, :326 | TenantSystemConfig, TenantFeatureFlag, TenantParameter |
+| `TenantResourceAppService.cs` | :80 | TenantResourceQuota |
+
+**C 阶段服务已正确包含** `GetNextLongIdAsync`（PackageAppService、SubscriptionAppService、BillingAppService 等）。
+
+**根因分析：**
+- B 阶段执行时，Agent 仅以 `dotnet build` 编译通过作为验收标准
+- 提示词规则文件（`global.md`、`backend.md`、`app-service.md`）中有规则定义，但 Agent 未实际搜索验证
+- C 阶段提示词中内联了更强的约束提示，因此 C 阶段未复现此问题
+
+**修复状态：⏳ 待下轮编码任务修复**
+
+### 问题 2：Postman 集合路由与 webapi 不一致
+
+**严重级别：中等**
+
+| Postman 路由 | 代码实际路由 | 问题 |
+|-------------|------------|------|
+| `POST /api/auth/refresh` | `POST /api/auth/refresh-token` | 路径不匹配 |
+| （缺失） | `POST /api/auth/change-password` | Postman 中未包含 |
+
+**修复状态：⏳ 待下轮编码任务修复**
+
+### 问题 3（根因）：提示词体系缺乏自动化代码审查机制
+
+**已修复 ✅ — 本轮完成**
+
+| 修改文件 | 修改内容 |
+|---------|---------|
+| `.github/copilot-instructions.md` | 内联关键编码约束（InsertAsync、ApiResult.Fail、Logger.Debug 等），添加强制代码审查说明 |
+| `.ai/system/self-review-protocol.md` | **新建**：定义 7 项强制审查项，包含具体 grep 搜索命令、验证规则、输出格式 |
+| `.ai/system/execution-policy.md` | 添加步骤 4.5（代码搜索审查），明确编译通过 ≠ 任务完成 |
+| `.ai/system/done-criteria.md` | 通用标准增加"代码搜索审查通过"，应用服务标准增加 grep 验证要求 |
+| `.ai/system/review-policy.md` | Agent 自检项增加 grep 搜索验证要求 |
+| `.ai/system/agent-contract.md` | 执行后输出增加"代码搜索审查结果"，添加重要说明 |
+| `.ai/system/prompt-writing-guide.md` | 新增"关键约束内联化"和"验收标准可执行化"原则 |
+| `.ai/prompts/10-review/code-review.md` | 审查清单改为 grep 命令驱动，验收标准要求搜索输出 |
+| `.ai/prompts/02-backend/app-service.md` | InsertAsync 规则增加零容忍说明（含关联表），验收标准增加 grep 验证 |
+| `.ai/prompts/07-testing/postman-collection.md` | 增加路由一致性验证步骤和约束 |
+| `.ai/README.md` | 目录结构增加 self-review-protocol.md |
+
+---
+
 ## 阶段 E：前端重构
 
 - [ ] 24~41 — 脚手架、布局、仪表盘及所有模块页面

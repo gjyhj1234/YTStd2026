@@ -27,6 +27,7 @@
 │   ├── done-criteria.md           # 完成标准定义
 │   ├── review-policy.md           # 审查策略
 │   ├── risk-control.md            # 风险控制规范
+│   ├── self-review-protocol.md    # Agent 自动化代码审查协议（强制）
 │   └── prompt-writing-guide.md    # 提示词编写指南
 │
 ├── context/                       # 项目上下文（不可由 Agent 修改）
