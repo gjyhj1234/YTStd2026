@@ -105,29 +105,31 @@
 
 ## 阶段 B：核心模块后端重构
 
-### B 阶段审计结果（2026-04-09）
+**状态：✅ 全部完成**
 
-| 模块 | 规格端点数 | 已实现 | 缺失 | 完成度 |
-|------|-----------|--------|------|--------|
-| B5 认证 API | 4 | 4 | 0 | ✅ 100% |
-| B6 平台用户 | 11 | 6 | 5 | ⚠️ 55% |
-| B7 平台角色 | 9 | 8 | 4 | ⚠️ 78% |
-| B8 平台权限 | 5 | 4 | 3 | ⚠️ 67% |
-| B9 租户生命周期 | 12 | 6 | 6 | ⚠️ 50% |
-| B10 租户信息 | 11 | 8 | 3 | ⚠️ 73% |
-| B11 租户资源 | 3 | 3 | 0* | ⚠️ 路径不匹配 |
-| B12 租户配置 | 8 | 0** | 8 | ❌ 作用域错误 |
-| B13 菜单与字典 | 13 | 0 | 13 | ❌ 未实现 |
+| 模块 | 规格端点数 | 已实现 | 完成度 |
+|------|-----------|--------|--------|
+| B5 认证 API | 4 | 4 | ✅ 100% |
+| B6 平台用户 | 11 | 11 | ✅ 100% |
+| B7 平台角色 | 9 | 12 | ✅ 100% |
+| B8 平台权限 | 5 | 7 | ✅ 100% |
+| B9 租户生命周期 | 12 | 13 | ✅ 100% |
+| B10 租户信息 | 11 | 11 | ✅ 100% |
+| B11 租户资源 | 3 | 3 | ✅ 100% |
+| B12 租户配置 | 8 | 11 | ✅ 100% |
+| B13 菜单与字典 | 13 | 13 | ✅ 100% |
 
-- [x] 5. `backend/auth-api.md` — 认证 API（4/4 端点，含新增 change-password）
-- [ ] 6. `backend/platform-user-api.md` — 平台用户 API（缺 DELETE/reset-password/check-username/batch-enable/batch-disable）
-- [ ] 7. `backend/platform-role-api.md` — 平台角色 API（缺 DELETE/GET permissions/check-code/all）
-- [ ] 8. `backend/platform-permission-api.md` — 平台权限 API（缺 POST/PUT/DELETE）
-- [ ] 9. `backend/tenant-lifecycle-api.md` — 租户生命周期 API（缺 DELETE/initialize/suspend/resume/terminate/convert-trial/check-code）
-- [ ] 10. `backend/tenant-info-api.md` — 租户信息 API（缺 group UPDATE/DELETE、tag DELETE、PUT tags）
-- [ ] 11. `backend/tenant-resource-api.md` — 租户资源 API（路径需从 /api/tenant-resource-quotas 改为 /api/tenants/{id}/resource-*）
-- [ ] 12. `backend/tenant-config-api.md` — 租户配置 API（需从 tenant-scoped 改为 platform-scoped /api/system-configs 和 /api/feature-flags）
-- [ ] 13. `backend/menu-dictionary-api.md` — 菜单与字典 API（全部待实现）
+- [x] 5. `backend/auth-api.md` — 认证 API（4/4 端点）
+- [x] 6. `backend/platform-user-api.md` — 平台用户 API（11/11 端点，含 DELETE/reset-password/check-username/batch-enable/batch-disable）
+- [x] 7. `backend/platform-role-api.md` — 平台角色 API（12 端点，含 DELETE/GET permissions/check-code/all）
+- [x] 8. `backend/platform-permission-api.md` — 平台权限 API（7 端点，含 POST/PUT/DELETE）
+- [x] 9. `backend/tenant-lifecycle-api.md` — 租户生命周期 API（13 端点，含 DELETE/initialize/suspend/resume/terminate/convert-trial/check-code）
+- [x] 10. `backend/tenant-info-api.md` — 租户信息 API（11 端点，含 group UPDATE/DELETE、域名路径修正、tag DELETE、PUT tags）
+- [x] 11. `backend/tenant-resource-api.md` — 租户资源 API（3 端点，路径修正为 /api/tenants/{id}/resource-*，新增 resource-usage）
+- [x] 12. `backend/tenant-config-api.md` — 租户配置 API（11 端点，新增 /api/system-configs 和 /api/feature-flags 含 enable/disable）
+- [x] 13. `backend/menu-dictionary-api.md` — 菜单与字典 API（13 端点，8 菜单 + 5 字典，全部新建）
+
+**阶段 B 编译验证：✅ `dotnet build YTStd.slnx` 0 error | `dotnet test YTStd.slnx` 179 tests passed**
 
 ## 阶段 C：扩展模块后端重构
 
