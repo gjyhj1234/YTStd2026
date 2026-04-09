@@ -45,6 +45,7 @@ namespace YTStdTenantPlatform.Application.Services
 
             var group = new TenantGroup
             {
+                Id = await DB.GetNextLongIdAsync(),
                 GroupCode = req.GroupCode.Trim(),
                 GroupName = req.GroupName.Trim(),
                 Description = req.Description,
@@ -123,6 +124,7 @@ namespace YTStdTenantPlatform.Application.Services
 
             var domain = new TenantDomain
             {
+                Id = await DB.GetNextLongIdAsync(),
                 TenantRefId = req.TenantRefId,
                 Domain = req.Domain.Trim(),
                 DomainType = req.DomainType,
@@ -201,6 +203,7 @@ namespace YTStdTenantPlatform.Application.Services
 
             var tag = new TenantTag
             {
+                Id = await DB.GetNextLongIdAsync(),
                 TagKey = req.TagKey.Trim(),
                 TagValue = req.TagValue.Trim(),
                 TagType = req.TagType,
@@ -233,6 +236,7 @@ namespace YTStdTenantPlatform.Application.Services
             {
                 var binding = new TenantTagBinding
                 {
+                    Id = await DB.GetNextLongIdAsync(),
                     TenantRefId = req.TenantRefId,
                     TagId = tagId,
                     CreatedAt = DateTime.UtcNow

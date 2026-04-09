@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using YTStdAdo;
 using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
@@ -68,6 +69,7 @@ namespace YTStdTenantPlatform.Application.Services
             var now = DateTime.UtcNow;
             var quota = new TenantResourceQuota
             {
+                Id = await DB.GetNextLongIdAsync(),
                 TenantRefId = req.TenantRefId,
                 QuotaType = req.QuotaType.Trim(),
                 QuotaLimit = req.QuotaLimit,

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using YTStdAdo;
 using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
@@ -75,6 +76,7 @@ namespace YTStdTenantPlatform.Application.Services
             {
                 target = new TenantSystemConfig
                 {
+                    Id = await DB.GetNextLongIdAsync(),
                     TenantRefId = tenantRefId,
                     SystemName = req.SystemName,
                     LogoUrl = req.LogoUrl,
@@ -218,6 +220,7 @@ namespace YTStdTenantPlatform.Application.Services
             var now = DateTime.UtcNow;
             var flag = new TenantFeatureFlag
             {
+                Id = await DB.GetNextLongIdAsync(),
                 TenantRefId = req.TenantRefId,
                 FeatureKey = req.FeatureKey.Trim(),
                 FeatureName = req.FeatureName.Trim(),
@@ -314,6 +317,7 @@ namespace YTStdTenantPlatform.Application.Services
             var now = DateTime.UtcNow;
             var param = new TenantParameter
             {
+                Id = await DB.GetNextLongIdAsync(),
                 TenantRefId = req.TenantRefId,
                 ParamKey = req.ParamKey.Trim(),
                 ParamName = req.ParamName.Trim(),
