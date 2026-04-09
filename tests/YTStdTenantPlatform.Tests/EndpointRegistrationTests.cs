@@ -113,10 +113,9 @@ namespace YTStdTenantPlatform.Tests
         }
 
         [Fact]
-        public void AllEndpointTypes_HaveXmlSummary()
+        public void AllEndpointTypes_HavePublicStaticMethods()
         {
             // 验证每个端点类至少有一个 public static 方法（Map）
-            // XML 注释的存在由编译器检查，这里验证类结构完整性
             foreach (var type in AllEndpointTypes)
             {
                 var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Static);
@@ -227,19 +226,14 @@ namespace YTStdTenantPlatform.Tests
         [Fact]
         public void RouteGroups_NoDuplicatePrefixes()
         {
-            var allPrefixes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var kvp in ExpectedRouteGroups)
             {
-                foreach (var prefix in kvp.Value)
+                // 同一文件内不应有重复的路由前缀
+                var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var p in kvp.Value)
                 {
-                    // 某些路由前缀（如 /api/tenants）在多个 Endpoint 中使用是允许的
-                    // 只在同一文件内检查
-                    var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                    foreach (var p in kvp.Value)
-                    {
-                        Assert.True(set.Add(p),
-                            kvp.Key + " 中存在重复路由前缀: " + p);
-                    }
+                    Assert.True(set.Add(p),
+                        kvp.Key + " 中存在重复路由前缀: " + p);
                 }
             }
         }

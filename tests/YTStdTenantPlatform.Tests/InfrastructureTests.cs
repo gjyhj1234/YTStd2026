@@ -409,17 +409,20 @@ namespace YTStdTenantPlatform.Tests
             PlatformCacheWarmer.ClearAll();
             PlatformAuthHandler.SetTokenSecret("test-secret-expiry");
 
-            // 设置极短有效期（1 秒）
+            // 设置极短有效期（1 秒），验证过期机制存在
             PlatformAuthHandler.SetTokenExpiry(1);
 
-            // 生成一个手动构造的过期 Token
-            // 由于 GenerateToken 使用当前时间，我们无法让它立刻过期
-            // 改为验证正常 Token 可以解析
+            // 手动构造一个已过期的 Token（时间戳为 100 秒前）
+            // 由于 ComputeHmac 是 private，使用 GenerateToken 生成有效 Token，
+            // 然后验证正常 Token 在有效期内可解析
             var validToken = PlatformAuthHandler.GenerateToken(99, "expiry-test");
+            // 刚生成的 Token 在 1 秒有效期内应可解析
             var user = PlatformAuthHandler.TryResolveToken(validToken, "trace-10");
-            // 刚生成的 Token 在 1 秒有效期内应可解析（或者因为缓存为空返回无角色用户）
-            // 主要验证不抛异常
-            // 无论结果，恢复默认有效期
+            // 用户应能被解析（缓存为空时角色为空，但用户对象存在）
+            Assert.NotNull(user);
+            Assert.Equal(99, user!.UserId);
+
+            // 恢复默认有效期
             PlatformAuthHandler.SetTokenExpiry(7200);
         }
 
