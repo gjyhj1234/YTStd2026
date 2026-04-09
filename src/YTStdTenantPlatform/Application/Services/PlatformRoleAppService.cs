@@ -198,5 +198,75 @@ namespace YTStdTenantPlatform.Application.Services
                 "[PlatformRoleAppService] 角色成员: roleId=" + roleId + " 用户数=" + req.UserIds.Length);
             return ApiResult.Ok();
         }
+
+        /// <summary>删除角色</summary>
+        public static async ValueTask<ApiResult> DeleteAsync(int tenantId, long operatorId, long id)
+        {
+            var (getResult, roles) = await PlatformRoleCRUD.GetListAsync(tenantId, operatorId);
+            if (!getResult.Success || roles == null) return ApiResult.Fail(ErrorCodes.RoleQueryFailed);
+
+            PlatformRole? target = null;
+            foreach (var r in roles) { if (r.Id == id) { target = r; break; } }
+            if (target == null) return ApiResult.Fail(ErrorCodes.RoleNotFound);
+
+            if (string.Equals(target.Code, "super-admin", StringComparison.OrdinalIgnoreCase))
+                return ApiResult.Fail(ErrorCodes.RoleCannotDeleteSuperAdmin);
+
+            var delResult = await PlatformRoleCRUD.DeleteAsync(tenantId, operatorId, target.Id);
+            if (!delResult.Success) return ApiResult.Fail(ErrorCodes.RoleDeleteFailed);
+
+            await PlatformCacheCoordinator.InvalidatePermissionsAsync();
+            Logger.Info(tenantId, operatorId, "[PlatformRoleAppService] 删除角色: " + target.Code);
+            return ApiResult.Ok();
+        }
+
+        /// <summary>获取角色已绑定的权限 ID 列表</summary>
+        public static async ValueTask<ApiResult<List<long>>> GetPermissionIdsAsync(int tenantId, long operatorId, long roleId)
+        {
+            var (result, data) = await PlatformRolePermissionCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return ApiResult<List<long>>.Fail(ErrorCodes.RoleQueryFailed);
+
+            var ids = new List<long>();
+            foreach (var rp in data)
+            {
+                if (rp.RoleId == roleId)
+                    ids.Add(rp.PermissionId);
+            }
+            return ApiResult<List<long>>.Ok(ids);
+        }
+
+        /// <summary>检查角色编码是否存在</summary>
+        public static async ValueTask<ApiResult<bool>> CheckCodeExistsAsync(int tenantId, long operatorId, string code)
+        {
+            var (result, data) = await PlatformRoleCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return ApiResult<bool>.Ok(false);
+
+            foreach (var r in data)
+            {
+                if (string.Equals(r.Code, code, StringComparison.OrdinalIgnoreCase))
+                    return ApiResult<bool>.Ok(true);
+            }
+            return ApiResult<bool>.Ok(false);
+        }
+
+        /// <summary>获取全部角色（不分页，用于下拉选择）</summary>
+        public static async ValueTask<ApiResult<List<PlatformRoleSimpleRepDTO>>> GetAllAsync(int tenantId, long operatorId)
+        {
+            var (result, data) = await PlatformRoleCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return ApiResult<List<PlatformRoleSimpleRepDTO>>.Fail(ErrorCodes.RoleQueryFailed);
+
+            var list = new List<PlatformRoleSimpleRepDTO>(data.Count);
+            foreach (var r in data)
+            {
+                list.Add(new PlatformRoleSimpleRepDTO
+                {
+                    Id = r.Id,
+                    Code = r.Code,
+                    Name = r.Name,
+                    Status = ((PlatformRoleStatus)r.Status).ToString()
+                });
+            }
+            return ApiResult<List<PlatformRoleSimpleRepDTO>>.Ok(list);
+        }
     }
 }

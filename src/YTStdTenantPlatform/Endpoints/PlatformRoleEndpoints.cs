@@ -87,6 +87,35 @@ namespace YTStdTenantPlatform.Endpoints
                 var result = await PlatformRoleAppService.BindMembersAsync(0, user.UserId, id, req);
                 await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
             }).WithSummary("角色成员管理（绑定用户）");
+
+            group.MapDelete("/{id:long}", async (HttpContext ctx, long id) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await PlatformRoleAppService.DeleteAsync(0, user.UserId, id);
+                await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
+            }).WithSummary("删除角色");
+
+            group.MapGet("/{id:long}/permissions", async (HttpContext ctx, long id) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await PlatformRoleAppService.GetPermissionIdsAsync(0, user.UserId, id);
+                await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
+            }).WithSummary("获取角色已绑定的权限 ID 列表");
+
+            group.MapGet("/check-code-exists", async (HttpContext ctx, string? code) =>
+            {
+                if (string.IsNullOrWhiteSpace(code)) { await WriteJsonAsync(ctx, ApiResult<bool>.Ok(false)); return; }
+                var user = GetCurrentUser(ctx);
+                var result = await PlatformRoleAppService.CheckCodeExistsAsync(0, user.UserId, code);
+                await WriteJsonAsync(ctx, result);
+            }).WithSummary("检查角色编码是否存在");
+
+            group.MapGet("/all", async (HttpContext ctx) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await PlatformRoleAppService.GetAllAsync(0, user.UserId);
+                await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
+            }).WithSummary("获取全部角色（不分页）");
         }
 
         private static CurrentUser GetCurrentUser(HttpContext ctx) =>

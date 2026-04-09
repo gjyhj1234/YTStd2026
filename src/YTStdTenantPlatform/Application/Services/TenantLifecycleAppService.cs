@@ -230,6 +230,79 @@ namespace YTStdTenantPlatform.Application.Services
             return false;
         }
 
+        /// <summary>软删除租户</summary>
+        public static async ValueTask<ApiResult> DeleteAsync(int tenantId, long operatorId, long id)
+        {
+            var (getResult, tenants) = await TenantCRUD.GetListAsync(tenantId, operatorId);
+            if (!getResult.Success || tenants == null) return ApiResult.Fail(ErrorCodes.TenantQueryFailed);
+
+            Tenant? target = null;
+            foreach (var t in tenants) { if (t.Id == id && t.DeletedAt == null) { target = t; break; } }
+            if (target == null) return ApiResult.Fail(ErrorCodes.TenantNotFound);
+
+            target.DeletedAt = DateTime.UtcNow;
+            target.Enabled = false;
+            target.UpdatedAt = DateTime.UtcNow;
+
+            var updResult = await TenantCRUD.UpdateAsync(tenantId, operatorId, target);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.TenantDeleteFailed);
+
+            await RecordLifecycleEventAsync(tenantId, operatorId, id, "deleted",
+                ((TenantLifecycleStatus)target.LifecycleStatus).ToString(), "Deleted", "软删除", operatorId);
+
+            Logger.Info(tenantId, operatorId, "[TenantLifecycleAppService] 软删除租户: " + target.TenantCode);
+            return ApiResult.Ok();
+        }
+
+        /// <summary>初始化租户（Trial → Active）</summary>
+        public static async ValueTask<ApiResult> InitializeAsync(int tenantId, long operatorId, long id)
+        {
+            var req = new TenantStatusChangeReqDTO { TargetStatus = "Active", Reason = "租户初始化" };
+            return await ChangeStatusAsync(tenantId, operatorId, id, req);
+        }
+
+        /// <summary>暂停租户（Active → Suspended）</summary>
+        public static async ValueTask<ApiResult> SuspendAsync(int tenantId, long operatorId, long id)
+        {
+            var req = new TenantStatusChangeReqDTO { TargetStatus = "Suspended", Reason = "租户暂停" };
+            return await ChangeStatusAsync(tenantId, operatorId, id, req);
+        }
+
+        /// <summary>恢复租户（Suspended → Active）</summary>
+        public static async ValueTask<ApiResult> ResumeAsync(int tenantId, long operatorId, long id)
+        {
+            var req = new TenantStatusChangeReqDTO { TargetStatus = "Active", Reason = "租户恢复" };
+            return await ChangeStatusAsync(tenantId, operatorId, id, req);
+        }
+
+        /// <summary>终止租户（Active/Suspended → Closed）</summary>
+        public static async ValueTask<ApiResult> TerminateAsync(int tenantId, long operatorId, long id)
+        {
+            var req = new TenantStatusChangeReqDTO { TargetStatus = "Closed", Reason = "租户终止" };
+            return await ChangeStatusAsync(tenantId, operatorId, id, req);
+        }
+
+        /// <summary>试用转正式（Trial → Active）</summary>
+        public static async ValueTask<ApiResult> ConvertTrialAsync(int tenantId, long operatorId, long id)
+        {
+            var req = new TenantStatusChangeReqDTO { TargetStatus = "Active", Reason = "试用转正式" };
+            return await ChangeStatusAsync(tenantId, operatorId, id, req);
+        }
+
+        /// <summary>检查租户编码是否存在</summary>
+        public static async ValueTask<ApiResult<bool>> CheckCodeExistsAsync(int tenantId, long operatorId, string code)
+        {
+            var (result, data) = await TenantCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return ApiResult<bool>.Ok(false);
+
+            foreach (var t in data)
+            {
+                if (t.DeletedAt == null && string.Equals(t.TenantCode, code, StringComparison.OrdinalIgnoreCase))
+                    return ApiResult<bool>.Ok(true);
+            }
+            return ApiResult<bool>.Ok(false);
+        }
+
         /// <summary>记录生命周期事件</summary>
         private static async ValueTask RecordLifecycleEventAsync(
             int tenantId, long operatorId, long tenantRefId,

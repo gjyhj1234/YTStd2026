@@ -30,7 +30,11 @@ namespace YTStdTenantPlatform.Infrastructure.Serialization;
 [JsonSerializable(typeof(RoleMemberBindReqDTO))]
 [JsonSerializable(typeof(ApiResult<PlatformRoleRepDTO>))]
 [JsonSerializable(typeof(ApiResult<PagedResult<PlatformRoleRepDTO>>))]
+[JsonSerializable(typeof(ApiResult<List<long>>))]
+[JsonSerializable(typeof(ApiResult<List<PlatformRoleSimpleRepDTO>>))]
 // ── 平台权限 ──
+[JsonSerializable(typeof(CreatePlatformPermissionReqDTO))]
+[JsonSerializable(typeof(UpdatePlatformPermissionReqDTO))]
 [JsonSerializable(typeof(ApiResult<PlatformPermissionRepDTO>))]
 [JsonSerializable(typeof(ApiResult<List<PlatformPermissionRepDTO>>))]
 // ── 租户生命周期 ──

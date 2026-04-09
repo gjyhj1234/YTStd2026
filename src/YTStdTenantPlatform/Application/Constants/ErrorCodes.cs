@@ -53,6 +53,8 @@ public static class ErrorCodes
     public const int RoleCodeExists = 18002;
     /// <summary>租户编码已存在</summary>
     public const int TenantCodeExists = 18003;
+    /// <summary>权限编码已存在</summary>
+    public const int PermissionCodeExists = 18004;
 
     // ── 平台用户 (19001-19099) ──
 
@@ -101,6 +103,25 @@ public static class ErrorCodes
     public const int RolePermissionBindFailed = 19108;
     /// <summary>角色成员绑定失败</summary>
     public const int RoleMemberBindFailed = 19109;
+    /// <summary>删除角色失败</summary>
+    public const int RoleDeleteFailed = 19110;
+    /// <summary>禁止删除超级管理员角色</summary>
+    public const int RoleCannotDeleteSuperAdmin = 19111;
+
+    // ── 平台权限 (19201-19299) ──
+
+    /// <summary>权限编码不能为空</summary>
+    public const int PermissionCodeRequired = 19201;
+    /// <summary>创建权限失败</summary>
+    public const int PermissionCreateFailed = 19202;
+    /// <summary>查询权限失败</summary>
+    public const int PermissionQueryFailed = 19203;
+    /// <summary>权限不存在</summary>
+    public const int PermissionNotFound = 19204;
+    /// <summary>更新权限失败</summary>
+    public const int PermissionUpdateFailed = 19205;
+    /// <summary>删除权限失败</summary>
+    public const int PermissionDeleteFailed = 19206;
 
     // ── 租户 (19301-19399) ──
 
@@ -158,6 +179,8 @@ public static class ErrorCodes
     public const int ParamSaveFailed = 19326;
     /// <summary>删除参数失败</summary>
     public const int ParamDeleteFailed = 19327;
+    /// <summary>删除租户失败</summary>
+    public const int TenantDeleteFailed = 19328;
 
     // ── 套餐 (19401-19499) ──
 

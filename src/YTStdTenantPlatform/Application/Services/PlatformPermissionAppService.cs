@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
 using YTStdTenantPlatform.Infrastructure.Cache;
@@ -61,6 +62,88 @@ namespace YTStdTenantPlatform.Application.Services
             if (cache.TryGetValue(code, out var perm))
                 return MapToDto(perm);
             return null;
+        }
+
+        /// <summary>创建权限</summary>
+        public static async ValueTask<ApiResult<long>> CreateAsync(
+            int tenantId, long operatorId, CreatePlatformPermissionReqDTO req)
+        {
+            if (string.IsNullOrWhiteSpace(req.Code))
+                return ApiResult<long>.Fail(ErrorCodes.PermissionCodeRequired);
+
+            // 检查编码唯一性
+            var (chkResult, existing) = await PlatformPermissionCRUD.GetListAsync(tenantId, operatorId);
+            if (chkResult.Success && existing != null)
+            {
+                foreach (var p in existing)
+                {
+                    if (string.Equals(p.Code, req.Code.Trim(), StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.PermissionCodeExists);
+                }
+            }
+
+            var now = DateTime.UtcNow;
+            var perm = new PlatformPermission
+            {
+                Code = req.Code.Trim(),
+                Name = req.Name?.Trim() ?? "",
+                PermissionType = req.PermissionType ?? "",
+                ParentId = req.ParentId,
+                Resource = req.Resource,
+                Action = req.Action,
+                CreatedAt = now,
+                UpdatedAt = now
+            };
+
+            var insResult = await PlatformPermissionCRUD.InsertAsync(tenantId, operatorId, perm);
+            if (!insResult.Success)
+                return ApiResult<long>.Fail(ErrorCodes.PermissionCreateFailed);
+
+            await PlatformCacheCoordinator.InvalidatePermissionsAsync();
+            Logger.Info(tenantId, operatorId, "[PlatformPermissionAppService] 创建权限: " + req.Code);
+            return ApiResult<long>.Ok(insResult.Id);
+        }
+
+        /// <summary>更新权限</summary>
+        public static async ValueTask<ApiResult> UpdateAsync(
+            int tenantId, long operatorId, long id, UpdatePlatformPermissionReqDTO req)
+        {
+            var (getResult, perms) = await PlatformPermissionCRUD.GetListAsync(tenantId, operatorId);
+            if (!getResult.Success || perms == null) return ApiResult.Fail(ErrorCodes.PermissionQueryFailed);
+
+            PlatformPermission? target = null;
+            foreach (var p in perms) { if (p.Id == id) { target = p; break; } }
+            if (target == null) return ApiResult.Fail(ErrorCodes.PermissionNotFound);
+
+            if (req.Name != null) target.Name = req.Name;
+            if (req.Resource != null) target.Resource = req.Resource;
+            if (req.Action != null) target.Action = req.Action;
+            target.UpdatedAt = DateTime.UtcNow;
+
+            var updResult = await PlatformPermissionCRUD.UpdateAsync(tenantId, operatorId, target);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.PermissionUpdateFailed);
+
+            await PlatformCacheCoordinator.InvalidatePermissionsAsync();
+            Logger.Info(tenantId, operatorId, "[PlatformPermissionAppService] 更新权限: " + target.Code);
+            return ApiResult.Ok();
+        }
+
+        /// <summary>删除权限</summary>
+        public static async ValueTask<ApiResult> DeleteAsync(int tenantId, long operatorId, long id)
+        {
+            var (getResult, perms) = await PlatformPermissionCRUD.GetListAsync(tenantId, operatorId);
+            if (!getResult.Success || perms == null) return ApiResult.Fail(ErrorCodes.PermissionQueryFailed);
+
+            PlatformPermission? target = null;
+            foreach (var p in perms) { if (p.Id == id) { target = p; break; } }
+            if (target == null) return ApiResult.Fail(ErrorCodes.PermissionNotFound);
+
+            var delResult = await PlatformPermissionCRUD.DeleteAsync(tenantId, operatorId, target.Id);
+            if (!delResult.Success) return ApiResult.Fail(ErrorCodes.PermissionDeleteFailed);
+
+            await PlatformCacheCoordinator.InvalidatePermissionsAsync();
+            Logger.Info(tenantId, operatorId, "[PlatformPermissionAppService] 删除权限: " + target.Code);
+            return ApiResult.Ok();
         }
 
         /// <summary>构建权限树</summary>
