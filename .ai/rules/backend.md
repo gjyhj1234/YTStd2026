@@ -98,16 +98,47 @@ public class PlatformUser
 
 ### 唯一性验证模式
 
+所有包含唯一索引字段的实体，Create/Save 方法必须遵循**唯一性双重校验模式**：
+
+**第一重：前置校验** — 在 InsertAsync 前检查唯一字段是否已存在
+
 ```csharp
-var existingList = await DB.GetListAsync<Entity>(query);
-foreach (var item in existingList)
+var (chkResult, existing) = await XxxCRUD.GetListAsync(tenantId, operatorId);
+if (chkResult.Success && existing != null)
 {
-    if (item.Code == input.Code && item.Id != input.Id)
+    foreach (var item in existing)
     {
-        return ApiResult.Fail(ErrorCodes.CodeExists);
+        if (string.Equals(item.Code, req.Code.Trim(), StringComparison.OrdinalIgnoreCase))
+            return ApiResult<long>.Fail(ErrorCodes.XxxCodeExists);
     }
 }
 ```
+
+**第二重：后置复核** — InsertAsync 失败时重新检查唯一性，返回精确错误码
+
+```csharp
+var insResult = await XxxCRUD.InsertAsync(tenantId, operatorId, entity);
+if (!insResult.Success)
+{
+    // 重新检查唯一性，判断是否因唯一约束冲突导致插入失败
+    var (rechkResult, rechkData) = await XxxCRUD.GetListAsync(tenantId, operatorId);
+    if (rechkResult.Success && rechkData != null)
+    {
+        foreach (var item in rechkData)
+        {
+            if (string.Equals(item.Code, entity.Code, StringComparison.OrdinalIgnoreCase))
+                return ApiResult<long>.Fail(ErrorCodes.XxxCodeExists);
+        }
+    }
+    return ApiResult<long>.Fail(ErrorCodes.XxxCreateFailed);
+}
+```
+
+**规则：**
+- 每个唯一字段必须有对应的 `ErrorCodes.XxxExists` 错误码（位于 18xxx 段）
+- 不允许唯一字段冲突时仅返回笼统的 `XxxCreateFailed` 错误码
+- 并发竞争场景下（前置校验通过但 InsertAsync 仍因唯一索引失败），必须通过后置复核返回精确的 `XxxExists` 错误码
+- Update 方法如果修改了唯一字段，也需要排他性唯一校验（排除自身 Id）
 
 ---
 

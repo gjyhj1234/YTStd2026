@@ -325,3 +325,132 @@ B 阶段（核心模块后端重构）中以下服务的 `InsertAsync` 调用前
 ## 阶段 F：前端国际化
 
 - [ ] 42. `frontend/i18n.md` — 全量国际化接入
+
+---
+
+## ⚠️ 人工审查发现的问题（2026-04-09 第 9 轮 — 唯一性校验专项审计）
+
+### 问题 4：Create/Save 方法缺少唯一性校验或缺少并发冲突后置复核
+
+**严重级别：严重**
+
+**问题描述：**
+
+1. **部分 Create 方法完全缺少唯一性前置校验**：新增数据前未检查唯一字段是否重复。虽然数据库有唯一索引，但 InsertAsync 失败时只返回笼统的 `XxxCreateFailed` 错误码，用户无法明确失败原因。
+2. **已有前置校验的 Create 方法缺少并发冲突后置复核**：前置校验通过后，在并发场景下另一请求可能已插入相同值。此时 InsertAsync 因唯一索引失败，仍然返回笼统的 `XxxCreateFailed` 错误码，而非精确的 `XxxExists` 错误码。
+
+---
+
+#### 4A. 完全缺少唯一性前置校验的 Create/Save 方法
+
+| 序号 | 服务文件 | 方法 | 唯一字段 | 当前 InsertAsync 失败错误码 | 应补充的前置校验错误码 | 错误码是否已存在 |
+|-----|---------|------|---------|--------------------------|-------------------|----|
+| 1 | `PlatformUserAppService.cs` | `CreateAsync` | `Username` | `UserCreateFailed (19004)` | `UsernameExists (18001)` | ✅ 已有 |
+| 2 | `PlatformUserAppService.cs` | `CreateAsync` | `Email` | `UserCreateFailed (19004)` | `EmailExists` | ❌ 需新增 (建议 18007) |
+| 3 | `PlatformRoleAppService.cs` | `CreateAsync` | `Code` | `RoleCreateFailed (19103)` | `RoleCodeExists (18002)` | ✅ 已有 |
+| 4 | `TenantLifecycleAppService.cs` | `CreateAsync` | `TenantCode` | `TenantCreateFailed (19303)` | `TenantCodeExists (18003)` | ✅ 已有 |
+| 5 | `TenantInfoAppService.cs` | `CreateGroupAsync` | `GroupCode` | `GroupCreateFailed (19310)` | `GroupCodeExists` | ❌ 需新增 (建议 18008) |
+| 6 | `TenantInfoAppService.cs` | `CreateDomainAsync` | `Domain` | `DomainCreateFailed (19312)` | `DomainExists` | ❌ 需新增 (建议 18009) |
+| 7 | `TenantInfoAppService.cs` | `CreateTagAsync` | `TagKey` | `TagCreateFailed (19314)` | `TagKeyExists` | ❌ 需新增 (建议 18010) |
+| 8 | `TenantConfigAppService.cs` | `SaveFeatureFlagAsync` | `FeatureKey` | `FeatureFlagSaveFailed (19322)` | `FeatureKeyExists` | ❌ 需新增 (建议 18011) |
+| 9 | `TenantConfigAppService.cs` | `SaveParameterAsync` | `ParamKey` | `ParamSaveFailed (19326)` | `ParamKeyExists` | ❌ 需新增 (建议 18012) |
+| 10 | `DictionaryAppService.cs` | `CreateAsync` | `TypeCode+ItemCode` | `DictCreateFailed (19372)` | `DictItemCodeExists` | ❌ 需新增 (建议 18013) |
+| 11 | `PackageAppService.cs` | `CreateVersionAsync` | `VersionCode` (同一套餐内) | `PackageVersionCreateFailed (19410)` | `PackageVersionCodeExists` | ❌ 需新增 (建议 18014) |
+| 12 | `NotificationAppService.cs` | `CreateTemplateAsync` | `TemplateCode` | `NotificationTemplateCreateFailed (19802)` | `NotificationTemplateCodeExists` | ❌ 需新增 (建议 18015) |
+
+**需新增的 ErrorCodes（18xxx 唯一性冲突段，共 9 个）：**
+
+```csharp
+// ── 唯一性冲突 (18001-18099) ── 新增项
+
+/// <summary>邮箱已存在</summary>
+public const int EmailExists = 18007;
+/// <summary>分组编码已存在</summary>
+public const int GroupCodeExists = 18008;
+/// <summary>域名已存在</summary>
+public const int DomainExists = 18009;
+/// <summary>标签键已存在</summary>
+public const int TagKeyExists = 18010;
+/// <summary>功能开关键已存在</summary>
+public const int FeatureKeyExists = 18011;
+/// <summary>参数键已存在</summary>
+public const int ParamKeyExists = 18012;
+/// <summary>字典项编码已存在</summary>
+public const int DictItemCodeExists = 18013;
+/// <summary>套餐版本编码已存在</summary>
+public const int PackageVersionCodeExists = 18014;
+/// <summary>通知模板编码已存在</summary>
+public const int NotificationTemplateCodeExists = 18015;
+```
+
+---
+
+#### 4B. 已有前置校验但缺少后置复核的 Create 方法
+
+| 序号 | 服务文件 | 方法 | 唯一字段 | 前置校验错误码 | InsertAsync 失败错误码（当前） | 需要后置复核 |
+|-----|---------|------|---------|-------------|--------------------------|---------|
+| 1 | `PlatformPermissionAppService.cs` | `CreateAsync` | `Code` | `PermissionCodeExists (18004)` | `PermissionCreateFailed (19202)` | ✅ 需添加后置复核 |
+| 2 | `PackageAppService.cs` | `CreatePackageAsync` | `PackageCode` | `PackageCodeExists (18006)` | `PackageCreateFailed (19403)` | ✅ 需添加后置复核 |
+| 3 | `MenuAppService.cs` | `CreateAsync` | `Code` | `MenuCodeExists (18005)` | `MenuCreateFailed (19352)` | ✅ 需添加后置复核 |
+
+**后置复核模式**（对每个方法，在 `!insResult.Success` 分支中加入重新查询逻辑）：
+
+```csharp
+var insResult = await XxxCRUD.InsertAsync(tenantId, operatorId, entity);
+if (!insResult.Success)
+{
+    // 后置复核：重新检查唯一性，精确返回冲突错误码
+    var (rechkResult, rechkData) = await XxxCRUD.GetListAsync(tenantId, operatorId);
+    if (rechkResult.Success && rechkData != null)
+    {
+        foreach (var item in rechkData)
+        {
+            if (string.Equals(item.Code, entity.Code, StringComparison.OrdinalIgnoreCase))
+                return ApiResult<long>.Fail(ErrorCodes.XxxCodeExists);
+        }
+    }
+    return ApiResult<long>.Fail(ErrorCodes.XxxCreateFailed);
+}
+```
+
+---
+
+#### 4C. 修复计划（下一轮编码任务执行）
+
+**执行顺序：**
+
+1. **Step 1**：在 `ErrorCodes.cs` 中添加 9 个新的唯一性冲突错误码（18007-18015）
+2. **Step 2**：修复 4A 中 12 个缺少前置校验的 Create/Save 方法，同时添加后置复核
+3. **Step 3**：修复 4B 中 3 个已有前置校验但缺少后置复核的方法
+4. **Step 4**：执行 `dotnet build YTStd.slnx` 编译验证
+5. **Step 5**：执行 `dotnet test YTStd.slnx` 测试验证
+6. **Step 6**：执行 `.ai/system/self-review-protocol.md` 全部审查项（含新增的审查项 8）
+
+**涉及文件清单：**
+
+| 文件 | 修改类型 | 修改内容 |
+|------|---------|---------|
+| `Application/Constants/ErrorCodes.cs` | 新增 | 添加 18007-18015 共 9 个错误码 |
+| `Application/Services/PlatformUserAppService.cs` | 修改 | CreateAsync 添加 Username+Email 前置校验 + 后置复核 |
+| `Application/Services/PlatformRoleAppService.cs` | 修改 | CreateAsync 添加 Code 前置校验 + 后置复核 |
+| `Application/Services/PlatformPermissionAppService.cs` | 修改 | CreateAsync 已有前置校验，补充后置复核 |
+| `Application/Services/TenantLifecycleAppService.cs` | 修改 | CreateAsync 添加 TenantCode 前置校验 + 后置复核 |
+| `Application/Services/TenantInfoAppService.cs` | 修改 | CreateGroupAsync/CreateDomainAsync/CreateTagAsync 添加前置校验 + 后置复核 |
+| `Application/Services/TenantConfigAppService.cs` | 修改 | SaveFeatureFlagAsync/SaveParameterAsync 添加前置校验 + 后置复核 |
+| `Application/Services/DictionaryAppService.cs` | 修改 | CreateAsync 添加 TypeCode+ItemCode 前置校验 + 后置复核 |
+| `Application/Services/PackageAppService.cs` | 修改 | CreatePackageAsync 已有前置校验补充后置复核，CreateVersionAsync 添加前置校验 + 后置复核 |
+| `Application/Services/MenuAppService.cs` | 修改 | CreateAsync 已有前置校验，补充后置复核 |
+| `Application/Services/NotificationAppService.cs` | 修改 | CreateTemplateAsync 添加 TemplateCode 前置校验 + 后置复核 |
+
+**修复状态：⏳ 待执行（下一轮编码任务）**
+
+---
+
+#### 4D. 提示词体系更新（本轮已完成）
+
+| 修改文件 | 修改内容 |
+|---------|---------|
+| `.github/copilot-instructions.md` | 新增规则 6：唯一性双重校验模式（含代码示例和正反面对比） |
+| `.ai/system/self-review-protocol.md` | 新增审查项 8：唯一性双重校验审查（含搜索命令、验证规则、输出格式） |
+| `.ai/rules/backend.md` | 唯一性验证模式改为双重校验模式（前置校验 + 后置复核） |
+| `.ai/prompts/02-backend/app-service.md` | 约束项增加唯一性双重校验要求，验收标准增加唯一性审查 |

@@ -82,6 +82,54 @@ Logger.Debug(tenantId, userId, $"[方法名] 参数: {param}");
 
 Postman 集合中的每个请求的 HTTP 方法和路径，必须在对应的 Endpoints 代码中有精确匹配的 `MapGet`/`MapPost`/`MapPut`/`MapDelete` 注册。不允许 Postman 中存在代码中不存在的路由。
 
+### 6. Create/Save 方法必须遵循唯一性双重校验模式（零容忍）
+
+所有包含唯一索引字段的实体，在 `InsertAsync` 前**必须**进行唯一性前置校验；同时在 `InsertAsync` 失败时**必须**进行唯一性后置复核，返回精确的唯一性冲突错误码（`ErrorCodes.XxxExists`），而非笼统的创建失败错误码（`ErrorCodes.XxxCreateFailed`）。
+
+```csharp
+// ✅ 正确 — 唯一性双重校验模式
+// 第一重：前置校验
+var (chkResult, existing) = await XxxCRUD.GetListAsync(tenantId, operatorId);
+if (chkResult.Success && existing != null)
+{
+    foreach (var item in existing)
+    {
+        if (string.Equals(item.Code, req.Code.Trim(), StringComparison.OrdinalIgnoreCase))
+            return ApiResult<long>.Fail(ErrorCodes.XxxCodeExists);
+    }
+}
+
+// ... 构建实体并设置 Id ...
+
+// 第二重：后置复核（防止并发竞争导致唯一索引冲突时返回笼统错误）
+var insResult = await XxxCRUD.InsertAsync(tenantId, operatorId, entity);
+if (!insResult.Success)
+{
+    // InsertAsync 失败时重新检查唯一性，若冲突则返回精确错误码
+    var (rechkResult, rechkData) = await XxxCRUD.GetListAsync(tenantId, operatorId);
+    if (rechkResult.Success && rechkData != null)
+    {
+        foreach (var item in rechkData)
+        {
+            if (string.Equals(item.Code, entity.Code, StringComparison.OrdinalIgnoreCase))
+                return ApiResult<long>.Fail(ErrorCodes.XxxCodeExists);
+        }
+    }
+    return ApiResult<long>.Fail(ErrorCodes.XxxCreateFailed);
+}
+
+// ❌ 错误 — 缺少前置校验
+var insResult = await XxxCRUD.InsertAsync(tenantId, operatorId, entity);
+if (!insResult.Success)
+    return ApiResult<long>.Fail(ErrorCodes.XxxCreateFailed); // 用户无法知道是重复还是其他原因
+
+// ❌ 错误 — 有前置校验但无后置复核
+// 前置校验通过后，在并发场景下另一请求可能已插入相同值
+// InsertAsync 因唯一索引失败，但返回笼统的 CreateFailed 错误码
+```
+
+**此规则适用于所有包含唯一索引的实体的 Create/Save 方法。每个唯一字段必须有对应的 `ErrorCodes.XxxExists` 错误码。**
+
 ---
 
 ## ⚠️ 强制代码审查（编译通过 ≠ 任务完成）

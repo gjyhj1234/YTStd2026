@@ -103,6 +103,11 @@ public class PlatformUserAppService
 - 所有 `Logger.Debug` 使用 `Func<string>` 重载
 - 唯一性验证使用 `GetListAsync` + foreach 模式
 - 返回值使用 `ApiResult<T>`
+- **Create/Save 方法必须遵循唯一性双重校验模式**：
+  1. **前置校验**：InsertAsync 前遍历现有数据检查唯一字段是否重复，重复时返回 `ErrorCodes.XxxExists`
+  2. **后置复核**：InsertAsync 失败时重新查询判断是否唯一冲突，冲突时返回 `ErrorCodes.XxxExists` 而非笼统的 `ErrorCodes.XxxCreateFailed`
+  3. 每个唯一字段必须有对应的 `ErrorCodes.XxxExists` 错误码（位于 18xxx 段）
+  4. 详见 `.ai/rules/backend.md` 中的"唯一性双重校验模式"
 
 ---
 
@@ -120,8 +125,10 @@ public class PlatformUserAppService
 
 - [ ] 服务方法签名包含 `tenantId` 和 `userId`
 - [ ] 所有创建操作有 ID 生成 — **使用 `grep -B 15 "InsertAsync"` 搜索验证，逐一确认每处 InsertAsync 前有 GetNextLongIdAsync**
-- [ ] 所有唯一字段有验证
+- [ ] 所有唯一字段有验证 — **前置校验 + 后置复核双重模式，使用 `grep -B 30 "InsertAsync"` 和 `grep -A 10 "!insResult.Success"` 验证**
+- [ ] 每个唯一字段有对应的 `ErrorCodes.XxxExists` 错误码（18xxx 段）
+- [ ] InsertAsync 失败时不返回笼统的 `XxxCreateFailed`，而是通过后置复核返回精确的 `XxxExists`
 - [ ] 错误码常量已定义
 - [ ] Debug 日志使用委托重载
 - [ ] 编译通过
-- [ ] **代码搜索审查通过**（按 `.ai/system/self-review-protocol.md` 执行）
+- [ ] **代码搜索审查通过**（按 `.ai/system/self-review-protocol.md` 执行，含审查项 8 唯一性校验）

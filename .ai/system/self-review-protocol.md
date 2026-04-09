@@ -116,6 +116,43 @@ grep -B 1 "public " src/{Project}/Application/Services/*.cs | grep -v "summary\|
 
 ---
 
+## 强制审查项（唯一性校验）
+
+### 审查项 8：Create/Save 方法的唯一性双重校验
+
+**搜索命令：**
+
+```bash
+# 步骤 1：找到所有 Create/Save 方法中的 InsertAsync 调用
+grep -rn "InsertAsync" src/{Project}/Application/Services/*.cs
+
+# 步骤 2：对每个 InsertAsync 调用，检查前方是否有唯一性前置校验（XxxExists 错误码）
+grep -B 30 "InsertAsync" src/{Project}/Application/Services/*.cs | grep "Exists"
+
+# 步骤 3：对每个 InsertAsync 失败分支，检查是否有后置复核（重新查询+返回 Exists 错误码）
+grep -A 10 "!insResult.Success" src/{Project}/Application/Services/*.cs | grep "Exists"
+```
+
+**验证规则：**
+- 对每一个包含唯一索引字段的实体的 Create/Save 方法：
+  1. InsertAsync 前必须有唯一性前置校验（遍历现有数据检查重复）
+  2. InsertAsync 失败时必须有唯一性后置复核（重新查询判断是否唯一冲突）
+  3. 每个唯一字段必须有对应的 `ErrorCodes.XxxExists` 错误码（位于 18xxx 段）
+  4. 不允许唯一字段冲突时仅返回笼统的 `XxxCreateFailed` 错误码
+- **违规数量为 0 时才算通过**
+
+**输出格式：**
+
+```
+[唯一性校验审查] 共检查 N 个 Create/Save 方法
+- ✅ {服务}.{方法} — 已有前置校验 + 后置复核（错误码: XxxExists）
+- ⚠️ {服务}.{方法} — 有前置校验但缺少后置复核
+- ❌ {服务}.{方法} — 缺少前置校验（唯一字段: xxx）
+结论：通过 / 不通过（N 处违规需修复）
+```
+
+---
+
 ## 强制审查项（Postman 集合）
 
 ### 审查项 7：Postman 路由与代码端点一致性
@@ -147,11 +184,11 @@ grep -B 1 "public " src/{Project}/Application/Services/*.cs | grep -v "summary\|
 
 | 时机 | 必须执行的审查项 |
 |------|---------------|
-| 每个应用服务文件编写完成后 | 审查项 1、2、3、4 |
+| 每个应用服务文件编写完成后 | 审查项 1、2、3、4、8 |
 | 每个端点文件编写完成后 | 审查项 4、5、6 |
-| 每个阶段（Phase）完成后 | 全部审查项 1-7 |
+| 每个阶段（Phase）完成后 | 全部审查项 1-8 |
 | Postman 集合更新后 | 审查项 7 |
-| 标记任务完成之前 | 全部审查项 1-7 |
+| 标记任务完成之前 | 全部审查项 1-8 |
 
 ---
 
@@ -177,6 +214,7 @@ grep -B 1 "public " src/{Project}/Application/Services/*.cs | grep -v "summary\|
 - 无裸 TenantId：✅
 - XML 注释完整：✅
 - Postman 一致性：✅ N/N 匹配
+- 唯一性双重校验：✅ N/N 个 Create/Save 方法合规
 ```
 
 ---
