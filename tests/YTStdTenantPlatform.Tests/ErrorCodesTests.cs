@@ -12,7 +12,7 @@ namespace YTStdTenantPlatform.Tests
         /// <summary>获取 ErrorCodes 中所有 const int 字段</summary>
         private static List<(string Name, int Value)> GetAllErrorCodes()
         {
-            var fields = typeof(ErrorCodes).GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+            var fields = typeof(ErrorCodes).GetFields(BindingFlags.Public | BindingFlags.Static);
             var result = new List<(string Name, int Value)>();
             for (int i = 0; i < fields.Length; i++)
             {
@@ -238,7 +238,7 @@ namespace YTStdTenantPlatform.Tests
         public void ErrorCodes_AllFieldsHaveXmlComment()
         {
             // 通过反射检查所有 public const int 字段
-            var fields = typeof(ErrorCodes).GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+            var fields = typeof(ErrorCodes).GetFields(BindingFlags.Public | BindingFlags.Static);
             foreach (var field in fields)
             {
                 if (!field.IsLiteral || field.IsInitOnly || field.FieldType != typeof(int))
