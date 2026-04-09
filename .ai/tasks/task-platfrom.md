@@ -159,8 +159,39 @@
 
 ## 阶段 D：后端测试
 
-- [ ] 22. `testing/backend-tests.md` — 补齐测试
-- [ ] 23. `testing/postman.md` — 更新 Postman 集合
+**状态：🔄 进行中**
+
+### D1. ErrorCodes 验证 + Menu/Dictionary 测试 + Phase C 新 DTO 测试
+
+**状态：✅ 完成**
+
+| 检查项 | 状态 | 说明 |
+|--------|------|------|
+| ErrorCodes 唯一性校验 | ✅ 通过 | 无重复值 |
+| ErrorCodes 分段范围校验 | ✅ 通过 | 全部在 10xxx/11xxx/12xxx/18xxx/19xxx/50xxx 范围内 |
+| ErrorCodes 数量验证 | ✅ 通过 | 115+ 个 const int 常量 |
+| Menu DTO 测试 | ✅ 通过 | MenuRepDTO/CreateMenuReqDTO/UpdateMenuReqDTO/MenuSortReqDTO |
+| Dictionary DTO 测试 | ✅ 通过 | DictionaryRepDTO/DictionaryTypeRepDTO/CreateDictionaryReqDTO/UpdateDictionaryReqDTO |
+| 菜单种子数据验证 | ✅ 通过 | 14 个顶级目录、编码唯一、父级引用正确、类型正确 |
+| 字典种子数据验证 | ✅ 通过 | 5 个字典类型、项编码类型内唯一、全部启用 |
+| Phase C 新 DTO 测试 | ✅ 通过 | RenewSubscriptionReqDTO/UpgradeSubscriptionReqDTO |
+| 编译通过 | ✅ 通过 | 0 error |
+| 测试通过 | ✅ 通过 | 192 tests passed（原 140 + 新增 52）|
+
+### D2. Endpoint 注册验证 + 中间件增强测试
+
+**状态：⏳ 待执行**
+
+### D3. 扩展模块服务逻辑测试
+
+**状态：⏳ 待执行**
+
+### D4. Postman 集合更新
+
+**状态：⏳ 待执行**
+
+- [ ] 22. `testing/backend-tests.md` — 补齐测试（D1 ✅ | D2 ⏳ | D3 ⏳）
+- [ ] 23. `testing/postman.md` — 更新 Postman 集合（D4 ⏳）
 
 ## 阶段 E：前端重构
 
