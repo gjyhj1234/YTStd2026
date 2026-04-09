@@ -98,7 +98,7 @@ public class PlatformUserAppService
 
 ## 约束
 
-- 所有 `InsertAsync` 前必须 `entity.Id = await DB.GetNextLongIdAsync()`
+- 所有 `InsertAsync` 前**必须** `entity.Id = await DB.GetNextLongIdAsync()` — **此规则无任何例外，包括关联表、中间表（如 RolePermission、RoleMember、TagBinding）也必须遵守**
 - 所有 `ApiResult.Fail()` 仅传 `ErrorCodes.XXX`（不传 message 参数）
 - 所有 `Logger.Debug` 使用 `Func<string>` 重载
 - 唯一性验证使用 `GetListAsync` + foreach 模式
@@ -111,15 +111,17 @@ public class PlatformUserAppService
 - 禁止使用 LINQ
 - 禁止使用反射
 - 禁止硬编码中文错误消息
-- 禁止省略 ID 生成步骤
+- 禁止省略 ID 生成步骤（任何实体的 InsertAsync 都不例外）
+- 禁止在 InsertAsync 调用时 entity.Id 为 0 或默认值
 
 ---
 
 ## 验收标准
 
 - [ ] 服务方法签名包含 `tenantId` 和 `userId`
-- [ ] 所有创建操作有 ID 生成
+- [ ] 所有创建操作有 ID 生成 — **使用 `grep -B 15 "InsertAsync"` 搜索验证，逐一确认每处 InsertAsync 前有 GetNextLongIdAsync**
 - [ ] 所有唯一字段有验证
 - [ ] 错误码常量已定义
 - [ ] Debug 日志使用委托重载
 - [ ] 编译通过
+- [ ] **代码搜索审查通过**（按 `.ai/system/self-review-protocol.md` 执行）

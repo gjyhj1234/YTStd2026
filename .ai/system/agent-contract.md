@@ -43,8 +43,11 @@ Agent 在开始任何编码任务之前，必须：
 2. 已修改的文件清单
 3. 构建验证结果（`dotnet build` / `npm run build`）
 4. 测试验证结果（`dotnet test` / `npm run test`，如适用）
-5. 风险点与待确认事项
-6. 会话总结（按 `.ai/templates/session-summary-template.md` 格式）
+5. **代码搜索审查结果**（按 `.ai/system/self-review-protocol.md` 执行，包含每项审查的搜索命令输出和合规数据）
+6. 风险点与待确认事项
+7. 会话总结（按 `.ai/templates/session-summary-template.md` 格式）
+
+> **重要**：编译和测试通过不等于任务完成。Agent 必须执行代码搜索审查，确认所有编码约束（如 InsertAsync 前有 GetNextLongIdAsync、Logger.Debug 使用 Func<string>、ApiResult.Fail 仅传 ErrorCodes 等）被严格遵守。
 
 ---
 

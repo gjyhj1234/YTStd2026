@@ -14,22 +14,25 @@
 
 ## Agent 自检清单
 
-Agent 在标记任务完成之前，必须逐项自检：
+Agent 在标记任务完成之前，必须逐项自检。**自检不仅仅是勾选清单，必须通过实际的代码搜索命令验证。**
+
+详细的搜索验证方法见 `.ai/system/self-review-protocol.md`。
 
 ### 后端自检项
 
 - [ ] 编译通过：`dotnet build YTStd.slnx` 无错误
 - [ ] 测试通过：`dotnet test YTStd.slnx` 全部通过
-- [ ] 无反射、无 `dynamic`、无 LINQ
-- [ ] 所有 `InsertAsync` 前有 `DB.GetNextLongIdAsync()`
-- [ ] 所有 `Logger.Debug` 使用 `Func<string>` 重载
-- [ ] 所有 `ApiResult.Fail()` 仅传 `ErrorCodes.XXX`（不传 message 参数）
-- [ ] 无裸 `TenantId` / `tenant_id` 字段名
+- [ ] 无反射、无 `dynamic`、无 LINQ — **已执行 `grep` 搜索验证，结果为 0**
+- [ ] 所有 `InsertAsync` 前有 `DB.GetNextLongIdAsync()` — **已执行 `grep -B 15 "InsertAsync"` 搜索验证，逐一确认 N/N 合规**
+- [ ] 所有 `Logger.Debug` 使用 `Func<string>` 重载 — **已执行 `grep "Logger\.Debug"` 搜索验证，逐一确认**
+- [ ] 所有 `ApiResult.Fail()` 仅传 `ErrorCodes.XXX`（不传 message 参数）— **已执行 `grep "ApiResult\.Fail"` 搜索验证**
+- [ ] 无裸 `TenantId` / `tenant_id` 字段名 — **已执行 `grep` 搜索验证**
 - [ ] 所有公开类型/方法有中文 XML 注释
 - [ ] JSON 使用 `Utf8JsonWriter` 或 `JsonSerializerContext`
 - [ ] 中间件错误响应使用 PascalCase JSON 属性名
 - [ ] 唯一索引实体有 check-exists 端点
 - [ ] `ApiResult` 使用 `Code`/`Message`/`Data` PascalCase
+- [ ] **Postman 路由一致性验证通过**（如涉及 Postman 变更）
 
 ### 前端自检项
 

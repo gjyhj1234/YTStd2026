@@ -18,9 +18,10 @@
 
 1. **编译通过**：`dotnet build YTStd.slnx` 无错误（后端）；`npm run build` 无错误（前端）
 2. **测试通过**：已有测试全部通过（`dotnet test YTStd.slnx`）
-3. **无新增警告**：不引入新的编译警告（除非有合理说明）
-4. **注释完整**：所有公开类型和方法有中文 XML 注释
-5. **会话总结**：输出符合模板格式的会话总结
+3. **代码搜索审查通过**：按 `.ai/system/self-review-protocol.md` 执行全部审查项，违规数为 0
+4. **无新增警告**：不引入新的编译警告（除非有合理说明）
+5. **注释完整**：所有公开类型和方法有中文 XML 注释
+6. **会话总结**：输出符合模板格式的会话总结，包含自动化审查结果数据
 
 ---
 
@@ -49,12 +50,13 @@
 ## 后端应用服务任务完成标准
 
 - 服务位于 `Application/Services/{Module}AppService.cs`
-- 所有 `InsertAsync` 调用前使用 `DB.GetNextLongIdAsync()` 获取 ID
-- 所有 `ApiResult.Fail()` 仅传 `ErrorCodes.XXX`（不传 message 参数）
-- 所有 `Logger.Debug` 使用 `Func<string>` 延迟求值重载
+- 所有 `InsertAsync` 调用前使用 `DB.GetNextLongIdAsync()` 获取 ID — **必须用 `grep -B 15 "InsertAsync"` 搜索验证**
+- 所有 `ApiResult.Fail()` 仅传 `ErrorCodes.XXX`（不传 message 参数）— **必须用 `grep "ApiResult\.Fail"` 搜索验证**
+- 所有 `Logger.Debug` 使用 `Func<string>` 延迟求值重载 — **必须用 `grep "Logger\.Debug"` 搜索验证**
 - 有唯一索引的实体有 check-exists 验证
 - 唯一性验证使用 `GetListAsync` + 内存循环模式
-- 无反射、无 `dynamic`、无 LINQ
+- 无反射、无 `dynamic`、无 LINQ — **必须用 `grep "System\.Linq"` 搜索验证**
+- **代码搜索审查结果记录在会话总结中**
 
 ---
 
@@ -132,6 +134,7 @@
 - 分页接口有分页参数测试
 - 有前置条件说明
 - 有断言脚本
+- **Postman 路由一致性验证通过**：每个 Postman 请求的 HTTP 方法 + URL 路径必须在 `Endpoints/*.cs` 或 `RouteRegistration.cs` 中有精确匹配的注册，不允许存在代码中不存在的路由 — **必须按 `.ai/system/self-review-protocol.md` 审查项 7 执行验证**
 
 ---
 
