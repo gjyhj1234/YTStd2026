@@ -13,7 +13,7 @@ namespace YTStdTenantPlatform.Application.Services
     {
         /// <summary>获取资源配额列表</summary>
         public static async ValueTask<PagedResult<TenantResourceQuotaRepDTO>> GetListAsync(
-            int tenantId, long operatorId, PagedRequest request, long? tenantRefId = null)
+            int tenantId, long operatorId, PagedRequest request, long tenantRefId)
         {
             var (result, data) = await TenantResourceQuotaCRUD.GetListAsync(tenantId, operatorId);
             if (!result.Success || data == null)
@@ -22,7 +22,7 @@ namespace YTStdTenantPlatform.Application.Services
             var filtered = new List<TenantResourceQuota>();
             foreach (var q in data)
             {
-                if (tenantRefId.HasValue && q.TenantRefId != tenantRefId.Value) continue;
+                if (q.TenantRefId != tenantRefId) continue;
                 if (!string.IsNullOrEmpty(request.Keyword) &&
                     q.QuotaType.IndexOf(request.Keyword, StringComparison.OrdinalIgnoreCase) < 0)
                     continue;
@@ -84,6 +84,56 @@ namespace YTStdTenantPlatform.Application.Services
             Logger.Info(tenantId, operatorId,
                 "[TenantResourceAppService] 保存配额: tenant=" + req.TenantRefId + " type=" + req.QuotaType);
             return ApiResult<long>.Ok(insResult.Id);
+        }
+
+        /// <summary>获取资源使用情况</summary>
+        public static async ValueTask<List<TenantResourceUsageRepDTO>> GetResourceUsageAsync(
+            int tenantId, long operatorId, long tenantRefId)
+        {
+            var (quotaResult, quotas) = await TenantResourceQuotaCRUD.GetListAsync(tenantId, operatorId);
+            var (usageResult, usages) = await TenantResourceUsageStatCRUD.GetListAsync(tenantId, operatorId);
+
+            var result = new List<TenantResourceUsageRepDTO>();
+            if (!quotaResult.Success || quotas == null) return result;
+
+            foreach (var q in quotas)
+            {
+                if (q.TenantRefId != tenantRefId) continue;
+
+                long currentUsage = 0;
+                if (usageResult.Success && usages != null)
+                {
+                    foreach (var u in usages)
+                    {
+                        if (u.TenantRefId != tenantRefId) continue;
+                        if (string.Equals(q.QuotaType, "user_count", StringComparison.OrdinalIgnoreCase))
+                            currentUsage = u.UserCount;
+                        else if (string.Equals(q.QuotaType, "api_call_count", StringComparison.OrdinalIgnoreCase))
+                            currentUsage = u.ApiCallCount;
+                        else if (string.Equals(q.QuotaType, "storage_bytes", StringComparison.OrdinalIgnoreCase))
+                            currentUsage = u.StorageBytes;
+                        else if (string.Equals(q.QuotaType, "database_bytes", StringComparison.OrdinalIgnoreCase))
+                            currentUsage = u.DatabaseBytes;
+                        else if (string.Equals(q.QuotaType, "file_count", StringComparison.OrdinalIgnoreCase))
+                            currentUsage = u.FileCount;
+                        break;
+                    }
+                }
+
+                decimal usagePercent = q.QuotaLimit > 0
+                    ? Math.Round((decimal)currentUsage / q.QuotaLimit * 100, 2)
+                    : 0;
+
+                result.Add(new TenantResourceUsageRepDTO
+                {
+                    TenantRefId = tenantRefId,
+                    QuotaType = q.QuotaType,
+                    QuotaLimit = q.QuotaLimit,
+                    CurrentUsage = currentUsage,
+                    UsagePercent = usagePercent
+                });
+            }
+            return result;
         }
 
         private static TenantResourceQuotaRepDTO MapToDto(TenantResourceQuota q)

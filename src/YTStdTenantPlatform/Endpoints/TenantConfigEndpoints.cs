@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -24,58 +25,77 @@ namespace YTStdTenantPlatform.Endpoints
         /// <summary>注册系统配置路由</summary>
         private static void MapSystemConfigEndpoints(WebApplication app)
         {
-            var group = app.MapGroup("/api/tenant-system-configs")
-                .WithTags("租户系统配置");
+            var group = app.MapGroup("/api/system-configs")
+                .WithTags("系统配置");
 
-            group.MapGet("/{tenantRefId:long}", async (HttpContext ctx, long tenantRefId) =>
+            group.MapGet("/", async (HttpContext ctx) =>
             {
                 var user = GetCurrentUser(ctx);
-                var result = await TenantConfigAppService.GetSystemConfigAsync(0, user.UserId, tenantRefId);
-                if (result == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.ResourceNotFound), 404); return; }
-                await WriteJsonAsync(ctx, ApiResult<TenantSystemConfigRepDTO>.Ok(result));
-            }).WithSummary("获取租户系统配置");
+                var list = await TenantConfigAppService.GetAllSystemConfigsAsync(0, user.UserId);
+                await WriteJsonAsync(ctx, ApiResult<List<TenantSystemConfigRepDTO>>.Ok(list));
+            }).WithSummary("获取所有系统配置");
 
-            group.MapPut("/{tenantRefId:long}", async (HttpContext ctx, long tenantRefId) =>
+            group.MapGet("/{key}", async (HttpContext ctx, string key) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await TenantConfigAppService.GetSystemConfigByKeyAsync(0, user.UserId, key);
+                if (result == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.ConfigNotFound), 404); return; }
+                await WriteJsonAsync(ctx, ApiResult<TenantSystemConfigRepDTO>.Ok(result));
+            }).WithSummary("按键获取系统配置");
+
+            group.MapPut("/{key}", async (HttpContext ctx, string key) =>
             {
                 var user = GetCurrentUser(ctx);
                 var req = await YTStdTenantPlatform.Infrastructure.Serialization.TenantPlatformJsonRequestReader.ReadAsync<UpdateTenantSystemConfigReqDTO>(ctx.Request, ctx.RequestAborted);
                 if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody), 400); return; }
-                var result = await TenantConfigAppService.UpdateSystemConfigAsync(0, user.UserId, tenantRefId, req);
+                var result = await TenantConfigAppService.UpdateSystemConfigByKeyAsync(0, user.UserId, key, req);
                 await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
-            }).WithSummary("更新租户系统配置");
+            }).WithSummary("按键更新系统配置");
         }
 
         /// <summary>注册功能开关路由</summary>
         private static void MapFeatureFlagEndpoints(WebApplication app)
         {
-            var group = app.MapGroup("/api/tenant-feature-flags")
-                .WithTags("租户功能开关");
+            var group = app.MapGroup("/api/feature-flags")
+                .WithTags("功能开关");
 
             group.MapGet("/", async (HttpContext ctx, int? page, int? pageSize, string? keyword, long? tenantRefId) =>
             {
                 var user = GetCurrentUser(ctx);
-                var req = new PagedRequest { Page = page ?? 1, PageSize = pageSize ?? 20, Keyword = keyword };
-                var result = await TenantConfigAppService.GetFeatureFlagListAsync(0, user.UserId, req, tenantRefId);
-                await WriteJsonAsync(ctx, ApiResult<PagedResult<TenantFeatureFlagRepDTO>>.Ok(result));
+                var list = await TenantConfigAppService.GetAllFeatureFlagsAsync(0, user.UserId);
+                await WriteJsonAsync(ctx, ApiResult<List<TenantFeatureFlagRepDTO>>.Ok(list));
             }).WithSummary("获取功能开关列表");
 
-            group.MapPost("/", async (HttpContext ctx) =>
+            group.MapGet("/{key}", async (HttpContext ctx, string key) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await TenantConfigAppService.GetFeatureFlagByKeyAsync(0, user.UserId, key);
+                if (result == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.FeatureFlagNotFound), 404); return; }
+                await WriteJsonAsync(ctx, ApiResult<TenantFeatureFlagRepDTO>.Ok(result));
+            }).WithSummary("按键获取功能开关");
+
+            group.MapPut("/{key}", async (HttpContext ctx, string key) =>
             {
                 var user = GetCurrentUser(ctx);
                 var req = await YTStdTenantPlatform.Infrastructure.Serialization.TenantPlatformJsonRequestReader.ReadAsync<SaveTenantFeatureFlagReqDTO>(ctx.Request, ctx.RequestAborted);
                 if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody), 400); return; }
-                var result = await TenantConfigAppService.SaveFeatureFlagAsync(0, user.UserId, req);
-                if (result.Code != 0) { await WriteJsonAsync(ctx, ApiResult.Fail(result.Code), 400); return; }
-                ctx.Response.StatusCode = 201;
-                await WriteJsonAsync(ctx, result);
-            }).WithSummary("创建/更新功能开关");
+                var result = await TenantConfigAppService.UpdateFeatureFlagByKeyAsync(0, user.UserId, key, req);
+                await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
+            }).WithSummary("按键更新功能开关");
 
-            group.MapPut("/{id:long}/toggle", async (HttpContext ctx, long id, bool enabled) =>
+            group.MapPut("/{key}/enable", async (HttpContext ctx, string key) =>
             {
                 var user = GetCurrentUser(ctx);
-                var result = await TenantConfigAppService.ToggleFeatureFlagAsync(0, user.UserId, id, enabled);
+                var result = await TenantConfigAppService.EnableFeatureFlagByKeyAsync(0, user.UserId, key);
                 await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
-            }).WithSummary("切换功能开关启停");
+            }).WithSummary("启用功能开关");
+
+            group.MapPut("/{key}/disable", async (HttpContext ctx, string key) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await TenantConfigAppService.DisableFeatureFlagByKeyAsync(0, user.UserId, key);
+                await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
+            }).WithSummary("禁用功能开关");
         }
 
         /// <summary>注册租户参数路由</summary>

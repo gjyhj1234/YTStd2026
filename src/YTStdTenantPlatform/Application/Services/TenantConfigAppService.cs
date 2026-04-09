@@ -31,6 +31,35 @@ namespace YTStdTenantPlatform.Application.Services
             return null;
         }
 
+        /// <summary>获取所有系统配置</summary>
+        public static async ValueTask<List<TenantSystemConfigRepDTO>> GetAllSystemConfigsAsync(
+            int tenantId, long operatorId)
+        {
+            var (result, data) = await TenantSystemConfigCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return new List<TenantSystemConfigRepDTO>();
+
+            var list = new List<TenantSystemConfigRepDTO>();
+            foreach (var c in data) list.Add(MapConfigToDto(c));
+            return list;
+        }
+
+        /// <summary>按键获取系统配置（键为 TenantRefId 字符串形式）</summary>
+        public static async ValueTask<TenantSystemConfigRepDTO?> GetSystemConfigByKeyAsync(
+            int tenantId, long operatorId, string key)
+        {
+            if (!long.TryParse(key, out var tenantRefId)) return null;
+            return await GetSystemConfigAsync(tenantId, operatorId, tenantRefId);
+        }
+
+        /// <summary>按键更新系统配置</summary>
+        public static async ValueTask<ApiResult> UpdateSystemConfigByKeyAsync(
+            int tenantId, long operatorId, string key, UpdateTenantSystemConfigReqDTO req)
+        {
+            if (!long.TryParse(key, out var tenantRefId))
+                return ApiResult.Fail(ErrorCodes.ConfigNotFound);
+            return await UpdateSystemConfigAsync(tenantId, operatorId, tenantRefId, req);
+        }
+
         /// <summary>更新租户系统配置</summary>
         public static async ValueTask<ApiResult> UpdateSystemConfigAsync(
             int tenantId, long operatorId, long tenantRefId, UpdateTenantSystemConfigReqDTO req)
@@ -44,7 +73,6 @@ namespace YTStdTenantPlatform.Application.Services
             var now = DateTime.UtcNow;
             if (target == null)
             {
-                // 创建新配置
                 target = new TenantSystemConfig
                 {
                     TenantRefId = tenantRefId,
@@ -77,6 +105,76 @@ namespace YTStdTenantPlatform.Application.Services
         // ──────────────────────────────────────────────────────
         // 功能开关
         // ──────────────────────────────────────────────────────
+
+        /// <summary>获取所有功能开关</summary>
+        public static async ValueTask<List<TenantFeatureFlagRepDTO>> GetAllFeatureFlagsAsync(
+            int tenantId, long operatorId)
+        {
+            var (result, data) = await TenantFeatureFlagCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return new List<TenantFeatureFlagRepDTO>();
+
+            var list = new List<TenantFeatureFlagRepDTO>();
+            foreach (var f in data) list.Add(MapFlagToDto(f));
+            return list;
+        }
+
+        /// <summary>按键获取功能开关</summary>
+        public static async ValueTask<TenantFeatureFlagRepDTO?> GetFeatureFlagByKeyAsync(
+            int tenantId, long operatorId, string key)
+        {
+            var (result, data) = await TenantFeatureFlagCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return null;
+
+            foreach (var f in data)
+            {
+                if (string.Equals(f.FeatureKey, key, StringComparison.OrdinalIgnoreCase))
+                    return MapFlagToDto(f);
+            }
+            return null;
+        }
+
+        /// <summary>按键更新功能开关</summary>
+        public static async ValueTask<ApiResult> UpdateFeatureFlagByKeyAsync(
+            int tenantId, long operatorId, string key, SaveTenantFeatureFlagReqDTO req)
+        {
+            var (getResult, flags) = await TenantFeatureFlagCRUD.GetListAsync(tenantId, operatorId);
+            if (!getResult.Success || flags == null) return ApiResult.Fail(ErrorCodes.ConfigQueryFailed);
+
+            TenantFeatureFlag? target = null;
+            foreach (var f in flags)
+            {
+                if (string.Equals(f.FeatureKey, key, StringComparison.OrdinalIgnoreCase))
+                { target = f; break; }
+            }
+            if (target == null) return ApiResult.Fail(ErrorCodes.FeatureFlagNotFound);
+
+            target.FeatureName = req.FeatureName;
+            target.Enabled = req.Enabled;
+            target.RolloutType = Enum.TryParse<FeatureFlagRolloutType>(req.RolloutType, true, out var rt) ? (int)rt : (int)FeatureFlagRolloutType.Full;
+            target.UpdatedAt = DateTime.UtcNow;
+
+            var updResult = await TenantFeatureFlagCRUD.UpdateAsync(tenantId, operatorId, target);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.FeatureFlagToggleFailed);
+
+            await PlatformCacheCoordinator.InvalidateFeatureFlagsAsync();
+            Logger.Info(tenantId, operatorId,
+                "[TenantConfigAppService] 更新功能开关: " + key);
+            return ApiResult.Ok();
+        }
+
+        /// <summary>按键启用功能开关</summary>
+        public static async ValueTask<ApiResult> EnableFeatureFlagByKeyAsync(
+            int tenantId, long operatorId, string key)
+        {
+            return await SetFeatureFlagEnabledByKeyAsync(tenantId, operatorId, key, true);
+        }
+
+        /// <summary>按键禁用功能开关</summary>
+        public static async ValueTask<ApiResult> DisableFeatureFlagByKeyAsync(
+            int tenantId, long operatorId, string key)
+        {
+            return await SetFeatureFlagEnabledByKeyAsync(tenantId, operatorId, key, false);
+        }
 
         /// <summary>获取功能开关列表</summary>
         public static async ValueTask<PagedResult<TenantFeatureFlagRepDTO>> GetFeatureFlagListAsync(
@@ -246,8 +344,33 @@ namespace YTStdTenantPlatform.Application.Services
         }
 
         // ──────────────────────────────────────────────────────
-        // Mapping helpers
+        // Private helpers
         // ──────────────────────────────────────────────────────
+
+        private static async ValueTask<ApiResult> SetFeatureFlagEnabledByKeyAsync(
+            int tenantId, long operatorId, string key, bool enabled)
+        {
+            var (getResult, flags) = await TenantFeatureFlagCRUD.GetListAsync(tenantId, operatorId);
+            if (!getResult.Success || flags == null) return ApiResult.Fail(ErrorCodes.ConfigQueryFailed);
+
+            TenantFeatureFlag? target = null;
+            foreach (var f in flags)
+            {
+                if (string.Equals(f.FeatureKey, key, StringComparison.OrdinalIgnoreCase))
+                { target = f; break; }
+            }
+            if (target == null) return ApiResult.Fail(ErrorCodes.FeatureFlagNotFound);
+
+            target.Enabled = enabled;
+            target.UpdatedAt = DateTime.UtcNow;
+            var updResult = await TenantFeatureFlagCRUD.UpdateAsync(tenantId, operatorId, target);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.FeatureFlagToggleFailed);
+
+            await PlatformCacheCoordinator.InvalidateFeatureFlagsAsync();
+            Logger.Info(tenantId, operatorId,
+                "[TenantConfigAppService] " + (enabled ? "启用" : "禁用") + "功能开关: " + key);
+            return ApiResult.Ok();
+        }
 
         private static TenantSystemConfigRepDTO MapConfigToDto(TenantSystemConfig c)
         {

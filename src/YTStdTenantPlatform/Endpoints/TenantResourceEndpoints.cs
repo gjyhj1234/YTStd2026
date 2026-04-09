@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -16,10 +17,10 @@ namespace YTStdTenantPlatform.Endpoints
         /// <summary>注册租户资源管理路由</summary>
         public static void Map(WebApplication app)
         {
-            var group = app.MapGroup("/api/tenant-resource-quotas")
+            var group = app.MapGroup("/api/tenants")
                 .WithTags("租户资源管理");
 
-            group.MapGet("/", async (HttpContext ctx, int? page, int? pageSize, string? keyword, long? tenantRefId) =>
+            group.MapGet("/{tenantRefId:long}/resource-quotas", async (HttpContext ctx, long tenantRefId, int? page, int? pageSize, string? keyword) =>
             {
                 var user = GetCurrentUser(ctx);
                 var req = new PagedRequest { Page = page ?? 1, PageSize = pageSize ?? 20, Keyword = keyword };
@@ -27,24 +28,23 @@ namespace YTStdTenantPlatform.Endpoints
                 await WriteJsonAsync(ctx, ApiResult<PagedResult<TenantResourceQuotaRepDTO>>.Ok(result));
             }).WithSummary("获取资源配额列表");
 
-            group.MapGet("/{id:long}", async (HttpContext ctx, long id) =>
-            {
-                var user = GetCurrentUser(ctx);
-                var result = await TenantResourceAppService.GetByIdAsync(0, user.UserId, id);
-                if (result == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.ResourceNotFound), 404); return; }
-                await WriteJsonAsync(ctx, ApiResult<TenantResourceQuotaRepDTO>.Ok(result));
-            }).WithSummary("获取配额详情");
-
-            group.MapPost("/", async (HttpContext ctx) =>
+            group.MapPut("/{tenantRefId:long}/resource-quotas", async (HttpContext ctx, long tenantRefId) =>
             {
                 var user = GetCurrentUser(ctx);
                 var req = await YTStdTenantPlatform.Infrastructure.Serialization.TenantPlatformJsonRequestReader.ReadAsync<SaveTenantResourceQuotaReqDTO>(ctx.Request, ctx.RequestAborted);
                 if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody), 400); return; }
+                req.TenantRefId = tenantRefId;
                 var result = await TenantResourceAppService.SaveAsync(0, user.UserId, req);
                 if (result.Code != 0) { await WriteJsonAsync(ctx, ApiResult.Fail(result.Code), 400); return; }
-                ctx.Response.StatusCode = 201;
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("创建/更新资源配额");
+
+            group.MapGet("/{tenantRefId:long}/resource-usage", async (HttpContext ctx, long tenantRefId) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await TenantResourceAppService.GetResourceUsageAsync(0, user.UserId, tenantRefId);
+                await WriteJsonAsync(ctx, ApiResult<List<TenantResourceUsageRepDTO>>.Ok(result));
+            }).WithSummary("获取资源使用情况");
         }
 
         private static CurrentUser GetCurrentUser(HttpContext ctx) =>

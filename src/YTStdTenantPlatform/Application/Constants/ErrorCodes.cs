@@ -181,6 +181,70 @@ public static class ErrorCodes
     public const int ParamDeleteFailed = 19327;
     /// <summary>删除租户失败</summary>
     public const int TenantDeleteFailed = 19328;
+    /// <summary>查询分组失败</summary>
+    public const int GroupQueryFailed = 19329;
+    /// <summary>分组不存在</summary>
+    public const int GroupNotFound = 19330;
+    /// <summary>更新分组失败</summary>
+    public const int GroupUpdateFailed = 19331;
+    /// <summary>删除分组失败</summary>
+    public const int GroupDeleteFailed = 19332;
+    /// <summary>查询域名失败</summary>
+    public const int DomainQueryFailed = 19333;
+    /// <summary>域名不存在</summary>
+    public const int DomainNotFound = 19334;
+    /// <summary>删除域名失败</summary>
+    public const int DomainDeleteFailed = 19335;
+    /// <summary>查询标签失败</summary>
+    public const int TagQueryFailed = 19336;
+    /// <summary>标签不存在</summary>
+    public const int TagNotFound = 19337;
+    /// <summary>删除标签失败</summary>
+    public const int TagDeleteFailed = 19338;
+    /// <summary>设置租户标签失败</summary>
+    public const int TenantTagSetFailed = 19339;
+    /// <summary>查询资源使用情况失败</summary>
+    public const int ResourceUsageQueryFailed = 19340;
+    /// <summary>更新配额失败</summary>
+    public const int QuotaUpdateFailed = 19341;
+    /// <summary>配置不存在</summary>
+    public const int ConfigNotFound = 19342;
+
+    // ── 菜单 (19350-19369) ──
+
+    /// <summary>菜单编码不能为空</summary>
+    public const int MenuCodeRequired = 19350;
+    /// <summary>菜单名称不能为空</summary>
+    public const int MenuNameRequired = 19351;
+    /// <summary>创建菜单失败</summary>
+    public const int MenuCreateFailed = 19352;
+    /// <summary>查询菜单失败</summary>
+    public const int MenuQueryFailed = 19353;
+    /// <summary>菜单不存在</summary>
+    public const int MenuNotFound = 19354;
+    /// <summary>更新菜单失败</summary>
+    public const int MenuUpdateFailed = 19355;
+    /// <summary>删除菜单失败</summary>
+    public const int MenuDeleteFailed = 19356;
+    /// <summary>菜单编码已存在</summary>
+    public const int MenuCodeExists = 18005;
+
+    // ── 字典 (19370-19389) ──
+
+    /// <summary>字典类型编码不能为空</summary>
+    public const int DictTypeCodeRequired = 19370;
+    /// <summary>字典项编码不能为空</summary>
+    public const int DictItemCodeRequired = 19371;
+    /// <summary>创建字典失败</summary>
+    public const int DictCreateFailed = 19372;
+    /// <summary>查询字典失败</summary>
+    public const int DictQueryFailed = 19373;
+    /// <summary>字典不存在</summary>
+    public const int DictNotFound = 19374;
+    /// <summary>更新字典失败</summary>
+    public const int DictUpdateFailed = 19375;
+    /// <summary>删除字典失败</summary>
+    public const int DictDeleteFailed = 19376;
 
     // ── 套餐 (19401-19499) ──
 

@@ -20,6 +20,7 @@ namespace YTStdTenantPlatform.Endpoints
             MapGroupEndpoints(app);
             MapDomainEndpoints(app);
             MapTagEndpoints(app);
+            MapTenantTagBindingEndpoints(app);
         }
 
         /// <summary>注册租户分组路由</summary>
@@ -52,31 +53,55 @@ namespace YTStdTenantPlatform.Endpoints
                 ctx.Response.StatusCode = 201;
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("创建租户分组");
+
+            group.MapPut("/{id:long}", async (HttpContext ctx, long id) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var req = await YTStdTenantPlatform.Infrastructure.Serialization.TenantPlatformJsonRequestReader.ReadAsync<UpdateTenantGroupReqDTO>(ctx.Request, ctx.RequestAborted);
+                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody), 400); return; }
+                var result = await TenantInfoAppService.UpdateGroupAsync(0, user.UserId, id, req);
+                await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
+            }).WithSummary("更新租户分组");
+
+            group.MapDelete("/{id:long}", async (HttpContext ctx, long id) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await TenantInfoAppService.DeleteGroupAsync(0, user.UserId, id);
+                await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
+            }).WithSummary("删除租户分组");
         }
 
         /// <summary>注册租户域名路由</summary>
         private static void MapDomainEndpoints(WebApplication app)
         {
-            var group = app.MapGroup("/api/tenant-domains")
+            var group = app.MapGroup("/api/tenants")
                 .WithTags("租户域名");
 
-            group.MapGet("/", async (HttpContext ctx, long tenantRefId) =>
+            group.MapGet("/{tenantRefId:long}/domains", async (HttpContext ctx, long tenantRefId) =>
             {
                 var user = GetCurrentUser(ctx);
                 var list = await TenantInfoAppService.GetDomainsAsync(0, user.UserId, tenantRefId);
                 await WriteJsonAsync(ctx, ApiResult<List<TenantDomainRepDTO>>.Ok(list));
             }).WithSummary("获取租户域名列表");
 
-            group.MapPost("/", async (HttpContext ctx) =>
+            group.MapPost("/{tenantRefId:long}/domains", async (HttpContext ctx, long tenantRefId) =>
             {
                 var user = GetCurrentUser(ctx);
                 var req = await YTStdTenantPlatform.Infrastructure.Serialization.TenantPlatformJsonRequestReader.ReadAsync<CreateTenantDomainReqDTO>(ctx.Request, ctx.RequestAborted);
                 if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody), 400); return; }
+                req.TenantRefId = tenantRefId;
                 var result = await TenantInfoAppService.CreateDomainAsync(0, user.UserId, req);
                 if (result.Code != 0) { await WriteJsonAsync(ctx, ApiResult.Fail(result.Code), 400); return; }
                 ctx.Response.StatusCode = 201;
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("创建租户域名");
+
+            group.MapDelete("/{tenantRefId:long}/domains/{domainId:long}", async (HttpContext ctx, long tenantRefId, long domainId) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await TenantInfoAppService.DeleteDomainAsync(0, user.UserId, tenantRefId, domainId);
+                await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
+            }).WithSummary("删除租户域名");
         }
 
         /// <summary>注册租户标签路由</summary>
@@ -104,6 +129,13 @@ namespace YTStdTenantPlatform.Endpoints
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("创建标签");
 
+            group.MapDelete("/{id:long}", async (HttpContext ctx, long id) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await TenantInfoAppService.DeleteTagAsync(0, user.UserId, id);
+                await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
+            }).WithSummary("删除标签");
+
             group.MapPost("/bind", async (HttpContext ctx) =>
             {
                 var user = GetCurrentUser(ctx);
@@ -112,6 +144,23 @@ namespace YTStdTenantPlatform.Endpoints
                 var result = await TenantInfoAppService.BindTagsAsync(0, user.UserId, req);
                 await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
             }).WithSummary("批量绑定标签");
+        }
+
+        /// <summary>注册租户标签绑定路由</summary>
+        private static void MapTenantTagBindingEndpoints(WebApplication app)
+        {
+            var group = app.MapGroup("/api/tenants")
+                .WithTags("租户标签绑定");
+
+            group.MapPut("/{id:long}/tags", async (HttpContext ctx, long id) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var req = await YTStdTenantPlatform.Infrastructure.Serialization.TenantPlatformJsonRequestReader.ReadAsync<TagBindReqDTO>(ctx.Request, ctx.RequestAborted);
+                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody), 400); return; }
+                req.TenantRefId = id;
+                var result = await TenantInfoAppService.SetTenantTagsAsync(0, user.UserId, id, req);
+                await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
+            }).WithSummary("设置租户标签");
         }
 
         private static CurrentUser GetCurrentUser(HttpContext ctx) =>
