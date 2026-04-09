@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using YTStdAdo;
 using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
@@ -60,6 +61,7 @@ namespace YTStdTenantPlatform.Application.Services
 
             var entity = new TenantApiKey
             {
+                Id = await DB.GetNextLongIdAsync(),
                 TenantRefId = req.TenantRefId,
                 KeyName = req.KeyName.Trim(),
                 AccessKey = accessKey,
@@ -75,11 +77,11 @@ namespace YTStdTenantPlatform.Application.Services
             if (!insResult.Success)
                 return ApiResult<ApiKeyCreatedRepDTO>.Fail(ErrorCodes.ApiKeyCreateFailed);
 
-            Logger.Info(tenantId, operatorId,
-                "[ApiIntegrationAppService] 创建 API 密钥: " + req.KeyName);
+            Logger.Debug(tenantId, operatorId,
+                () => "[ApiIntegrationAppService] 创建 API 密钥: " + req.KeyName);
             return ApiResult<ApiKeyCreatedRepDTO>.Ok(new ApiKeyCreatedRepDTO
             {
-                Id = insResult.Id,
+                Id = entity.Id,
                 AccessKey = accessKey,
                 SecretKey = rawSecret
             });
@@ -102,8 +104,8 @@ namespace YTStdTenantPlatform.Application.Services
             var updResult = await TenantApiKeyCRUD.UpdateAsync(tenantId, operatorId, target);
             if (!updResult.Success) return ApiResult.Fail(ErrorCodes.ApiKeyDisableFailed);
 
-            Logger.Info(tenantId, operatorId,
-                "[ApiIntegrationAppService] 禁用 API 密钥: " + target.KeyName);
+            Logger.Debug(tenantId, operatorId,
+                () => "[ApiIntegrationAppService] 禁用 API 密钥: " + target.KeyName);
             return ApiResult.Ok();
         }
 
@@ -215,6 +217,7 @@ namespace YTStdTenantPlatform.Application.Services
             var now = DateTime.UtcNow;
             var entity = new TenantWebhook
             {
+                Id = await DB.GetNextLongIdAsync(),
                 TenantRefId = req.TenantRefId,
                 WebhookName = req.WebhookName.Trim(),
                 TargetUrl = req.TargetUrl.Trim(),
@@ -227,9 +230,9 @@ namespace YTStdTenantPlatform.Application.Services
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.WebhookCreateFailed);
 
-            Logger.Info(tenantId, operatorId,
-                "[ApiIntegrationAppService] 创建 Webhook: " + req.WebhookName);
-            return ApiResult<long>.Ok(insResult.Id);
+            Logger.Debug(tenantId, operatorId,
+                () => "[ApiIntegrationAppService] 创建 Webhook: " + req.WebhookName);
+            return ApiResult<long>.Ok(entity.Id);
         }
 
         /// <summary>更新租户 Webhook</summary>
@@ -250,8 +253,8 @@ namespace YTStdTenantPlatform.Application.Services
             var updResult = await TenantWebhookCRUD.UpdateAsync(tenantId, operatorId, target);
             if (!updResult.Success) return ApiResult.Fail(ErrorCodes.WebhookUpdateFailed);
 
-            Logger.Info(tenantId, operatorId,
-                "[ApiIntegrationAppService] 更新 Webhook: " + target.WebhookName);
+            Logger.Debug(tenantId, operatorId,
+                () => "[ApiIntegrationAppService] 更新 Webhook: " + target.WebhookName);
             return ApiResult.Ok();
         }
 
@@ -274,8 +277,8 @@ namespace YTStdTenantPlatform.Application.Services
             var updResult = await TenantWebhookCRUD.UpdateAsync(tenantId, operatorId, target);
             if (!updResult.Success) return ApiResult.Fail(ErrorCodes.WebhookStatusChangeFailed);
 
-            Logger.Info(tenantId, operatorId,
-                "[ApiIntegrationAppService] Webhook 状态变更: " + target.WebhookName + " → " + status);
+            Logger.Debug(tenantId, operatorId,
+                () => "[ApiIntegrationAppService] Webhook 状态变更: " + target.WebhookName + " → " + status);
             return ApiResult.Ok();
         }
 
@@ -319,6 +322,29 @@ namespace YTStdTenantPlatform.Application.Services
                 Items = items, Total = filtered.Count,
                 Page = request.NormalizedPage, PageSize = request.NormalizedPageSize
             };
+        }
+
+        /// <summary>获取 API 密钥详情</summary>
+        public static async ValueTask<TenantApiKeyRepDTO?> GetApiKeyByIdAsync(int tenantId, long operatorId, long id)
+        {
+            var (result, data) = await TenantApiKeyCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return null;
+            foreach (var k in data) { if (k.Id == id) return MapApiKeyToDto(k); }
+            return null;
+        }
+
+        /// <summary>删除 API 密钥</summary>
+        public static async ValueTask<ApiResult> DeleteApiKeyAsync(int tenantId, long operatorId, long id)
+        {
+            var (getResult, keys) = await TenantApiKeyCRUD.GetListAsync(tenantId, operatorId);
+            if (!getResult.Success || keys == null) return ApiResult.Fail(ErrorCodes.ApiKeyQueryFailed);
+            TenantApiKey? target = null;
+            foreach (var k in keys) { if (k.Id == id) { target = k; break; } }
+            if (target == null) return ApiResult.Fail(ErrorCodes.ApiKeyNotFound);
+            var delResult = await TenantApiKeyCRUD.DeleteAsync(tenantId, operatorId, target.Id);
+            if (!delResult.Success) return ApiResult.Fail(ErrorCodes.ApiKeyDeleteFailed);
+            Logger.Debug(tenantId, operatorId, () => "[ApiIntegrationAppService] 删除密钥: " + target.Id);
+            return ApiResult.Ok();
         }
 
         // ──────────────────────────────────────────────────────

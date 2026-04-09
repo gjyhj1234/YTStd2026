@@ -337,6 +337,8 @@ public static class ErrorCodes
     public const int WebhookUpdateFailed = 19708;
     /// <summary>Webhook状态变更失败</summary>
     public const int WebhookStatusChangeFailed = 19709;
+    /// <summary>删除API密钥失败</summary>
+    public const int ApiKeyDeleteFailed = 19710;
 
     // ── 通知 (19801-19899) ──
 

@@ -17,6 +17,7 @@ namespace YTStdTenantPlatform.Endpoints
         public static void Map(WebApplication app)
         {
             MapInvoiceEndpoints(app);
+            MapTenantBillingEndpoints(app);
             MapPaymentOrderEndpoints(app);
             MapRefundEndpoints(app);
         }
@@ -24,7 +25,7 @@ namespace YTStdTenantPlatform.Endpoints
         /// <summary>注册发票路由</summary>
         private static void MapInvoiceEndpoints(WebApplication app)
         {
-            var group = app.MapGroup("/api/billing-invoices")
+            var group = app.MapGroup("/api/billings")
                 .WithTags("计费与账单");
 
             group.MapGet("/", async (HttpContext ctx, int? page, int? pageSize, string? keyword, string? status) =>
@@ -54,6 +55,13 @@ namespace YTStdTenantPlatform.Endpoints
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("创建发票");
 
+            group.MapPut("/{id:long}/pay", async (HttpContext ctx, long id) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await BillingAppService.PayInvoiceAsync(0, user.UserId, id);
+                await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
+            }).WithSummary("标记发票已支付");
+
             group.MapPut("/{id:long}/void", async (HttpContext ctx, long id) =>
             {
                 var user = GetCurrentUser(ctx);
@@ -68,6 +76,18 @@ namespace YTStdTenantPlatform.Endpoints
                 var result = await BillingAppService.GetInvoiceItemsAsync(0, user.UserId, invoiceId, req);
                 await WriteJsonAsync(ctx, ApiResult<PagedResult<BillingInvoiceItemRepDTO>>.Ok(result));
             }).WithSummary("获取发票明细列表");
+        }
+
+        /// <summary>注册租户账单路由</summary>
+        private static void MapTenantBillingEndpoints(WebApplication app)
+        {
+            app.MapGet("/api/tenants/{id:long}/billings", async (HttpContext ctx, long id, int? page, int? pageSize) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var req = new PagedRequest { Page = page ?? 1, PageSize = pageSize ?? 20 };
+                var result = await BillingAppService.GetTenantInvoiceListAsync(0, user.UserId, id, req);
+                await WriteJsonAsync(ctx, ApiResult<PagedResult<BillingInvoiceRepDTO>>.Ok(result));
+            }).WithTags("计费与账单").WithSummary("获取租户账单列表");
         }
 
         /// <summary>注册支付订单路由</summary>
