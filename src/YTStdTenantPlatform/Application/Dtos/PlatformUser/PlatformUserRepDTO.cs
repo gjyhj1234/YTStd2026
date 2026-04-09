@@ -24,4 +24,11 @@ namespace YTStdTenantPlatform.Application.Dtos
         /// <summary>创建时间</summary>
         public DateTime CreatedAt { get; set; }
     }
+
+    /// <summary>重置密码响应</summary>
+    public sealed class ResetPasswordRepDTO
+    {
+        /// <summary>自动生成的密码（仅当未指定新密码时返回）</summary>
+        public string? GeneratedPassword { get; set; }
+    }
 }

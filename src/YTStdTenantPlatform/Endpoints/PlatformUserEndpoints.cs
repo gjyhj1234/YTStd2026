@@ -71,6 +71,51 @@ namespace YTStdTenantPlatform.Endpoints
                 if (result.Code != 0) { await WriteJsonAsync(ctx, result, 400); return; }
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("禁用平台用户");
+
+            group.MapDelete("/{id:long}", async (HttpContext ctx, long id) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await PlatformUserAppService.DeleteAsync(0, user.UserId, id);
+                if (result.Code != 0) { await WriteJsonAsync(ctx, result, 400); return; }
+                await WriteJsonAsync(ctx, result);
+            }).WithSummary("删除平台用户");
+
+            group.MapPut("/{id:long}/reset-password", async (HttpContext ctx, long id) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var req = await YTStdTenantPlatform.Infrastructure.Serialization.TenantPlatformJsonRequestReader.ReadAsync<ResetPasswordReqDTO>(ctx.Request, ctx.RequestAborted);
+                var result = await PlatformUserAppService.ResetPasswordAsync(0, user.UserId, id, req?.NewPassword);
+                if (result.Code != 0) { await WriteJsonAsync(ctx, ApiResult.Fail(result.Code), 400); return; }
+                await WriteJsonAsync(ctx, result);
+            }).WithSummary("重置密码");
+
+            group.MapGet("/check-username-exists", async (HttpContext ctx, string username) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await PlatformUserAppService.CheckUsernameExistsAsync(0, user.UserId, username);
+                if (result.Code != 0) { await WriteJsonAsync(ctx, ApiResult.Fail(result.Code), 400); return; }
+                await WriteJsonAsync(ctx, result);
+            }).WithSummary("检查用户名是否存在");
+
+            group.MapPut("/batch-enable", async (HttpContext ctx) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var req = await YTStdTenantPlatform.Infrastructure.Serialization.TenantPlatformJsonRequestReader.ReadAsync<BatchUserIdsReqDTO>(ctx.Request, ctx.RequestAborted);
+                if (req == null || req.Ids.Length == 0) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody), 400); return; }
+                var result = await PlatformUserAppService.BatchSetStatusAsync(0, user.UserId, req.Ids, Domain.Enums.PlatformUserStatus.Active);
+                if (result.Code != 0) { await WriteJsonAsync(ctx, result, 400); return; }
+                await WriteJsonAsync(ctx, result);
+            }).WithSummary("批量启用用户");
+
+            group.MapPut("/batch-disable", async (HttpContext ctx) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var req = await YTStdTenantPlatform.Infrastructure.Serialization.TenantPlatformJsonRequestReader.ReadAsync<BatchUserIdsReqDTO>(ctx.Request, ctx.RequestAborted);
+                if (req == null || req.Ids.Length == 0) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody), 400); return; }
+                var result = await PlatformUserAppService.BatchSetStatusAsync(0, user.UserId, req.Ids, Domain.Enums.PlatformUserStatus.Disabled);
+                if (result.Code != 0) { await WriteJsonAsync(ctx, result, 400); return; }
+                await WriteJsonAsync(ctx, result);
+            }).WithSummary("批量禁用用户");
         }
 
         private static CurrentUser GetCurrentUser(HttpContext ctx) =>

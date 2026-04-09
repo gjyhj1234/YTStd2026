@@ -17,8 +17,12 @@ namespace YTStdTenantPlatform.Infrastructure.Serialization;
 // ── 平台用户 ──
 [JsonSerializable(typeof(CreatePlatformUserReqDTO))]
 [JsonSerializable(typeof(UpdatePlatformUserReqDTO))]
+[JsonSerializable(typeof(ResetPasswordReqDTO))]
+[JsonSerializable(typeof(BatchUserIdsReqDTO))]
 [JsonSerializable(typeof(ApiResult<PlatformUserRepDTO>))]
 [JsonSerializable(typeof(ApiResult<PagedResult<PlatformUserRepDTO>>))]
+[JsonSerializable(typeof(ApiResult<ResetPasswordRepDTO>))]
+[JsonSerializable(typeof(ApiResult<bool>))]
 // ── 平台角色 ──
 [JsonSerializable(typeof(CreatePlatformRoleReqDTO))]
 [JsonSerializable(typeof(UpdatePlatformRoleReqDTO))]

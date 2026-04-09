@@ -72,6 +72,14 @@ public static class ErrorCodes
     public const int UserUpdateFailed = 19007;
     /// <summary>用户状态变更失败</summary>
     public const int UserStatusChangeFailed = 19008;
+    /// <summary>删除用户失败</summary>
+    public const int UserDeleteFailed = 19009;
+    /// <summary>重置密码失败</summary>
+    public const int UserResetPasswordFailed = 19010;
+    /// <summary>禁止删除超级管理员</summary>
+    public const int UserCannotDeleteAdmin = 19011;
+    /// <summary>禁止禁用自己</summary>
+    public const int UserCannotDisableSelf = 19012;
 
     // ── 平台角色 (19101-19199) ──
 
