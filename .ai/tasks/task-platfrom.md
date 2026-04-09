@@ -159,7 +159,7 @@
 
 ## 阶段 D：后端测试
 
-**状态：🔄 进行中**
+**状态：✅ 全部完成**
 
 ### D1. ErrorCodes 验证 + Menu/Dictionary 测试 + Phase C 新 DTO 测试
 
@@ -196,14 +196,54 @@
 
 ### D3. 扩展模块服务逻辑测试
 
-**状态：⏳ 待执行**
+**状态：✅ 完成**
+
+| 检查项 | 状态 | 说明 |
+|--------|------|------|
+| PagedRequest 分页规范化 | ✅ 通过 | 0/负数页→1，超量→200，Offset 计算正确 |
+| ApiResult 成功/失败路径 | ✅ 通过 | Ok=Code0，Fail=对应错误码，Data=默认值 |
+| SaasPackageStatus 状态流转规则 | ✅ 通过 | Draft→Published 可发布，Published 不能删除，Unpublish 需 Published |
+| SubscriptionStatus 状态规则 | ✅ 通过 | 值唯一，>=3 个状态，错误码全部定义 |
+| InvoiceStatus 状态规则 | ✅ 通过 | 值唯一，错误码全部定义 |
+| TenantLifecycleStatus 状态规则 | ✅ 通过 | 值唯一，>=4 个状态，错误码全部定义 |
+| DTO 字段默认值与必填项验证 | ✅ 通过 | CreatePackageReqDTO/RenewSubscriptionReqDTO/UpgradeSubscriptionReqDTO |
+| 错误码业务分段验证 | ✅ 通过 | Package/Subscription/Invoice/System 错误码范围正确 |
+| 通知模板、文件存储、平台运营 DTO | ✅ 通过 | 全部 DTO 可正确实例化和访问字段 |
+| 审计日志、系统日志 DTO | ✅ 通过 | AuditLogRepDTO/SystemLogRepDTO 字段验证 |
+| PaymentStatus/RefundStatus 枚举 | ✅ 通过 | 值唯一，错误码定义 |
+| 编译通过 | ✅ 通过 | 0 error |
+| 测试通过 | ✅ 通过 | 329 tests passed（原 275 + 新增 54）|
 
 ### D4. Postman 集合更新
 
-**状态：⏳ 待执行**
+**状态：✅ 完成**
 
-- [ ] 22. `testing/backend-tests.md` — 补齐测试（D1 ✅ | D2 ⏳ | D3 ⏳）
-- [ ] 23. `testing/postman.md` — 更新 Postman 集合（D4 ⏳）
+| 检查项 | 状态 | 说明 |
+|--------|------|------|
+| /api/saas-packages → /api/packages | ✅ 修正 | 套餐管理路由更新 |
+| /api/packages/{id}/versions | ✅ 修正 | 套餐版本路由更新 |
+| /api/package-versions/{id}/capabilities | ✅ 修正 | 套餐能力路由更新 |
+| /api/tenant-subscriptions → /api/subscriptions | ✅ 修正 | 订阅路由更新 |
+| /api/billing-invoices → /api/billings | ✅ 修正 | 账单路由更新 |
+| /api/tenant-files → /api/files | ✅ 修正 | 文件路由更新 |
+| /api/system-logs → /api/login-logs | ✅ 修正 | 审计路由更新 |
+| /api/tenant-daily-stats → /api/platform-operations/tenant-statistics | ✅ 修正 | 运营路由更新 |
+| /api/platform-monitor-metrics → /api/platform-operations/monitor-metrics | ✅ 修正 | 监控路由更新 |
+| /api/tenant-system-configs → /api/system-configs | ✅ 修正 | 系统配置路由更新 |
+| /api/tenant-feature-flags → /api/feature-flags | ✅ 修正 | 功能开关路由更新 |
+| 新增菜单管理（38 菜单管理，10 个请求） | ✅ 新增 | /api/menus 完整端点 |
+| 新增字典管理（39 字典管理，5 个请求） | ✅ 新增 | /api/dictionaries 完整端点 |
+| 补充平台用户缺失端点（5 个） | ✅ 新增 | delete/reset-password/check-username/batch-enable/batch-disable |
+| 补充平台角色缺失端点（4 个） | ✅ 新增 | delete/permissions/check-code/all |
+| 补充平台权限缺失端点（3 个） | ✅ 新增 | create/update/delete |
+| 补充租户管理缺失端点（7 个） | ✅ 新增 | delete/initialize/suspend/resume/terminate/convert-trial/check-code |
+| 补充订阅缺失端点（3 个） | ✅ 新增 | renew/upgrade/tenant-subscription |
+| 补充账单缺失端点（2 个） | ✅ 新增 | pay/tenant-billings |
+| 补充 API 密钥缺失端点（2 个） | ✅ 新增 | GET/DELETE api-key |
+| 总请求数 | ✅ 验证 | 175 个请求（原 115 + 新增 60）|
+
+- [x] 22. `testing/backend-tests.md` — 补齐测试（D1 ✅ | D2 ✅ | D3 ✅）
+- [x] 23. `testing/postman.md` — 更新 Postman 集合（D4 ✅）
 
 ## 阶段 E：前端重构
 

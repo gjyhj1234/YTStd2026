@@ -150,6 +150,31 @@
       "key": "systemLogId",
       "value": "1",
       "type": "string"
+    },
+    {
+      "key": "menuId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "dictId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "configKey",
+      "value": "site_name",
+      "type": "string"
+    },
+    {
+      "key": "featureKey",
+      "value": "enable_2fa",
+      "type": "string"
+    },
+    {
+      "key": "typeCode",
+      "value": "status_type",
+      "type": "string"
     }
   ],
   "item": [
@@ -175,7 +200,8 @@
               ],
               "path": [
                 "api",
-                "health"
+                "health",
+                ""
               ]
             }
           },
@@ -458,7 +484,8 @@
               ],
               "path": [
                 "api",
-                "platform-users"
+                "platform-users",
+                ""
               ],
               "query": [
                 {
@@ -568,7 +595,8 @@
               ],
               "path": [
                 "api",
-                "platform-users"
+                "platform-users",
+                ""
               ]
             },
             "body": {
@@ -731,6 +759,264 @@
               }
             }
           ]
+        },
+        {
+          "name": "删除平台用户",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/platform-users/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "platform-users",
+                "{{userId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "重置用户密码",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/platform-users/{{userId}}/reset-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "platform-users",
+                "{{userId}}",
+                "reset-password"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"NewPassword\": \"NewPass@123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "检查用户名是否存在",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/platform-users/check-username?username=admin",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "platform-users",
+                "check-username?username=admin"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "批量启用用户",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/platform-users/batch-enable",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "platform-users",
+                "batch-enable"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Ids\": [\n    \"{{userId}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "批量禁用用户",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/platform-users/batch-disable",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "platform-users",
+                "batch-disable"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Ids\": [\n    \"{{userId}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
         }
       ],
       "description": "平台管理员用户的增删改查与状态管理"
@@ -761,7 +1047,8 @@
               ],
               "path": [
                 "api",
-                "platform-roles"
+                "platform-roles",
+                ""
               ],
               "query": [
                 {
@@ -871,7 +1158,8 @@
               ],
               "path": [
                 "api",
-                "platform-roles"
+                "platform-roles",
+                ""
               ]
             },
             "body": {
@@ -1138,6 +1426,191 @@
               }
             }
           ]
+        },
+        {
+          "name": "删除角色",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/platform-roles/{{roleId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "platform-roles",
+                "{{roleId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "获取角色权限列表",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/platform-roles/{{roleId}}/permissions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "platform-roles",
+                "{{roleId}}",
+                "permissions"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "检查角色编码是否存在",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/platform-roles/check-code?code=super-admin",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "platform-roles",
+                "check-code?code=super-admin"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "获取全部角色",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/platform-roles/all",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "platform-roles",
+                "all"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
         }
       ],
       "description": "平台角色的增删改查、权限绑定与用户绑定"
@@ -1216,7 +1689,8 @@
               ],
               "path": [
                 "api",
-                "platform-permissions"
+                "platform-permissions",
+                ""
               ]
             }
           },
@@ -1317,6 +1791,162 @@
               }
             }
           ]
+        },
+        {
+          "name": "创建权限",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/platform-permissions/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "platform-permissions",
+                ""
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"PermissionCode\": \"test_perm\",\n  \"PermissionName\": \"测试权限\",\n  \"Module\": \"test\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "更新权限",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/platform-permissions/{{permissionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "platform-permissions",
+                "{{permissionId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"PermissionName\": \"更新后权限名\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "删除权限",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/platform-permissions/{{permissionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "platform-permissions",
+                "{{permissionId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
         }
       ],
       "description": "平台权限树查询与按编码检索"
@@ -1347,7 +1977,8 @@
               ],
               "path": [
                 "api",
-                "tenants"
+                "tenants",
+                ""
               ],
               "query": [
                 {
@@ -1457,7 +2088,8 @@
               ],
               "path": [
                 "api",
-                "tenants"
+                "tenants",
+                ""
               ]
             },
             "body": {
@@ -1643,6 +2275,333 @@
               }
             }
           ]
+        },
+        {
+          "name": "删除租户",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tenants/{{tenantId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tenants",
+                "{{tenantId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "初始化租户",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tenants/{{tenantId}}/initialize",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tenants",
+                "{{tenantId}}",
+                "initialize"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "暂停租户",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tenants/{{tenantId}}/suspend",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tenants",
+                "{{tenantId}}",
+                "suspend"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "恢复租户",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tenants/{{tenantId}}/resume",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tenants",
+                "{{tenantId}}",
+                "resume"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "终止租户",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tenants/{{tenantId}}/terminate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tenants",
+                "{{tenantId}}",
+                "terminate"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "试用转正式",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tenants/{{tenantId}}/convert-trial",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tenants",
+                "{{tenantId}}",
+                "convert-trial"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "检查租户编码是否存在",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tenants/check-code?code=test001",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tenants",
+                "check-code?code=test001"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
         }
       ],
       "description": "租户生命周期管理：创建、更新、状态流转及生命周期事件"
@@ -1721,7 +2680,8 @@
               ],
               "path": [
                 "api",
-                "tenant-groups"
+                "tenant-groups",
+                ""
               ]
             }
           },
@@ -1761,7 +2721,8 @@
               ],
               "path": [
                 "api",
-                "tenant-groups"
+                "tenant-groups",
+                ""
               ]
             },
             "body": {
@@ -1790,6 +2751,107 @@
               }
             }
           ]
+        },
+        {
+          "name": "更新租户分组",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tenant-groups/{{groupId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tenant-groups",
+                "{{groupId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"GroupName\": \"更新分组名\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "删除租户分组",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tenant-groups/{{groupId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tenant-groups",
+                "{{groupId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
         }
       ],
       "description": "租户分组的树形结构与平铺列表管理"
@@ -1814,13 +2876,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/tenant-domains/?tenantRefId={{tenantId}}",
+              "raw": "{{baseUrl}}/api/tenants/{{tenantId}}/domains/?tenantRefId={{tenantId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "tenant-domains"
+                "tenant-domains",
+                ""
               ],
               "query": [
                 {
@@ -1869,13 +2932,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/tenant-domains/",
+              "raw": "{{baseUrl}}/api/tenants/{{tenantId}}/domains/",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "tenant-domains"
+                "tenant-domains",
+                ""
               ]
             },
             "description": "DomainType 可选值：primary（主域名）、alias（别名）、custom（自定义域名）",
@@ -1901,6 +2965,54 @@
                   "if (pm.response.json().Code === 0) {",
                   "    pm.collectionVariables.set('domainId', pm.response.json().Data.Id.toString());",
                   "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "删除租户域名",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tenants/{{tenantId}}/domains/{{domainId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tenants",
+                "{{tenantId}}",
+                "domains",
+                "{{domainId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
                 ]
               }
             }
@@ -1935,7 +3047,8 @@
               ],
               "path": [
                 "api",
-                "tenant-tags"
+                "tenant-tags",
+                ""
               ],
               "query": [
                 {
@@ -1999,7 +3112,8 @@
               ],
               "path": [
                 "api",
-                "tenant-tags"
+                "tenant-tags",
+                ""
               ]
             },
             "body": {
@@ -2079,13 +3193,115 @@
               }
             }
           ]
+        },
+        {
+          "name": "删除标签",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tenant-tags/{{tagId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tenant-tags",
+                "{{tagId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "更新租户标签绑定",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tenants/{{tenantId}}/tags",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tenants",
+                "{{tenantId}}",
+                "tags"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"TagIds\": [\n    \"{{tagId}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
         }
       ],
       "description": "租户标签的创建与批量绑定"
     },
     {
       "id": "11a0a7ca-aef5-4a85-9bc9-d7868852ee72",
-      "name": "10 租户资源配额",
+      "name": "10 租户资源",
       "item": [
         {
           "id": "af24355f-573a-4d9e-b7a0-012dc3bd763a",
@@ -2103,13 +3319,16 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/tenant-resource-quotas/?page=1&pageSize=20&keyword=&tenantRefId={{tenantId}}",
+              "raw": "{{baseUrl}}/api/tenants/{{tenantId}}/resource-quotas",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "tenant-resource-quotas"
+                "tenants",
+                "{{tenantId}}",
+                "resource-quotas",
+                ""
               ],
               "query": [
                 {
@@ -2172,13 +3391,15 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/tenant-resource-quotas/{{quotaId}}",
+              "raw": "{{baseUrl}}/api/tenants/{{tenantId}}/resource-quotas/{{quotaId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "tenant-resource-quotas",
+                "tenants",
+                "{{tenantId}}",
+                "resource-quotas",
                 "{{quotaId}}"
               ]
             }
@@ -2213,13 +3434,16 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/tenant-resource-quotas/",
+              "raw": "{{baseUrl}}/api/tenants/{{tenantId}}/resource-quotas/",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "tenant-resource-quotas"
+                "tenants",
+                "{{tenantId}}",
+                "resource-quotas",
+                ""
               ]
             },
             "description": "ResetCycle 可选值：daily（每日）、monthly（每月）、yearly（每年）、none（不重置）",
@@ -2249,13 +3473,116 @@
               }
             }
           ]
+        },
+        {
+          "name": "获取资源使用量",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tenants/{{tenantId}}/resource-usage",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tenants",
+                "{{tenantId}}",
+                "resource-usage"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "更新资源配额",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tenants/{{tenantId}}/resource-quotas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tenants",
+                "{{tenantId}}",
+                "resource-quotas"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"MaxUsers\": 100,\n  \"MaxStorage\": 10240\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
         }
       ],
       "description": "租户资源配额的配置与管理"
     },
     {
       "id": "d2b2be33-ab5e-40e3-9e0d-0968bea2a827",
-      "name": "11 租户系统配置",
+      "name": "11 系统配置",
       "item": [
         {
           "id": "53888091-152a-4a39-977a-4885479bf60d",
@@ -2273,13 +3600,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/tenant-system-configs/{{tenantId}}",
+              "raw": "{{baseUrl}}/api/system-configs/{{tenantId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "tenant-system-configs",
+                "system-configs",
                 "{{tenantId}}"
               ]
             },
@@ -2315,13 +3642,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/tenant-system-configs/{{tenantId}}",
+              "raw": "{{baseUrl}}/api/system-configs/{{tenantId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "tenant-system-configs",
+                "system-configs",
                 "{{tenantId}}"
               ]
             },
@@ -2348,13 +3675,160 @@
               }
             }
           ]
+        },
+        {
+          "name": "获取系统配置列表",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/system-configs?page=1&pageSize=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "system-configs?page=1&pageSize=20"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });",
+                  "pm.test(\"返回分页数据\", function() { var json = pm.response.json(); pm.expect(json.Data.Items).to.be.an(\"array\"); pm.expect(json.Data.Total).to.be.a(\"number\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "按键获取系统配置",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/system-configs/{{configKey}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "system-configs",
+                "{{configKey}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "更新系统配置",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/system-configs/{{configKey}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "system-configs",
+                "{{configKey}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ConfigValue\": \"new_value\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
         }
       ],
       "description": "租户级别的系统配置管理（名称、Logo、主题、语言、时区）"
     },
     {
       "id": "88adddaf-f258-49cf-a6e5-9ff011b9b160",
-      "name": "12 租户功能开关",
+      "name": "12 功能开关",
       "item": [
         {
           "id": "5361ea8d-7453-4afb-9c8b-64d3a2c1d4d3",
@@ -2372,13 +3846,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/tenant-feature-flags/?page=1&pageSize=20&keyword=&tenantRefId={{tenantId}}",
+              "raw": "{{baseUrl}}/api/feature-flags/?page=1&pageSize=20&keyword=&tenantRefId={{tenantId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "tenant-feature-flags"
+                "feature-flags",
+                ""
               ],
               "query": [
                 {
@@ -2441,13 +3916,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/tenant-feature-flags/",
+              "raw": "{{baseUrl}}/api/feature-flags/",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "tenant-feature-flags"
+                "feature-flags",
+                ""
               ]
             },
             "description": "RolloutType 可选值：all（全量）、percentage（按比例灰度）、whitelist（白名单）",
@@ -2494,13 +3970,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/tenant-feature-flags/{{featureFlagId}}/toggle?enabled=true",
+              "raw": "{{baseUrl}}/api/feature-flags/{{featureFlagId}}/toggle?enabled=true",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "tenant-feature-flags",
+                "feature-flags",
                 "{{featureFlagId}}",
                 "toggle"
               ],
@@ -2523,6 +3999,201 @@
                 "exec": [
                   "pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
                   "pm.test('Code is 0', function() { var j = pm.response.json(); pm.expect(j.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "按键获取功能开关",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/feature-flags/{{featureKey}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "feature-flags",
+                "{{featureKey}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "更新功能开关",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/feature-flags/{{featureKey}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "feature-flags",
+                "{{featureKey}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ConfigValue\": \"true\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "启用功能开关",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/feature-flags/{{featureKey}}/enable",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "feature-flags",
+                "{{featureKey}}",
+                "enable"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "禁用功能开关",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/feature-flags/{{featureKey}}/disable",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "feature-flags",
+                "{{featureKey}}",
+                "disable"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
                 ]
               }
             }
@@ -2557,7 +4228,8 @@
               ],
               "path": [
                 "api",
-                "tenant-parameters"
+                "tenant-parameters",
+                ""
               ],
               "query": [
                 {
@@ -2626,7 +4298,8 @@
               ],
               "path": [
                 "api",
-                "tenant-parameters"
+                "tenant-parameters",
+                ""
               ]
             },
             "description": "ParamType 可选值：string（字符串）、number（数字）、boolean（布尔）、json（JSON）",
@@ -2703,7 +4376,7 @@
     },
     {
       "id": "fb0b2552-e212-498e-ab66-66b0a6c49594",
-      "name": "14 SaaS 套餐管理",
+      "name": "14 套餐管理",
       "item": [
         {
           "id": "f716aea4-3e60-4199-8b6e-77ae88433a85",
@@ -2721,13 +4394,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/saas-packages/?page=1&pageSize=20&keyword=&status=",
+              "raw": "{{baseUrl}}/api/packages/?page=1&pageSize=20&keyword=&status=",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "saas-packages"
+                "packages",
+                ""
               ],
               "query": [
                 {
@@ -2790,13 +4464,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/saas-packages/{{packageId}}",
+              "raw": "{{baseUrl}}/api/packages/{{packageId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "saas-packages",
+                "packages",
                 "{{packageId}}"
               ]
             }
@@ -2831,13 +4505,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/saas-packages/",
+              "raw": "{{baseUrl}}/api/packages/",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "saas-packages"
+                "packages",
+                ""
               ]
             },
             "body": {
@@ -2883,13 +4558,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/saas-packages/{{packageId}}",
+              "raw": "{{baseUrl}}/api/packages/{{packageId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "saas-packages",
+                "packages",
                 "{{packageId}}"
               ]
             },
@@ -2933,13 +4608,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/saas-packages/{{packageId}}/enable",
+              "raw": "{{baseUrl}}/api/packages/{{packageId}}/enable",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "saas-packages",
+                "packages",
                 "{{packageId}}",
                 "enable"
               ]
@@ -2975,13 +4650,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/saas-packages/{{packageId}}/disable",
+              "raw": "{{baseUrl}}/api/packages/{{packageId}}/disable",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "saas-packages",
+                "packages",
                 "{{packageId}}",
                 "disable"
               ]
@@ -3000,13 +4675,199 @@
               }
             }
           ]
+        },
+        {
+          "name": "删除套餐",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/packages/{{packageId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "packages",
+                "{{packageId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "发布套餐",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/packages/{{packageId}}/publish",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "packages",
+                "{{packageId}}",
+                "publish"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "下架套餐",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/packages/{{packageId}}/unpublish",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "packages",
+                "{{packageId}}",
+                "unpublish"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "检查套餐编码是否存在",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/packages/check-code?code=basic",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "packages",
+                "check-code?code=basic"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
         }
       ],
       "description": "SaaS 套餐的增删改查与状态管理"
     },
     {
       "id": "757ff81b-cba1-41b2-8ce9-617d6231752a",
-      "name": "15 SaaS 套餐版本",
+      "name": "15 套餐版本",
       "item": [
         {
           "id": "11e53f1a-2ed0-4e03-aa2b-5dfd6d65e100",
@@ -3024,13 +4885,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/saas-package-versions/{{packageId}}?page=1&pageSize=20&keyword=",
+              "raw": "{{baseUrl}}/api/packages/{{packageId}}/versions?page=1&pageSize=20&keyword=",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "saas-package-versions",
+                "packages",
                 "{{packageId}}"
               ],
               "query": [
@@ -3090,13 +4951,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/saas-package-versions/{{packageId}}",
+              "raw": "{{baseUrl}}/api/packages/{{packageId}}/versions",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "saas-package-versions",
+                "packages",
                 "{{packageId}}"
               ]
             },
@@ -3133,7 +4994,7 @@
     },
     {
       "id": "2cf649ea-44f2-4b12-9a0d-c6da0137887e",
-      "name": "16 SaaS 套餐能力",
+      "name": "16 套餐能力",
       "item": [
         {
           "id": "f99f45c5-b301-4298-88c5-7c711acbe7fa",
@@ -3151,13 +5012,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/saas-package-capabilities/{{packageVersionId}}?page=1&pageSize=20&keyword=",
+              "raw": "{{baseUrl}}/api/package-versions/{{packageVersionId}}?page=1&pageSize=20&keyword=",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "saas-package-capabilities",
+                "package-versions",
                 "{{packageVersionId}}"
               ],
               "query": [
@@ -3217,13 +5078,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/saas-package-capabilities/{{packageVersionId}}",
+              "raw": "{{baseUrl}}/api/package-versions/{{packageVersionId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "saas-package-capabilities",
+                "package-versions",
                 "{{packageVersionId}}"
               ]
             },
@@ -3277,13 +5138,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/tenant-subscriptions/?page=1&pageSize=20&keyword=&status=",
+              "raw": "{{baseUrl}}/api/subscriptions/?page=1&pageSize=20&keyword=&status=",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "tenant-subscriptions"
+                "subscriptions",
+                ""
               ],
               "query": [
                 {
@@ -3346,13 +5208,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/tenant-subscriptions/{{subscriptionId}}",
+              "raw": "{{baseUrl}}/api/subscriptions/{{subscriptionId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "tenant-subscriptions",
+                "subscriptions",
                 "{{subscriptionId}}"
               ]
             }
@@ -3387,13 +5249,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/tenant-subscriptions/",
+              "raw": "{{baseUrl}}/api/subscriptions/",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "tenant-subscriptions"
+                "subscriptions",
+                ""
               ]
             },
             "description": "SubscriptionType 可选值：standard（标准）、enterprise（企业）、custom（自定义）",
@@ -3440,13 +5303,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/tenant-subscriptions/{{subscriptionId}}/cancel",
+              "raw": "{{baseUrl}}/api/subscriptions/{{subscriptionId}}/cancel",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "tenant-subscriptions",
+                "subscriptions",
                 "{{subscriptionId}}",
                 "cancel"
               ]
@@ -3461,6 +5324,165 @@
                 "exec": [
                   "pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
                   "pm.test('Code is 0', function() { var j = pm.response.json(); pm.expect(j.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "续费订阅",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/subscriptions/{{subscriptionId}}/renew",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "subscriptions",
+                "{{subscriptionId}}",
+                "renew"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Months\": 12\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "升级订阅",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/subscriptions/{{subscriptionId}}/upgrade",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "subscriptions",
+                "{{subscriptionId}}",
+                "upgrade"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"TargetPackageVersionId\": \"{{packageVersionId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "获取租户当前订阅",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/subscriptions/tenant/{{tenantId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "subscriptions",
+                "tenant",
+                "{{tenantId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
                 ]
               }
             }
@@ -3495,7 +5517,8 @@
               ],
               "path": [
                 "api",
-                "tenant-trials"
+                "tenant-trials",
+                ""
               ],
               "query": [
                 {
@@ -3564,7 +5587,8 @@
               ],
               "path": [
                 "api",
-                "tenant-trials"
+                "tenant-trials",
+                ""
               ]
             },
             "body": {
@@ -3617,13 +5641,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/tenant-subscription-changes/?page=1&pageSize=20&keyword=&tenantRefId={{tenantId}}",
+              "raw": "{{baseUrl}}/api/subscription-changes/?page=1&pageSize=20&keyword=&tenantRefId={{tenantId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "tenant-subscription-changes"
+                "subscription-changes",
+                ""
               ],
               "query": [
                 {
@@ -3669,7 +5694,7 @@
     },
     {
       "id": "00a96a7a-6166-46ce-875a-7ca2326624bd",
-      "name": "20 账单发票",
+      "name": "20 账单",
       "item": [
         {
           "id": "845d0814-28a4-42fa-a953-d5778aa1cb5b",
@@ -3687,13 +5712,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/billing-invoices/?page=1&pageSize=20&keyword=&status=",
+              "raw": "{{baseUrl}}/api/billings/?page=1&pageSize=20&keyword=&status=",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "billing-invoices"
+                "billings",
+                ""
               ],
               "query": [
                 {
@@ -3756,13 +5782,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/billing-invoices/{{invoiceId}}",
+              "raw": "{{baseUrl}}/api/billings/{{invoiceId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "billing-invoices",
+                "billings",
                 "{{invoiceId}}"
               ]
             }
@@ -3797,13 +5823,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/billing-invoices/",
+              "raw": "{{baseUrl}}/api/billings/",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "billing-invoices"
+                "billings",
+                ""
               ]
             },
             "body": {
@@ -3849,13 +5876,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/billing-invoices/{{invoiceId}}/void",
+              "raw": "{{baseUrl}}/api/billings/{{invoiceId}}/void",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "billing-invoices",
+                "billings",
                 "{{invoiceId}}",
                 "void"
               ]
@@ -3891,13 +5918,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/billing-invoices/{{invoiceId}}/items?page=1&pageSize=20",
+              "raw": "{{baseUrl}}/api/billings/{{invoiceId}}/items?page=1&pageSize=20",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "billing-invoices",
+                "billings",
                 "{{invoiceId}}",
                 "items"
               ],
@@ -3924,6 +5951,101 @@
                 "exec": [
                   "pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
                   "pm.test('Code is 0', function() { var j = pm.response.json(); pm.expect(j.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "支付账单",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/billings/{{invoiceId}}/pay",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "billings",
+                "{{invoiceId}}",
+                "pay"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "获取租户账单列表",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/billings/tenant/{{tenantId}}?page=1&pageSize=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "billings",
+                "tenant",
+                "{{tenantId}}?page=1&pageSize=20"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });",
+                  "pm.test(\"返回分页数据\", function() { var json = pm.response.json(); pm.expect(json.Data.Items).to.be.an(\"array\"); pm.expect(json.Data.Total).to.be.a(\"number\"); });"
                 ]
               }
             }
@@ -3958,7 +6080,8 @@
               ],
               "path": [
                 "api",
-                "payment-orders"
+                "payment-orders",
+                ""
               ],
               "query": [
                 {
@@ -4027,7 +6150,8 @@
               ],
               "path": [
                 "api",
-                "payment-orders"
+                "payment-orders",
+                ""
               ]
             },
             "description": "PaymentChannel 可选值：manual（手动）、alipay（支付宝）、wechat（微信支付）、bank（银行转账）",
@@ -4087,7 +6211,8 @@
               ],
               "path": [
                 "api",
-                "payment-refunds"
+                "payment-refunds",
+                ""
               ],
               "query": [
                 {
@@ -4156,7 +6281,8 @@
               ],
               "path": [
                 "api",
-                "payment-refunds"
+                "payment-refunds",
+                ""
               ]
             },
             "body": {
@@ -4215,7 +6341,8 @@
               ],
               "path": [
                 "api",
-                "tenant-api-keys"
+                "tenant-api-keys",
+                ""
               ],
               "query": [
                 {
@@ -4285,7 +6412,8 @@
               ],
               "path": [
                 "api",
-                "tenant-api-keys"
+                "tenant-api-keys",
+                ""
               ]
             },
             "description": "SecretKey 仅在创建时返回一次，请妥善保存！",
@@ -4363,6 +6491,98 @@
               }
             }
           ]
+        },
+        {
+          "name": "获取 API 密钥详情",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tenant-api-keys/{{apiKeyId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tenant-api-keys",
+                "{{apiKeyId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "删除 API 密钥",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tenant-api-keys/{{apiKeyId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tenant-api-keys",
+                "{{apiKeyId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
         }
       ],
       "description": "租户 API 密钥的创建与禁用。密钥 Secret 仅在创建时返回一次"
@@ -4393,7 +6613,8 @@
               ],
               "path": [
                 "api",
-                "tenant-api-usage-stats"
+                "tenant-api-usage-stats",
+                ""
               ],
               "query": [
                 {
@@ -4463,7 +6684,8 @@
               ],
               "path": [
                 "api",
-                "webhook-events"
+                "webhook-events",
+                ""
               ],
               "query": [
                 {
@@ -4527,7 +6749,8 @@
               ],
               "path": [
                 "api",
-                "tenant-webhooks"
+                "tenant-webhooks",
+                ""
               ],
               "query": [
                 {
@@ -4597,7 +6820,8 @@
               ],
               "path": [
                 "api",
-                "tenant-webhooks"
+                "tenant-webhooks",
+                ""
               ]
             },
             "body": {
@@ -4790,7 +7014,8 @@
               ],
               "path": [
                 "api",
-                "webhook-delivery-logs"
+                "webhook-delivery-logs",
+                ""
               ],
               "query": [
                 {
@@ -4836,7 +7061,7 @@
     },
     {
       "id": "009580fd-499e-4fc3-897f-8a1f8ea603f2",
-      "name": "28 平台运营-每日统计",
+      "name": "28 平台运营-租户统计",
       "item": [
         {
           "id": "e71d2a13-050c-4f7a-bced-efe564c8fb3f",
@@ -4854,13 +7079,15 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/tenant-daily-stats/?page=1&pageSize=20&keyword=&tenantRefId={{tenantId}}",
+              "raw": "{{baseUrl}}/api/platform-operations/tenant-statistics/?page=1&pageSize=20&keyword=&tenantRefId={{tenantId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "tenant-daily-stats"
+                "platform-operations",
+                "tenant-statistics",
+                ""
               ],
               "query": [
                 {
@@ -4924,13 +7151,15 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/platform-monitor-metrics/?page=1&pageSize=20&keyword=",
+              "raw": "{{baseUrl}}/api/platform-operations/monitor-metrics/?page=1&pageSize=20&keyword=",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "platform-monitor-metrics"
+                "platform-operations",
+                "monitor-metrics",
+                ""
               ],
               "query": [
                 {
@@ -4994,7 +7223,8 @@
               ],
               "path": [
                 "api",
-                "operation-logs"
+                "operation-logs",
+                ""
               ],
               "query": [
                 {
@@ -5111,7 +7341,8 @@
               ],
               "path": [
                 "api",
-                "audit-logs"
+                "audit-logs",
+                ""
               ],
               "query": [
                 {
@@ -5204,7 +7435,7 @@
     },
     {
       "id": "2ffb056b-4334-46db-bd53-d79f5e80a855",
-      "name": "32 系统日志",
+      "name": "32 登录日志",
       "item": [
         {
           "id": "2951d7c5-5411-49b1-b2e9-051d9a374cc4",
@@ -5222,13 +7453,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/system-logs/?page=1&pageSize=20&keyword=&status=",
+              "raw": "{{baseUrl}}/api/login-logs/?page=1&pageSize=20&keyword=&status=",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "system-logs"
+                "login-logs",
+                ""
               ],
               "query": [
                 {
@@ -5291,13 +7523,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/system-logs/{{systemLogId}}",
+              "raw": "{{baseUrl}}/api/login-logs/{{systemLogId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "system-logs",
+                "login-logs",
                 "{{systemLogId}}"
               ]
             }
@@ -5345,7 +7577,8 @@
               ],
               "path": [
                 "api",
-                "notification-templates"
+                "notification-templates",
+                ""
               ],
               "query": [
                 {
@@ -5455,7 +7688,8 @@
               ],
               "path": [
                 "api",
-                "notification-templates"
+                "notification-templates",
+                ""
               ]
             },
             "description": "Channel 可选值：email（邮件）、sms（短信）、webhook（Webhook）、in_app（站内信）",
@@ -5619,6 +7853,52 @@
               }
             }
           ]
+        },
+        {
+          "name": "删除通知模板",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notification-templates/{{notificationTemplateId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notification-templates",
+                "{{notificationTemplateId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
         }
       ],
       "description": "通知消息模板的增删改查与状态管理"
@@ -5649,7 +7929,8 @@
               ],
               "path": [
                 "api",
-                "notifications"
+                "notifications",
+                ""
               ],
               "query": [
                 {
@@ -5759,7 +8040,8 @@
               ],
               "path": [
                 "api",
-                "notifications"
+                "notifications",
+                ""
               ]
             },
             "body": {
@@ -5860,7 +8142,8 @@
               ],
               "path": [
                 "api",
-                "storage-strategies"
+                "storage-strategies",
+                ""
               ],
               "query": [
                 {
@@ -5970,7 +8253,8 @@
               ],
               "path": [
                 "api",
-                "storage-strategies"
+                "storage-strategies",
+                ""
               ]
             },
             "description": "ProviderType 可选值：local（本地）、s3（Amazon S3）、oss（阿里云 OSS）、azure（Azure Blob）",
@@ -6158,13 +8442,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/tenant-files/?page=1&pageSize=20&keyword=&tenantRefId={{tenantId}}",
+              "raw": "{{baseUrl}}/api/files/?page=1&pageSize=20&keyword=&tenantRefId={{tenantId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "tenant-files"
+                "files",
+                ""
               ],
               "query": [
                 {
@@ -6228,13 +8513,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/tenant-files/{{fileId}}",
+              "raw": "{{baseUrl}}/api/files/{{fileId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "tenant-files",
+                "files",
                 "{{fileId}}"
               ]
             }
@@ -6269,13 +8554,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/tenant-files/{{fileId}}",
+              "raw": "{{baseUrl}}/api/files/{{fileId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "tenant-files",
+                "files",
                 "{{fileId}}"
               ]
             }
@@ -6323,7 +8608,8 @@
               ],
               "path": [
                 "api",
-                "file-access-policies"
+                "file-access-policies",
+                ""
               ],
               "query": [
                 {
@@ -6386,7 +8672,8 @@
               ],
               "path": [
                 "api",
-                "file-access-policies"
+                "file-access-policies",
+                ""
               ]
             },
             "description": "PermissionCode 可选值：read（读取）、write（写入）、delete（删除）、admin（管理员）",
@@ -6416,6 +8703,757 @@
         }
       ],
       "description": "文件级访问权限策略的查询与配置"
+    },
+    {
+      "name": "38 菜单管理",
+      "item": [
+        {
+          "name": "获取菜单树",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/menus/tree",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "menus",
+                "tree"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });",
+                  "pm.test(\"返回分页数据\", function() { var json = pm.response.json(); pm.expect(json.Data.Items).to.be.an(\"array\"); pm.expect(json.Data.Total).to.be.a(\"number\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "获取用户菜单",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/menus/user-menus",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "menus",
+                "user-menus"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });",
+                  "pm.test(\"返回分页数据\", function() { var json = pm.response.json(); pm.expect(json.Data.Items).to.be.an(\"array\"); pm.expect(json.Data.Total).to.be.a(\"number\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "获取菜单分页列表",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/menus?page=1&pageSize=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "menus?page=1&pageSize=20"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });",
+                  "pm.test(\"返回分页数据\", function() { var json = pm.response.json(); pm.expect(json.Data.Items).to.be.an(\"array\"); pm.expect(json.Data.Total).to.be.a(\"number\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "获取菜单详情",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/menus/{{menuId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "menus",
+                "{{menuId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "创建菜单",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/menus/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "menus",
+                ""
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"MenuCode\": \"test_menu\",\n  \"MenuName\": \"测试菜单\",\n  \"MenuType\": \"directory\",\n  \"SortOrder\": 99\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "更新菜单",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/menus/{{menuId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "menus",
+                "{{menuId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"MenuName\": \"更新菜单名\",\n  \"SortOrder\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "删除菜单",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/menus/{{menuId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "menus",
+                "{{menuId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "排序菜单",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/menus/sort",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "menus",
+                "sort"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Items\": [\n    {\n      \"MenuId\": \"{{menuId}}\",\n      \"SortOrder\": 1\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "启用菜单",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/menus/{{menuId}}/enable",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "menus",
+                "{{menuId}}",
+                "enable"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "禁用菜单",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/menus/{{menuId}}/disable",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "menus",
+                "{{menuId}}",
+                "disable"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "39 字典管理",
+      "item": [
+        {
+          "name": "获取字典类型列表",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/dictionaries?page=1&pageSize=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "dictionaries?page=1&pageSize=20"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });",
+                  "pm.test(\"返回分页数据\", function() { var json = pm.response.json(); pm.expect(json.Data.Items).to.be.an(\"array\"); pm.expect(json.Data.Total).to.be.a(\"number\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "按类型编码获取字典项",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/dictionaries/{{typeCode}}/items",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "dictionaries",
+                "{{typeCode}}",
+                "items"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });",
+                  "pm.test(\"返回分页数据\", function() { var json = pm.response.json(); pm.expect(json.Data.Items).to.be.an(\"array\"); pm.expect(json.Data.Total).to.be.a(\"number\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "创建字典项",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/dictionaries/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "dictionaries",
+                ""
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"TypeCode\": \"status_type\",\n  \"ItemCode\": \"active\",\n  \"ItemName\": \"启用\",\n  \"SortOrder\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "更新字典项",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/dictionaries/{{dictId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "dictionaries",
+                "{{dictId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ItemName\": \"更新字典项名\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "删除字典项",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/dictionaries/{{dictId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "dictionaries",
+                "{{dictId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "events": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"状态码为 200\", function() { pm.response.to.have.status(200); });",
+                  "pm.test(\"Code 为 0（成功）\", function() { var json = pm.response.json(); pm.expect(json.Code).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }
