@@ -3,11 +3,14 @@ namespace YTStdTenantPlatform.Domain.Enums;
 /// <summary>SaaS套餐状态</summary>
 public enum SaasPackageStatus
 {
-    /// <summary>正常</summary>
-    Active,
+    /// <summary>草稿</summary>
+    Draft,
 
-    /// <summary>已禁用</summary>
-    Disabled,
+    /// <summary>已发布</summary>
+    Published,
+
+    /// <summary>已下架</summary>
+    Unpublished,
 
     /// <summary>已删除</summary>
     Deleted

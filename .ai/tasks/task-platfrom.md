@@ -133,7 +133,29 @@
 
 ## 阶段 C：扩展模块后端重构
 
-- [ ] 14~21 — 套餐、订阅、计费、API集成、运营、审计、通知、存储
+**状态：✅ 全部完成**
+
+| 模块 | 重构内容 | 完成度 |
+|------|---------|--------|
+| C14 套餐 API | 路由 /api/packages, DELETE, publish/unpublish, check-code-exists, DB.GetNextLongIdAsync, 唯一性校验 | ✅ 100% |
+| C15 订阅 API | 路由 /api/subscriptions, renew, upgrade, 租户订阅, DB.GetNextLongIdAsync | ✅ 100% |
+| C16 计费 API | 路由 /api/billings, pay, 租户账单, DB.GetNextLongIdAsync | ✅ 100% |
+| C17 API集成 | GET/DELETE api-key, DB.GetNextLongIdAsync, Logger.Debug | ✅ 100% |
+| C18 平台运营 | 路由 /api/platform-operations/*, Logger.Debug | ✅ 100% |
+| C19 审计日志 | 路由 /api/login-logs（替换 system-logs） | ✅ 100% |
+| C20 通知系统 | DELETE 通知模板, DB.GetNextLongIdAsync, Logger.Debug | ✅ 100% |
+| C21 文件存储 | 路由 /api/files, DB.GetNextLongIdAsync, Logger.Debug | ✅ 100% |
+
+- [x] 14. `backend/package-api.md` — 套餐 API（路由修正、新增 DELETE/publish/unpublish/check-code-exists）
+- [x] 15. `backend/subscription-api.md` — 订阅 API（路由修正、新增 renew/upgrade/tenant-subscription）
+- [x] 16. `backend/billing-api.md` — 计费 API（路由修正、新增 pay/tenant-billings）
+- [x] 17. `backend/api-integration-api.md` — API 集成（新增 GET/DELETE api-key）
+- [x] 18. `backend/platform-operation-api.md` — 平台运营（路由统一到 /api/platform-operations/*）
+- [x] 19. `backend/audit-api.md` — 审计（login-logs 替换 system-logs）
+- [x] 20. `backend/notification-api.md` — 通知（新增 DELETE 模板）
+- [x] 21. `backend/storage-api.md` — 文件存储（路由修正 /api/files）
+
+**阶段 C 编译验证：✅ `dotnet build YTStd.slnx` 0 error | `dotnet test YTStd.slnx` 303 tests passed**
 
 ## 阶段 D：后端测试
 

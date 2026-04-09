@@ -87,6 +87,8 @@ namespace YTStdTenantPlatform.Infrastructure.Serialization;
 [JsonSerializable(typeof(ApiResult<PagedResult<SaasPackageCapabilityRepDTO>>))]
 // ── 订阅 ──
 [JsonSerializable(typeof(CreateSubscriptionReqDTO))]
+[JsonSerializable(typeof(RenewSubscriptionReqDTO))]
+[JsonSerializable(typeof(UpgradeSubscriptionReqDTO))]
 [JsonSerializable(typeof(CreateTrialReqDTO))]
 [JsonSerializable(typeof(ApiResult<TenantSubscriptionRepDTO>))]
 [JsonSerializable(typeof(ApiResult<PagedResult<TenantSubscriptionRepDTO>>))]

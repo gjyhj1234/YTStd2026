@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using YTStdAdo;
 using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
@@ -27,6 +28,7 @@ namespace YTStdTenantPlatform.Application.Services
             var filtered = new List<SaasPackage>();
             foreach (var p in data)
             {
+                if (p.Status == (int)SaasPackageStatus.Deleted) continue;
                 if (!string.IsNullOrEmpty(request.Status) &&
                     (!Enum.TryParse<SaasPackageStatus>(request.Status, true, out var statusFilter) ||
                      p.Status != (int)statusFilter))
@@ -58,7 +60,7 @@ namespace YTStdTenantPlatform.Application.Services
             if (!result.Success || data == null) return null;
             foreach (var p in data)
             {
-                if (p.Id == id)
+                if (p.Id == id && p.Status != (int)SaasPackageStatus.Deleted)
                     return MapPackageToDto(p);
             }
             return null;
@@ -70,14 +72,29 @@ namespace YTStdTenantPlatform.Application.Services
         {
             if (string.IsNullOrWhiteSpace(req.PackageCode))
                 return ApiResult<long>.Fail(ErrorCodes.PackageCodeRequired);
+            if (string.IsNullOrWhiteSpace(req.PackageName))
+                return ApiResult<long>.Fail(ErrorCodes.PackageNameRequired);
+
+            // 唯一性校验
+            var (chkResult, existing) = await SaasPackageCRUD.GetListAsync(tenantId, operatorId);
+            if (chkResult.Success && existing != null)
+            {
+                foreach (var p in existing)
+                {
+                    if (p.Status != (int)SaasPackageStatus.Deleted &&
+                        string.Equals(p.PackageCode, req.PackageCode.Trim(), StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.PackageCodeExists);
+                }
+            }
 
             var now = DateTime.UtcNow;
             var entity = new SaasPackage
             {
+                Id = await DB.GetNextLongIdAsync(),
                 PackageCode = req.PackageCode.Trim(),
                 PackageName = req.PackageName.Trim(),
                 Description = req.Description,
-                Status = (int)SaasPackageStatus.Active,
+                Status = (int)SaasPackageStatus.Draft,
                 CreatedBy = operatorId,
                 CreatedAt = now,
                 UpdatedAt = now
@@ -87,8 +104,8 @@ namespace YTStdTenantPlatform.Application.Services
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.PackageCreateFailed);
 
-            Logger.Info(tenantId, operatorId, "[PackageAppService] 创建套餐: " + req.PackageCode);
-            return ApiResult<long>.Ok(insResult.Id);
+            Logger.Debug(tenantId, operatorId, () => "[PackageAppService] 创建套餐: " + req.PackageCode);
+            return ApiResult<long>.Ok(entity.Id);
         }
 
         /// <summary>更新 SaaS 套餐</summary>
@@ -99,42 +116,110 @@ namespace YTStdTenantPlatform.Application.Services
             if (!getResult.Success || packages == null) return ApiResult.Fail(ErrorCodes.PackageQueryFailed);
 
             SaasPackage? target = null;
-            foreach (var p in packages) { if (p.Id == id) { target = p; break; } }
+            foreach (var p in packages) { if (p.Id == id && p.Status != (int)SaasPackageStatus.Deleted) { target = p; break; } }
             if (target == null) return ApiResult.Fail(ErrorCodes.PackageNotFound);
 
             if (req.PackageName != null) target.PackageName = req.PackageName;
             if (req.Description != null) target.Description = req.Description;
+            target.UpdatedBy = operatorId;
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await SaasPackageCRUD.UpdateAsync(tenantId, operatorId, target);
             if (!updResult.Success) return ApiResult.Fail(ErrorCodes.PackageUpdateFailed);
 
-            Logger.Info(tenantId, operatorId, "[PackageAppService] 更新套餐: " + target.PackageCode);
+            Logger.Debug(tenantId, operatorId, () => "[PackageAppService] 更新套餐: " + target.PackageCode);
             return ApiResult.Ok();
         }
 
-        /// <summary>设置套餐状态（启用/禁用）</summary>
-        public static async ValueTask<ApiResult> SetPackageStatusAsync(
-            int tenantId, long operatorId, long id, string status)
+        /// <summary>删除套餐（软删除，已发布的不可直接删除需先下架）</summary>
+        public static async ValueTask<ApiResult> DeletePackageAsync(
+            int tenantId, long operatorId, long id)
         {
             var (getResult, packages) = await SaasPackageCRUD.GetListAsync(tenantId, operatorId);
             if (!getResult.Success || packages == null) return ApiResult.Fail(ErrorCodes.PackageQueryFailed);
 
             SaasPackage? target = null;
-            foreach (var p in packages) { if (p.Id == id) { target = p; break; } }
+            foreach (var p in packages) { if (p.Id == id && p.Status != (int)SaasPackageStatus.Deleted) { target = p; break; } }
             if (target == null) return ApiResult.Fail(ErrorCodes.PackageNotFound);
 
-            if (!Enum.TryParse<SaasPackageStatus>(status, true, out var parsedStatus))
-                return ApiResult.Fail(ErrorCodes.InvalidParameter);
-            target.Status = (int)parsedStatus;
+            if (target.Status == (int)SaasPackageStatus.Published)
+                return ApiResult.Fail(ErrorCodes.PackagePublishedCannotDelete);
+
+            target.Status = (int)SaasPackageStatus.Deleted;
+            target.UpdatedBy = operatorId;
+            target.UpdatedAt = DateTime.UtcNow;
+
+            var updResult = await SaasPackageCRUD.UpdateAsync(tenantId, operatorId, target);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.PackageDeleteFailed);
+
+            Logger.Debug(tenantId, operatorId, () => "[PackageAppService] 删除套餐: " + target.PackageCode);
+            return ApiResult.Ok();
+        }
+
+        /// <summary>发布套餐</summary>
+        public static async ValueTask<ApiResult> PublishPackageAsync(
+            int tenantId, long operatorId, long id)
+        {
+            var (getResult, packages) = await SaasPackageCRUD.GetListAsync(tenantId, operatorId);
+            if (!getResult.Success || packages == null) return ApiResult.Fail(ErrorCodes.PackageQueryFailed);
+
+            SaasPackage? target = null;
+            foreach (var p in packages) { if (p.Id == id && p.Status != (int)SaasPackageStatus.Deleted) { target = p; break; } }
+            if (target == null) return ApiResult.Fail(ErrorCodes.PackageNotFound);
+
+            if (target.Status == (int)SaasPackageStatus.Published)
+                return ApiResult.Ok();
+
+            target.Status = (int)SaasPackageStatus.Published;
+            target.UpdatedBy = operatorId;
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await SaasPackageCRUD.UpdateAsync(tenantId, operatorId, target);
             if (!updResult.Success) return ApiResult.Fail(ErrorCodes.PackageStatusChangeFailed);
 
-            Logger.Info(tenantId, operatorId,
-                "[PackageAppService] 套餐状态变更: " + target.PackageCode + " → " + status);
+            Logger.Debug(tenantId, operatorId, () => "[PackageAppService] 发布套餐: " + target.PackageCode);
             return ApiResult.Ok();
+        }
+
+        /// <summary>下架套餐</summary>
+        public static async ValueTask<ApiResult> UnpublishPackageAsync(
+            int tenantId, long operatorId, long id)
+        {
+            var (getResult, packages) = await SaasPackageCRUD.GetListAsync(tenantId, operatorId);
+            if (!getResult.Success || packages == null) return ApiResult.Fail(ErrorCodes.PackageQueryFailed);
+
+            SaasPackage? target = null;
+            foreach (var p in packages) { if (p.Id == id && p.Status != (int)SaasPackageStatus.Deleted) { target = p; break; } }
+            if (target == null) return ApiResult.Fail(ErrorCodes.PackageNotFound);
+
+            if (target.Status != (int)SaasPackageStatus.Published)
+                return ApiResult.Fail(ErrorCodes.PackageStatusTransitionDenied);
+
+            target.Status = (int)SaasPackageStatus.Unpublished;
+            target.UpdatedBy = operatorId;
+            target.UpdatedAt = DateTime.UtcNow;
+
+            var updResult = await SaasPackageCRUD.UpdateAsync(tenantId, operatorId, target);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.PackageStatusChangeFailed);
+
+            Logger.Debug(tenantId, operatorId, () => "[PackageAppService] 下架套餐: " + target.PackageCode);
+            return ApiResult.Ok();
+        }
+
+        /// <summary>检查套餐编码是否已存在</summary>
+        public static async ValueTask<bool> CheckCodeExistsAsync(
+            int tenantId, long operatorId, string code, long? excludeId = null)
+        {
+            var (result, data) = await SaasPackageCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return false;
+            foreach (var p in data)
+            {
+                if (p.Status == (int)SaasPackageStatus.Deleted) continue;
+                if (excludeId.HasValue && p.Id == excludeId.Value) continue;
+                if (string.Equals(p.PackageCode, code, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            return false;
         }
 
         // ──────────────────────────────────────────────────────
@@ -179,6 +264,7 @@ namespace YTStdTenantPlatform.Application.Services
             var now = DateTime.UtcNow;
             var entity = new SaasPackageVersion
             {
+                Id = await DB.GetNextLongIdAsync(),
                 PackageId = req.PackageId,
                 VersionCode = req.VersionCode.Trim(),
                 VersionName = req.VersionName.Trim(),
@@ -197,8 +283,8 @@ namespace YTStdTenantPlatform.Application.Services
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.PackageVersionCreateFailed);
 
-            Logger.Info(tenantId, operatorId, "[PackageAppService] 创建版本: " + req.VersionCode);
-            return ApiResult<long>.Ok(insResult.Id);
+            Logger.Debug(tenantId, operatorId, () => "[PackageAppService] 创建版本: " + req.VersionCode);
+            return ApiResult<long>.Ok(entity.Id);
         }
 
         // ──────────────────────────────────────────────────────
@@ -243,6 +329,7 @@ namespace YTStdTenantPlatform.Application.Services
             var now = DateTime.UtcNow;
             var entity = new SaasPackageCapability
             {
+                Id = await DB.GetNextLongIdAsync(),
                 PackageVersionId = req.PackageVersionId,
                 CapabilityKey = req.CapabilityKey.Trim(),
                 CapabilityName = req.CapabilityName.Trim(),
@@ -256,8 +343,8 @@ namespace YTStdTenantPlatform.Application.Services
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.PackageCapabilitySaveFailed);
 
-            Logger.Info(tenantId, operatorId, "[PackageAppService] 保存能力: " + req.CapabilityKey);
-            return ApiResult<long>.Ok(insResult.Id);
+            Logger.Debug(tenantId, operatorId, () => "[PackageAppService] 保存能力: " + req.CapabilityKey);
+            return ApiResult<long>.Ok(entity.Id);
         }
 
         // ──────────────────────────────────────────────────────

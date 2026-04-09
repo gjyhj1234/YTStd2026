@@ -272,6 +272,14 @@ public static class ErrorCodes
     public const int PackageCapabilityKeyRequired = 19411;
     /// <summary>保存能力失败</summary>
     public const int PackageCapabilitySaveFailed = 19412;
+    /// <summary>套餐编码已存在</summary>
+    public const int PackageCodeExists = 18006;
+    /// <summary>已发布的套餐不可直接删除，需先下架</summary>
+    public const int PackagePublishedCannotDelete = 19413;
+    /// <summary>删除套餐失败</summary>
+    public const int PackageDeleteFailed = 19414;
+    /// <summary>套餐状态流转不允许</summary>
+    public const int PackageStatusTransitionDenied = 19415;
 
     // ── 订阅 (19501-19599) ──
 
@@ -285,6 +293,12 @@ public static class ErrorCodes
     public const int SubscriptionCancelFailed = 19504;
     /// <summary>创建试用失败</summary>
     public const int TrialCreateFailed = 19505;
+    /// <summary>续费订阅失败</summary>
+    public const int SubscriptionRenewFailed = 19506;
+    /// <summary>升级订阅失败</summary>
+    public const int SubscriptionUpgradeFailed = 19507;
+    /// <summary>订阅状态不允许此操作</summary>
+    public const int SubscriptionStatusDenied = 19508;
 
     // ── 计费 (19601-19699) ──
 
@@ -300,6 +314,8 @@ public static class ErrorCodes
     public const int PaymentOrderCreateFailed = 19605;
     /// <summary>创建退款失败</summary>
     public const int RefundCreateFailed = 19606;
+    /// <summary>标记发票支付失败</summary>
+    public const int InvoicePayFailed = 19607;
 
     // ── API集成 (19701-19799) ──
 
@@ -321,6 +337,8 @@ public static class ErrorCodes
     public const int WebhookUpdateFailed = 19708;
     /// <summary>Webhook状态变更失败</summary>
     public const int WebhookStatusChangeFailed = 19709;
+    /// <summary>删除API密钥失败</summary>
+    public const int ApiKeyDeleteFailed = 19710;
 
     // ── 通知 (19801-19899) ──
 
@@ -344,6 +362,8 @@ public static class ErrorCodes
     public const int NotificationNotFound = 19809;
     /// <summary>标记通知已读失败</summary>
     public const int NotificationMarkReadFailed = 19810;
+    /// <summary>删除通知模板失败</summary>
+    public const int NotificationTemplateDeleteFailed = 19811;
 
     // ── 文件存储 (19901-19999) ──
 

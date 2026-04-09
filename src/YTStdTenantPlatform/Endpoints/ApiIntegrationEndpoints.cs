@@ -48,6 +48,21 @@ namespace YTStdTenantPlatform.Endpoints
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("创建 API 密钥");
 
+            group.MapGet("/{id:long}", async (HttpContext ctx, long id) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await ApiIntegrationAppService.GetApiKeyByIdAsync(0, user.UserId, id);
+                if (result == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.ResourceNotFound), 404); return; }
+                await WriteJsonAsync(ctx, ApiResult<TenantApiKeyRepDTO>.Ok(result));
+            }).WithSummary("获取 API 密钥详情");
+
+            group.MapDelete("/{id:long}", async (HttpContext ctx, long id) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await ApiIntegrationAppService.DeleteApiKeyAsync(0, user.UserId, id);
+                await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
+            }).WithSummary("删除 API 密钥");
+
             group.MapPut("/{id:long}/disable", async (HttpContext ctx, long id) =>
             {
                 var user = GetCurrentUser(ctx);
