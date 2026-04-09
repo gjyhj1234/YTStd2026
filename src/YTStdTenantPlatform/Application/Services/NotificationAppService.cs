@@ -69,6 +69,17 @@ namespace YTStdTenantPlatform.Application.Services
             if (string.IsNullOrWhiteSpace(req.TemplateCode))
                 return ApiResult<long>.Fail(ErrorCodes.NotificationTemplateNameRequired);
 
+            // 唯一性前置校验
+            var (chkResult, existing) = await NotificationTemplateCRUD.GetListAsync(tenantId, operatorId);
+            if (chkResult.Success && existing != null)
+            {
+                foreach (var item in existing)
+                {
+                    if (string.Equals(item.TemplateCode, req.TemplateCode.Trim(), StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.NotificationTemplateCodeExists);
+                }
+            }
+
             var now = DateTime.UtcNow;
             var entity = new NotificationTemplate
             {
@@ -85,7 +96,19 @@ namespace YTStdTenantPlatform.Application.Services
 
             var insResult = await NotificationTemplateCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
+            {
+                // 唯一性后置复核
+                var (rechkResult, rechkData) = await NotificationTemplateCRUD.GetListAsync(tenantId, operatorId);
+                if (rechkResult.Success && rechkData != null)
+                {
+                    foreach (var item in rechkData)
+                    {
+                        if (string.Equals(item.TemplateCode, entity.TemplateCode, StringComparison.OrdinalIgnoreCase))
+                            return ApiResult<long>.Fail(ErrorCodes.NotificationTemplateCodeExists);
+                    }
+                }
                 return ApiResult<long>.Fail(ErrorCodes.NotificationTemplateCreateFailed);
+            }
 
             Logger.Debug(tenantId, operatorId,
                 () => "[NotificationAppService] 创建通知模板: " + req.TemplateCode);

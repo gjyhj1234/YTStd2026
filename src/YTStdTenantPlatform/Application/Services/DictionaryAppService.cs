@@ -57,6 +57,18 @@ namespace YTStdTenantPlatform.Application.Services
             if (string.IsNullOrWhiteSpace(req.ItemCode))
                 return ApiResult<long>.Fail(ErrorCodes.DictItemCodeRequired);
 
+            // 唯一性前置校验（TypeCode + ItemCode 组合唯一）
+            var (chkResult, existing) = await PlatformDictionaryCRUD.GetListAsync(tenantId, operatorId);
+            if (chkResult.Success && existing != null)
+            {
+                foreach (var item in existing)
+                {
+                    if (string.Equals(item.TypeCode, req.TypeCode.Trim(), StringComparison.OrdinalIgnoreCase) &&
+                        string.Equals(item.ItemCode, req.ItemCode.Trim(), StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.DictItemCodeExists);
+                }
+            }
+
             var now = DateTime.UtcNow;
             var dict = new PlatformDictionary
             {
@@ -75,7 +87,21 @@ namespace YTStdTenantPlatform.Application.Services
             };
 
             var insResult = await PlatformDictionaryCRUD.InsertAsync(tenantId, operatorId, dict);
-            if (!insResult.Success) return ApiResult<long>.Fail(ErrorCodes.DictCreateFailed);
+            if (!insResult.Success)
+            {
+                // 唯一性后置复核
+                var (rechkResult, rechkData) = await PlatformDictionaryCRUD.GetListAsync(tenantId, operatorId);
+                if (rechkResult.Success && rechkData != null)
+                {
+                    foreach (var item in rechkData)
+                    {
+                        if (string.Equals(item.TypeCode, dict.TypeCode, StringComparison.OrdinalIgnoreCase) &&
+                            string.Equals(item.ItemCode, dict.ItemCode, StringComparison.OrdinalIgnoreCase))
+                            return ApiResult<long>.Fail(ErrorCodes.DictItemCodeExists);
+                    }
+                }
+                return ApiResult<long>.Fail(ErrorCodes.DictCreateFailed);
+            }
 
             Logger.Info(tenantId, operatorId, "[DictionaryAppService] 创建字典: " + req.TypeCode + "." + req.ItemCode);
             return ApiResult<long>.Ok(dict.Id);

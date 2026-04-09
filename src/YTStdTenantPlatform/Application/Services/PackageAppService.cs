@@ -102,7 +102,20 @@ namespace YTStdTenantPlatform.Application.Services
 
             var insResult = await SaasPackageCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
+            {
+                // 唯一性后置复核
+                var (rechkResult, rechkData) = await SaasPackageCRUD.GetListAsync(tenantId, operatorId);
+                if (rechkResult.Success && rechkData != null)
+                {
+                    foreach (var item in rechkData)
+                    {
+                        if (item.Status != (int)SaasPackageStatus.Deleted &&
+                            string.Equals(item.PackageCode, entity.PackageCode, StringComparison.OrdinalIgnoreCase))
+                            return ApiResult<long>.Fail(ErrorCodes.PackageCodeExists);
+                    }
+                }
                 return ApiResult<long>.Fail(ErrorCodes.PackageCreateFailed);
+            }
 
             Logger.Debug(tenantId, operatorId, () => "[PackageAppService] 创建套餐: " + req.PackageCode);
             return ApiResult<long>.Ok(entity.Id);
@@ -261,6 +274,18 @@ namespace YTStdTenantPlatform.Application.Services
             if (string.IsNullOrWhiteSpace(req.VersionCode))
                 return ApiResult<long>.Fail(ErrorCodes.PackageVersionCodeRequired);
 
+            // 唯一性前置校验（同一套餐内 VersionCode 唯一）
+            var (chkResult, existingVersions) = await SaasPackageVersionCRUD.GetListAsync(tenantId, operatorId);
+            if (chkResult.Success && existingVersions != null)
+            {
+                foreach (var item in existingVersions)
+                {
+                    if (item.PackageId == req.PackageId &&
+                        string.Equals(item.VersionCode, req.VersionCode.Trim(), StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.PackageVersionCodeExists);
+                }
+            }
+
             var now = DateTime.UtcNow;
             var entity = new SaasPackageVersion
             {
@@ -281,7 +306,20 @@ namespace YTStdTenantPlatform.Application.Services
 
             var insResult = await SaasPackageVersionCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
+            {
+                // 唯一性后置复核
+                var (rechkResult, rechkData) = await SaasPackageVersionCRUD.GetListAsync(tenantId, operatorId);
+                if (rechkResult.Success && rechkData != null)
+                {
+                    foreach (var item in rechkData)
+                    {
+                        if (item.PackageId == entity.PackageId &&
+                            string.Equals(item.VersionCode, entity.VersionCode, StringComparison.OrdinalIgnoreCase))
+                            return ApiResult<long>.Fail(ErrorCodes.PackageVersionCodeExists);
+                    }
+                }
                 return ApiResult<long>.Fail(ErrorCodes.PackageVersionCreateFailed);
+            }
 
             Logger.Debug(tenantId, operatorId, () => "[PackageAppService] 创建版本: " + req.VersionCode);
             return ApiResult<long>.Ok(entity.Id);
