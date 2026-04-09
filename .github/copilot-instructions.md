@@ -82,7 +82,7 @@ Logger.Debug(tenantId, userId, $"[方法名] 参数: {param}");
 
 Postman 集合中的每个请求的 HTTP 方法和路径，必须在对应的 Endpoints 代码中有精确匹配的 `MapGet`/`MapPost`/`MapPut`/`MapDelete` 注册。不允许 Postman 中存在代码中不存在的路由。
 
-### 6. Create 方法必须遵循唯一性双重校验模式（零容忍）
+### 6. Create/Save 方法必须遵循唯一性双重校验模式（零容忍）
 
 所有包含唯一索引字段的实体，在 `InsertAsync` 前**必须**进行唯一性前置校验；同时在 `InsertAsync` 失败时**必须**进行唯一性后置复核，返回精确的唯一性冲突错误码（`ErrorCodes.XxxExists`），而非笼统的创建失败错误码（`ErrorCodes.XxxCreateFailed`）。
 
