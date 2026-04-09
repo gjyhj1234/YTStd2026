@@ -17,6 +17,7 @@ namespace YTStdTenantPlatform.Endpoints
         public static void Map(WebApplication app)
         {
             MapSubscriptionEndpoints(app);
+            MapTenantSubscriptionEndpoints(app);
             MapTrialEndpoints(app);
             MapSubscriptionChangeEndpoints(app);
         }
@@ -24,7 +25,7 @@ namespace YTStdTenantPlatform.Endpoints
         /// <summary>注册租户订阅路由</summary>
         private static void MapSubscriptionEndpoints(WebApplication app)
         {
-            var group = app.MapGroup("/api/tenant-subscriptions")
+            var group = app.MapGroup("/api/subscriptions")
                 .WithTags("订阅管理");
 
             group.MapGet("/", async (HttpContext ctx, int? page, int? pageSize, string? keyword, string? status) =>
@@ -54,12 +55,42 @@ namespace YTStdTenantPlatform.Endpoints
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("创建订阅");
 
+            group.MapPut("/{id:long}/renew", async (HttpContext ctx, long id) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var req = await YTStdTenantPlatform.Infrastructure.Serialization.TenantPlatformJsonRequestReader.ReadAsync<RenewSubscriptionReqDTO>(ctx.Request, ctx.RequestAborted);
+                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody), 400); return; }
+                var result = await SubscriptionAppService.RenewSubscriptionAsync(0, user.UserId, id, req);
+                await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
+            }).WithSummary("续费订阅");
+
+            group.MapPut("/{id:long}/upgrade", async (HttpContext ctx, long id) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var req = await YTStdTenantPlatform.Infrastructure.Serialization.TenantPlatformJsonRequestReader.ReadAsync<UpgradeSubscriptionReqDTO>(ctx.Request, ctx.RequestAborted);
+                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody), 400); return; }
+                var result = await SubscriptionAppService.UpgradeSubscriptionAsync(0, user.UserId, id, req);
+                await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
+            }).WithSummary("升级订阅套餐");
+
             group.MapPut("/{id:long}/cancel", async (HttpContext ctx, long id) =>
             {
                 var user = GetCurrentUser(ctx);
                 var result = await SubscriptionAppService.CancelSubscriptionAsync(0, user.UserId, id);
                 await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
             }).WithSummary("取消订阅");
+        }
+
+        /// <summary>注册获取租户当前订阅路由</summary>
+        private static void MapTenantSubscriptionEndpoints(WebApplication app)
+        {
+            app.MapGet("/api/tenants/{id:long}/subscription", async (HttpContext ctx, long id) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await SubscriptionAppService.GetTenantSubscriptionAsync(0, user.UserId, id);
+                if (result == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.ResourceNotFound), 404); return; }
+                await WriteJsonAsync(ctx, ApiResult<TenantSubscriptionRepDTO>.Ok(result));
+            }).WithTags("订阅管理").WithSummary("获取租户当前订阅");
         }
 
         /// <summary>注册试用路由</summary>
@@ -91,7 +122,7 @@ namespace YTStdTenantPlatform.Endpoints
         /// <summary>注册订阅变更记录路由</summary>
         private static void MapSubscriptionChangeEndpoints(WebApplication app)
         {
-            var group = app.MapGroup("/api/tenant-subscription-changes")
+            var group = app.MapGroup("/api/subscription-changes")
                 .WithTags("订阅管理");
 
             group.MapGet("/", async (HttpContext ctx, int? page, int? pageSize, string? keyword, long tenantRefId) =>

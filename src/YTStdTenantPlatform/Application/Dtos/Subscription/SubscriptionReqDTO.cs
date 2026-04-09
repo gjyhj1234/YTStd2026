@@ -15,6 +15,20 @@ namespace YTStdTenantPlatform.Application.Dtos
         public bool AutoRenew { get; set; } = false;
     }
 
+    /// <summary>续费订阅请求</summary>
+    public sealed class RenewSubscriptionReqDTO
+    {
+        /// <summary>续费时长（月）</summary>
+        public int Months { get; set; } = 12;
+    }
+
+    /// <summary>升级订阅请求</summary>
+    public sealed class UpgradeSubscriptionReqDTO
+    {
+        /// <summary>目标套餐版本 ID</summary>
+        public long TargetPackageVersionId { get; set; }
+    }
+
     /// <summary>创建试用请求</summary>
     public sealed class CreateTrialReqDTO
     {

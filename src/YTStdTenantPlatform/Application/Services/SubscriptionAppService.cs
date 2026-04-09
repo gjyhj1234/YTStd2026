@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using YTStdAdo;
 using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
@@ -60,6 +61,21 @@ namespace YTStdTenantPlatform.Application.Services
             return null;
         }
 
+        /// <summary>获取租户当前有效订阅</summary>
+        public static async ValueTask<TenantSubscriptionRepDTO?> GetTenantSubscriptionAsync(
+            int tenantId, long operatorId, long tenantRefId)
+        {
+            var (result, data) = await TenantSubscriptionCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return null;
+            foreach (var s in data)
+            {
+                if (s.TenantRefId == tenantRefId &&
+                    string.Equals(s.SubscriptionStatus, nameof(SubscriptionStatus.Active), StringComparison.OrdinalIgnoreCase))
+                    return MapSubscriptionToDto(s);
+            }
+            return null;
+        }
+
         /// <summary>创建订阅</summary>
         public static async ValueTask<ApiResult<long>> CreateSubscriptionAsync(
             int tenantId, long operatorId, CreateSubscriptionReqDTO req)
@@ -72,9 +88,10 @@ namespace YTStdTenantPlatform.Application.Services
             var now = DateTime.UtcNow;
             var entity = new TenantSubscription
             {
+                Id = await DB.GetNextLongIdAsync(),
                 TenantRefId = req.TenantRefId,
                 PackageVersionId = req.PackageVersionId,
-                SubscriptionStatus = "active",
+                SubscriptionStatus = nameof(SubscriptionStatus.Active),
                 SubscriptionType = req.SubscriptionType,
                 StartedAt = now,
                 ExpiresAt = now.AddYears(1),
@@ -88,9 +105,67 @@ namespace YTStdTenantPlatform.Application.Services
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.SubscriptionCreateFailed);
 
-            Logger.Info(tenantId, operatorId,
-                "[SubscriptionAppService] 创建订阅: tenant=" + req.TenantRefId);
-            return ApiResult<long>.Ok(insResult.Id);
+            Logger.Debug(tenantId, operatorId, () => "[SubscriptionAppService] 创建订阅: tenant=" + req.TenantRefId);
+            return ApiResult<long>.Ok(entity.Id);
+        }
+
+        /// <summary>续费订阅</summary>
+        public static async ValueTask<ApiResult> RenewSubscriptionAsync(
+            int tenantId, long operatorId, long id, RenewSubscriptionReqDTO req)
+        {
+            var (getResult, subscriptions) = await TenantSubscriptionCRUD.GetListAsync(tenantId, operatorId);
+            if (!getResult.Success || subscriptions == null) return ApiResult.Fail(ErrorCodes.SubscriptionQueryFailed);
+
+            TenantSubscription? target = null;
+            foreach (var s in subscriptions) { if (s.Id == id) { target = s; break; } }
+            if (target == null) return ApiResult.Fail(ErrorCodes.SubscriptionNotFound);
+
+            if (!string.Equals(target.SubscriptionStatus, nameof(SubscriptionStatus.Active), StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(target.SubscriptionStatus, nameof(SubscriptionStatus.Expiring), StringComparison.OrdinalIgnoreCase))
+                return ApiResult.Fail(ErrorCodes.SubscriptionStatusDenied);
+
+            var months = req.Months > 0 ? req.Months : 12;
+            target.ExpiresAt = target.ExpiresAt.AddMonths(months);
+            target.SubscriptionStatus = nameof(SubscriptionStatus.Active);
+            target.UpdatedAt = DateTime.UtcNow;
+
+            var updResult = await TenantSubscriptionCRUD.UpdateAsync(tenantId, operatorId, target);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.SubscriptionRenewFailed);
+
+            // 记录变更
+            await RecordChangeAsync(tenantId, operatorId, target.TenantRefId, target.Id,
+                nameof(SubscriptionChangeType.Renew), target.PackageVersionId, target.PackageVersionId, "续费 " + months + " 个月");
+
+            Logger.Debug(tenantId, operatorId, () => "[SubscriptionAppService] 续费订阅: id=" + id);
+            return ApiResult.Ok();
+        }
+
+        /// <summary>升级订阅套餐</summary>
+        public static async ValueTask<ApiResult> UpgradeSubscriptionAsync(
+            int tenantId, long operatorId, long id, UpgradeSubscriptionReqDTO req)
+        {
+            var (getResult, subscriptions) = await TenantSubscriptionCRUD.GetListAsync(tenantId, operatorId);
+            if (!getResult.Success || subscriptions == null) return ApiResult.Fail(ErrorCodes.SubscriptionQueryFailed);
+
+            TenantSubscription? target = null;
+            foreach (var s in subscriptions) { if (s.Id == id) { target = s; break; } }
+            if (target == null) return ApiResult.Fail(ErrorCodes.SubscriptionNotFound);
+
+            if (!string.Equals(target.SubscriptionStatus, nameof(SubscriptionStatus.Active), StringComparison.OrdinalIgnoreCase))
+                return ApiResult.Fail(ErrorCodes.SubscriptionStatusDenied);
+
+            var fromVersionId = target.PackageVersionId;
+            target.PackageVersionId = req.TargetPackageVersionId;
+            target.UpdatedAt = DateTime.UtcNow;
+
+            var updResult = await TenantSubscriptionCRUD.UpdateAsync(tenantId, operatorId, target);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.SubscriptionUpgradeFailed);
+
+            await RecordChangeAsync(tenantId, operatorId, target.TenantRefId, target.Id,
+                nameof(SubscriptionChangeType.Upgrade), fromVersionId, req.TargetPackageVersionId, "升级套餐");
+
+            Logger.Debug(tenantId, operatorId, () => "[SubscriptionAppService] 升级订阅: id=" + id);
+            return ApiResult.Ok();
         }
 
         /// <summary>取消订阅</summary>
@@ -104,16 +179,38 @@ namespace YTStdTenantPlatform.Application.Services
             foreach (var s in subscriptions) { if (s.Id == id) { target = s; break; } }
             if (target == null) return ApiResult.Fail(ErrorCodes.SubscriptionNotFound);
 
-            target.SubscriptionStatus = "cancelled";
+            target.SubscriptionStatus = nameof(SubscriptionStatus.Cancelled);
             target.CancelledAt = DateTime.UtcNow;
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await TenantSubscriptionCRUD.UpdateAsync(tenantId, operatorId, target);
             if (!updResult.Success) return ApiResult.Fail(ErrorCodes.SubscriptionCancelFailed);
 
-            Logger.Info(tenantId, operatorId,
-                "[SubscriptionAppService] 取消订阅: id=" + id);
+            await RecordChangeAsync(tenantId, operatorId, target.TenantRefId, target.Id,
+                nameof(SubscriptionChangeType.Cancel), target.PackageVersionId, null, "取消订阅");
+
+            Logger.Debug(tenantId, operatorId, () => "[SubscriptionAppService] 取消订阅: id=" + id);
             return ApiResult.Ok();
+        }
+
+        /// <summary>记录订阅变更</summary>
+        private static async ValueTask RecordChangeAsync(
+            int tenantId, long operatorId, long tenantRefId, long subscriptionId,
+            string changeType, long? fromVersionId, long? toVersionId, string? remark)
+        {
+            var change = new TenantSubscriptionChange
+            {
+                Id = await DB.GetNextLongIdAsync(),
+                TenantRefId = tenantRefId,
+                SubscriptionId = subscriptionId,
+                ChangeType = changeType,
+                FromPackageVersionId = fromVersionId,
+                ToPackageVersionId = toVersionId,
+                EffectiveAt = DateTime.UtcNow,
+                Remark = remark,
+                CreatedAt = DateTime.UtcNow
+            };
+            await TenantSubscriptionChangeCRUD.InsertAsync(tenantId, operatorId, change);
         }
 
         // ──────────────────────────────────────────────────────
@@ -151,6 +248,7 @@ namespace YTStdTenantPlatform.Application.Services
             var now = DateTime.UtcNow;
             var entity = new TenantTrial
             {
+                Id = await DB.GetNextLongIdAsync(),
                 TenantRefId = req.TenantRefId,
                 PackageVersionId = req.PackageVersionId,
                 Status = (int)TrialStatus.Active,
@@ -164,9 +262,8 @@ namespace YTStdTenantPlatform.Application.Services
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.TrialCreateFailed);
 
-            Logger.Info(tenantId, operatorId,
-                "[SubscriptionAppService] 创建试用: tenant=" + req.TenantRefId);
-            return ApiResult<long>.Ok(insResult.Id);
+            Logger.Debug(tenantId, operatorId, () => "[SubscriptionAppService] 创建试用: tenant=" + req.TenantRefId);
+            return ApiResult<long>.Ok(entity.Id);
         }
 
         // ──────────────────────────────────────────────────────

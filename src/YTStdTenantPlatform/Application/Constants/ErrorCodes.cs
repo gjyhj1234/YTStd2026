@@ -293,6 +293,12 @@ public static class ErrorCodes
     public const int SubscriptionCancelFailed = 19504;
     /// <summary>创建试用失败</summary>
     public const int TrialCreateFailed = 19505;
+    /// <summary>续费订阅失败</summary>
+    public const int SubscriptionRenewFailed = 19506;
+    /// <summary>升级订阅失败</summary>
+    public const int SubscriptionUpgradeFailed = 19507;
+    /// <summary>订阅状态不允许此操作</summary>
+    public const int SubscriptionStatusDenied = 19508;
 
     // ── 计费 (19601-19699) ──
 
@@ -308,6 +314,8 @@ public static class ErrorCodes
     public const int PaymentOrderCreateFailed = 19605;
     /// <summary>创建退款失败</summary>
     public const int RefundCreateFailed = 19606;
+    /// <summary>标记发票支付失败</summary>
+    public const int InvoicePayFailed = 19607;
 
     // ── API集成 (19701-19799) ──
 

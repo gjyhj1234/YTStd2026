@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using YTStdAdo;
 using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
@@ -62,6 +63,27 @@ namespace YTStdTenantPlatform.Application.Services
             return null;
         }
 
+        /// <summary>获取租户账单列表</summary>
+        public static async ValueTask<PagedResult<BillingInvoiceRepDTO>> GetTenantInvoiceListAsync(
+            int tenantId, long operatorId, long tenantRefId, PagedRequest request)
+        {
+            var (result, data) = await BillingInvoiceCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null)
+                return new PagedResult<BillingInvoiceRepDTO> { Page = request.NormalizedPage, PageSize = request.NormalizedPageSize };
+            var filtered = new List<BillingInvoice>();
+            foreach (var inv in data) { if (inv.TenantRefId == tenantRefId) filtered.Add(inv); }
+            var items = new List<BillingInvoiceRepDTO>();
+            var offset = request.Offset;
+            var size = request.NormalizedPageSize;
+            for (int i = offset; i < filtered.Count && i < offset + size; i++)
+                items.Add(MapInvoiceToDto(filtered[i]));
+            return new PagedResult<BillingInvoiceRepDTO>
+            {
+                Items = items, Total = filtered.Count,
+                Page = request.NormalizedPage, PageSize = request.NormalizedPageSize
+            };
+        }
+
         /// <summary>创建发票</summary>
         public static async ValueTask<ApiResult<long>> CreateInvoiceAsync(
             int tenantId, long operatorId, CreateBillingInvoiceReqDTO req)
@@ -72,6 +94,7 @@ namespace YTStdTenantPlatform.Application.Services
             var now = DateTime.UtcNow;
             var entity = new BillingInvoice
             {
+                Id = await DB.GetNextLongIdAsync(),
                 InvoiceNo = "INV-" + DateTime.UtcNow.Ticks,
                 TenantRefId = req.TenantRefId,
                 SubscriptionId = req.SubscriptionId,
@@ -87,9 +110,9 @@ namespace YTStdTenantPlatform.Application.Services
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.InvoiceCreateFailed);
 
-            Logger.Info(tenantId, operatorId,
-                "[BillingAppService] 创建发票: " + entity.InvoiceNo);
-            return ApiResult<long>.Ok(insResult.Id);
+            Logger.Debug(tenantId, operatorId,
+                () => "[BillingAppService] 创建发票: " + entity.InvoiceNo);
+            return ApiResult<long>.Ok(entity.Id);
         }
 
         /// <summary>作废发票</summary>
@@ -109,8 +132,25 @@ namespace YTStdTenantPlatform.Application.Services
             var updResult = await BillingInvoiceCRUD.UpdateAsync(tenantId, operatorId, target);
             if (!updResult.Success) return ApiResult.Fail(ErrorCodes.InvoiceVoidFailed);
 
-            Logger.Info(tenantId, operatorId,
-                "[BillingAppService] 作废发票: " + target.InvoiceNo);
+            Logger.Debug(tenantId, operatorId,
+                () => "[BillingAppService] 作废发票: " + target.InvoiceNo);
+            return ApiResult.Ok();
+        }
+
+        /// <summary>标记发票已支付</summary>
+        public static async ValueTask<ApiResult> PayInvoiceAsync(int tenantId, long operatorId, long id)
+        {
+            var (getResult, invoices) = await BillingInvoiceCRUD.GetListAsync(tenantId, operatorId);
+            if (!getResult.Success || invoices == null) return ApiResult.Fail(ErrorCodes.InvoiceQueryFailed);
+            BillingInvoice? target = null;
+            foreach (var inv in invoices) { if (inv.Id == id) { target = inv; break; } }
+            if (target == null) return ApiResult.Fail(ErrorCodes.InvoiceNotFound);
+            target.InvoiceStatus = "paid";
+            target.PaidAt = DateTime.UtcNow;
+            target.UpdatedAt = DateTime.UtcNow;
+            var updResult = await BillingInvoiceCRUD.UpdateAsync(tenantId, operatorId, target);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.InvoicePayFailed);
+            Logger.Debug(tenantId, operatorId, () => "[BillingAppService] 标记已支付: " + target.InvoiceNo);
             return ApiResult.Ok();
         }
 
@@ -199,6 +239,7 @@ namespace YTStdTenantPlatform.Application.Services
             var now = DateTime.UtcNow;
             var entity = new PaymentOrder
             {
+                Id = await DB.GetNextLongIdAsync(),
                 OrderNo = "PAY-" + DateTime.UtcNow.Ticks,
                 TenantRefId = req.TenantRefId,
                 InvoiceId = req.InvoiceId,
@@ -214,9 +255,9 @@ namespace YTStdTenantPlatform.Application.Services
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.PaymentOrderCreateFailed);
 
-            Logger.Info(tenantId, operatorId,
-                "[BillingAppService] 创建支付订单: " + entity.OrderNo);
-            return ApiResult<long>.Ok(insResult.Id);
+            Logger.Debug(tenantId, operatorId,
+                () => "[BillingAppService] 创建支付订单: " + entity.OrderNo);
+            return ApiResult<long>.Ok(entity.Id);
         }
 
         // ──────────────────────────────────────────────────────
@@ -254,6 +295,7 @@ namespace YTStdTenantPlatform.Application.Services
             var now = DateTime.UtcNow;
             var entity = new PaymentRefund
             {
+                Id = await DB.GetNextLongIdAsync(),
                 RefundNo = "REF-" + DateTime.UtcNow.Ticks,
                 PaymentOrderId = req.PaymentOrderId,
                 RefundStatus = "pending",
@@ -267,9 +309,9 @@ namespace YTStdTenantPlatform.Application.Services
             if (!insResult.Success)
                 return ApiResult<long>.Fail(ErrorCodes.RefundCreateFailed);
 
-            Logger.Info(tenantId, operatorId,
-                "[BillingAppService] 创建退款: " + entity.RefundNo);
-            return ApiResult<long>.Ok(insResult.Id);
+            Logger.Debug(tenantId, operatorId,
+                () => "[BillingAppService] 创建退款: " + entity.RefundNo);
+            return ApiResult<long>.Ok(entity.Id);
         }
 
         // ──────────────────────────────────────────────────────
