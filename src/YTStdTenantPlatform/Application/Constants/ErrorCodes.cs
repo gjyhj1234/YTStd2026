@@ -22,6 +22,12 @@ public static class ErrorCodes
     public const int AuthLoginUpdateFailed = 10005;
     /// <summary>令牌无效或已过期</summary>
     public const int AuthTokenInvalid = 10006;
+    /// <summary>旧密码不正确</summary>
+    public const int AuthOldPasswordInvalid = 10007;
+    /// <summary>修改密码失败</summary>
+    public const int AuthChangePasswordFailed = 10008;
+    /// <summary>新密码不能为空</summary>
+    public const int AuthNewPasswordRequired = 10009;
 
     // ── 权限 (11001-11099) ──
 

@@ -297,7 +297,7 @@ namespace YTStdTenantPlatform.Bootstrap
                     ApiResult<LoginRepDTO>.Ok(loginData));
             }).WithSummary("平台用户登录");
 
-            group.MapPost("/refresh", async (HttpContext context, CancellationToken cancellationToken) =>
+            group.MapPost("/refresh-token", async (HttpContext context, CancellationToken cancellationToken) =>
             {
                 RefreshTokenReqDTO? request;
                 try
@@ -358,6 +358,91 @@ namespace YTStdTenantPlatform.Bootstrap
                 await TenantPlatformJsonResponseWriter.WriteAsync(context,
                     ApiResult<CurrentUserRepDTO>.Ok(meData));
             }).WithSummary("获取当前登录用户信息");
+
+            group.MapPost("/change-password", async (HttpContext context, CancellationToken cancellationToken) =>
+            {
+                // 获取当前用户
+                var currentUser = context.Items.TryGetValue(CurrentUser.HttpContextKey, out var userObj) && userObj is CurrentUser cu
+                    ? cu
+                    : null;
+
+                if (currentUser == null || currentUser.UserId == 0)
+                {
+                    await TenantPlatformJsonResponseWriter.WriteAsync(context,
+                        ApiResult.Fail(ErrorCodes.AuthTokenInvalid), 401);
+                    return;
+                }
+
+                ChangePasswordReqDTO? request;
+                try
+                {
+                    request = await TenantPlatformJsonRequestReader.ReadAsync<ChangePasswordReqDTO>(context.Request, cancellationToken);
+                }
+                catch
+                {
+                    request = null;
+                }
+                if (request == null || string.IsNullOrWhiteSpace(request.OldPassword) || string.IsNullOrWhiteSpace(request.NewPassword))
+                {
+                    await TenantPlatformJsonResponseWriter.WriteAsync(context,
+                        ApiResult.Fail(ErrorCodes.AuthNewPasswordRequired), 400);
+                    return;
+                }
+
+                // 查找用户
+                var (queryResult, users) = await PlatformUserCRUD.GetListAsync(0, 0);
+                if (!queryResult.Success || users == null)
+                {
+                    Logger.Error(0, 0, "[RouteRegistration] 修改密码时查询用户失败: " + queryResult.ErrorMessage);
+                    await TenantPlatformJsonResponseWriter.WriteAsync(context,
+                        ApiResult.Fail(ErrorCodes.SystemBusy), 500);
+                    return;
+                }
+
+                PlatformUser? matchedUser = null;
+                for (int i = 0; i < users.Count; i++)
+                {
+                    if (users[i].Id == currentUser.UserId && users[i].DeletedAt == null)
+                    {
+                        matchedUser = users[i];
+                        break;
+                    }
+                }
+
+                if (matchedUser == null)
+                {
+                    await TenantPlatformJsonResponseWriter.WriteAsync(context,
+                        ApiResult.Fail(ErrorCodes.UserNotFound), 404);
+                    return;
+                }
+
+                // 验证旧密码
+                if (!VerifyPassword(request.OldPassword, matchedUser.PasswordHash, matchedUser.PasswordSalt))
+                {
+                    await TenantPlatformJsonResponseWriter.WriteAsync(context,
+                        ApiResult.Fail(ErrorCodes.AuthOldPasswordInvalid), 400);
+                    return;
+                }
+
+                // 生成新密码哈希
+                var newSalt = Guid.NewGuid().ToString("N");
+                var newHash = HashPassword(request.NewPassword, newSalt);
+                matchedUser.PasswordHash = newHash;
+                matchedUser.PasswordSalt = newSalt;
+                matchedUser.PasswordExpiresAt = null;
+                matchedUser.UpdatedAt = DateTime.UtcNow;
+
+                var updateResult = await PlatformUserCRUD.UpdateAsync(0, 0, matchedUser);
+                if (!updateResult.Success)
+                {
+                    Logger.Error(0, 0, "[RouteRegistration] 修改密码失败: " + updateResult.ErrorMessage);
+                    await TenantPlatformJsonResponseWriter.WriteAsync(context,
+                        ApiResult.Fail(ErrorCodes.AuthChangePasswordFailed), 500);
+                    return;
+                }
+
+                await TenantPlatformJsonResponseWriter.WriteAsync(context, ApiResult.Ok());
+            }).WithSummary("修改密码");
         }
 
         private static bool VerifyPassword(string password, string storedHash, string? storedSalt)

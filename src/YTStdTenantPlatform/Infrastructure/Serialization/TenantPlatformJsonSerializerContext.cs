@@ -11,6 +11,7 @@ namespace YTStdTenantPlatform.Infrastructure.Serialization;
 // ── 认证 ──
 [JsonSerializable(typeof(LoginReqDTO))]
 [JsonSerializable(typeof(RefreshTokenReqDTO))]
+[JsonSerializable(typeof(ChangePasswordReqDTO))]
 [JsonSerializable(typeof(ApiResult<LoginRepDTO>))]
 [JsonSerializable(typeof(ApiResult<CurrentUserRepDTO>))]
 // ── 平台用户 ──
