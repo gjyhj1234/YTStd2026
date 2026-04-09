@@ -272,6 +272,14 @@ public static class ErrorCodes
     public const int PackageCapabilityKeyRequired = 19411;
     /// <summary>保存能力失败</summary>
     public const int PackageCapabilitySaveFailed = 19412;
+    /// <summary>套餐编码已存在</summary>
+    public const int PackageCodeExists = 18006;
+    /// <summary>已发布的套餐不可直接删除，需先下架</summary>
+    public const int PackagePublishedCannotDelete = 19413;
+    /// <summary>删除套餐失败</summary>
+    public const int PackageDeleteFailed = 19414;
+    /// <summary>套餐状态流转不允许</summary>
+    public const int PackageStatusTransitionDenied = 19415;
 
     // ── 订阅 (19501-19599) ──
 
