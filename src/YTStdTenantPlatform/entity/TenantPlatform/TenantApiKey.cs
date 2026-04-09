@@ -28,8 +28,8 @@ public class TenantApiKey
     public string SecretHash { get; set; } = "";
 
     /// <summary>状态</summary>
-    [Column(Length = 32, IsRequired = true)]
-    public string Status { get; set; } = "";
+    [Column(DbType = "smallint", IsRequired = true)]
+    public int Status { get; set; }
 
     /// <summary>配额上限</summary>
     public long? QuotaLimit { get; set; }

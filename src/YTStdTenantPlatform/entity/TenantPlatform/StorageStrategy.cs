@@ -37,8 +37,8 @@ public class StorageStrategy
     public string? Config { get; set; }
 
     /// <summary>状态</summary>
-    [Column(Length = 32, IsRequired = true)]
-    public string Status { get; set; } = "";
+    [Column(DbType = "smallint", IsRequired = true)]
+    public int Status { get; set; }
 
     /// <summary>创建时间</summary>
     public DateTime CreatedAt { get; set; }

@@ -33,8 +33,8 @@ public class PlatformMfaSetting
     public bool IsPrimary { get; set; }
 
     /// <summary>状态</summary>
-    [Column(Length = 32, IsRequired = true)]
-    public string Status { get; set; } = "";
+    [Column(DbType = "smallint", IsRequired = true)]
+    public int Status { get; set; }
 
     /// <summary>验证时间</summary>
     public DateTime? VerifiedAt { get; set; }

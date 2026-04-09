@@ -47,6 +47,7 @@ public class SaasPackageVersion
     public bool IsDefault { get; set; }
 
     /// <summary>是否启用</summary>
+    [Column(ColumnName = "is_enabled")]
     public bool Enabled { get; set; }
 
     /// <summary>生效开始时间</summary>

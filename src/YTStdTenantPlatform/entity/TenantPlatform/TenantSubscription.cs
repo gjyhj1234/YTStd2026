@@ -33,6 +33,7 @@ public class TenantSubscription
     public DateTime ExpiresAt { get; set; }
 
     /// <summary>是否自动续费</summary>
+    [Column(ColumnName = "is_auto_renew")]
     public bool AutoRenew { get; set; }
 
     /// <summary>取消时间</summary>

@@ -22,15 +22,19 @@ public class PlatformPasswordPolicy
     public int MaxLength { get; set; }
 
     /// <summary>是否要求大写字母</summary>
+    [Column(ColumnName = "is_require_uppercase")]
     public bool RequireUppercase { get; set; }
 
     /// <summary>是否要求小写字母</summary>
+    [Column(ColumnName = "is_require_lowercase")]
     public bool RequireLowercase { get; set; }
 
     /// <summary>是否要求数字</summary>
+    [Column(ColumnName = "is_require_number")]
     public bool RequireNumber { get; set; }
 
     /// <summary>是否要求特殊字符</summary>
+    [Column(ColumnName = "is_require_special")]
     public bool RequireSpecial { get; set; }
 
     /// <summary>密码过期天数</summary>

@@ -25,11 +25,12 @@ public class TenantFeatureFlag
     public string FeatureName { get; set; } = "";
 
     /// <summary>是否启用</summary>
+    [Column(ColumnName = "is_enabled")]
     public bool Enabled { get; set; }
 
     /// <summary>灰度类型</summary>
-    [Column(Length = 32, IsRequired = true)]
-    public string RolloutType { get; set; } = "";
+    [Column(DbType = "smallint", IsRequired = true)]
+    public int RolloutType { get; set; }
 
     /// <summary>灰度配置</summary>
     [Column(DbType = "jsonb")]
