@@ -26,11 +26,11 @@ namespace YTStdTenantPlatform.Bootstrap
             // 请求日志 / TraceId
             app.UseMiddleware<RequestLoggingMiddleware>();
 
-            // 限流
-            app.UseMiddleware<RateLimitMiddleware>();
-
-            // 权限认证
+            // 权限认证（JWT 解析 + 权限检查）
             app.UseMiddleware<PermissionMiddleware>();
+
+            // 限流（在认证之后，可按用户级别限流）
+            app.UseMiddleware<RateLimitMiddleware>();
 
             // 审计记录
             app.UseMiddleware<AuditMiddleware>();

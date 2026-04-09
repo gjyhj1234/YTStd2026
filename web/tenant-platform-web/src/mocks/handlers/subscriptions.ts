@@ -17,7 +17,7 @@ export const subscriptionsHandlers = [
     const sub = mockTenantSubscriptions.find((s) => s.Id === Number(params['id']))
     if (!sub)
       return HttpResponse.json(
-        fail('error.subscription_not_found'),
+        fail(),
         { status: 404 },
       )
     return HttpResponse.json(ok(sub))
@@ -37,11 +37,11 @@ export const subscriptionsHandlers = [
       CancelledAt: '',
       CreatedAt: new Date().toISOString(),
     }
-    return HttpResponse.json(ok(newSub, 'operation.create_success'))
+    return HttpResponse.json(ok(newSub))
   }),
 
   http.put('/api/tenant-subscriptions/:id/cancel', () => {
-    return HttpResponse.json(ok(null, 'operation.cancel_success'))
+    return HttpResponse.json(ok(null))
   }),
 
   http.get('/api/tenant-trials', ({ request }) => {
@@ -62,7 +62,7 @@ export const subscriptionsHandlers = [
       ConvertedSubscriptionId: null,
       CreatedAt: new Date().toISOString(),
     }
-    return HttpResponse.json(ok(newTrial, 'operation.create_success'))
+    return HttpResponse.json(ok(newTrial))
   }),
 
   http.get('/api/tenant-subscription-changes', ({ request }) => {

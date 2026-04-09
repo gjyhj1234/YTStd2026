@@ -4,7 +4,7 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>租户初始化任务</summary>
-[Entity(TableName = "tenant_initialization_tasks")]
+[Entity(TableName = "sys_tenant_init_task")]
 public class TenantInitializationTask
 {
     /// <summary>主键</summary>

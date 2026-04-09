@@ -4,9 +4,9 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>平台用户</summary>
-[Entity(TableName = "platform_users", NeedAuditTable = true)]
-[Index("uq_platform_users_username", "username", Kind = IndexKind.Unique)]
-[Index("uq_platform_users_email", "email", Kind = IndexKind.Unique)]
+[Entity(TableName = "sys_user", NeedAuditTable = true)]
+[Index("uq_sys_user_username", "username", Kind = IndexKind.Unique)]
+[Index("uq_sys_user_email", "email", Kind = IndexKind.Unique)]
 public class PlatformUser
 {
     /// <summary>主键</summary>
@@ -38,8 +38,8 @@ public class PlatformUser
     public string? PasswordSalt { get; set; }
 
     /// <summary>用户状态</summary>
-    [Column(Length = 32, IsRequired = true)]
-    public string Status { get; set; } = "";
+    [Column(DbType = "smallint", IsRequired = true)]
+    public int Status { get; set; }
 
     /// <summary>密码过期时间</summary>
     public DateTime? PasswordExpiresAt { get; set; }
@@ -58,6 +58,7 @@ public class PlatformUser
     public DateTime? LockedUntil { get; set; }
 
     /// <summary>是否启用多因素认证</summary>
+    [Column(ColumnName = "is_mfa_enabled")]
     public bool MfaEnabled { get; set; }
 
     /// <summary>备注</summary>

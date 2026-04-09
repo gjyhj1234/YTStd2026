@@ -4,9 +4,9 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>SaaS 套餐版本</summary>
-[Entity(TableName = "saas_package_versions", NeedAuditTable = true)]
+[Entity(TableName = "sys_package_version", NeedAuditTable = true)]
 [DetailOf(typeof(SaasPackage), ForeignKey = "PackageId")]
-[Index("uq_saas_package_versions_package_version", "package_id", "version_code", Kind = IndexKind.Unique)]
+[Index("uq_sys_package_version_package_version", "package_id", "version_code", Kind = IndexKind.Unique)]
 public class SaasPackageVersion
 {
     /// <summary>主键</summary>
@@ -47,6 +47,7 @@ public class SaasPackageVersion
     public bool IsDefault { get; set; }
 
     /// <summary>是否启用</summary>
+    [Column(ColumnName = "is_enabled")]
     public bool Enabled { get; set; }
 
     /// <summary>生效开始时间</summary>

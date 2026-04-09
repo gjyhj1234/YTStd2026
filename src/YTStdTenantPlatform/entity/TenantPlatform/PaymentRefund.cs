@@ -4,9 +4,9 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>支付退款</summary>
-[Entity(TableName = "payment_refunds", NeedAuditTable = true)]
+[Entity(TableName = "sys_payment_refund", NeedAuditTable = true)]
 [DetailOf(typeof(PaymentOrder), ForeignKey = "PaymentOrderId")]
-[Index("uq_payment_refunds_refund_no", "refund_no", Kind = IndexKind.Unique)]
+[Index("uq_sys_payment_refund_refund_no", "refund_no", Kind = IndexKind.Unique)]
 public class PaymentRefund
 {
     /// <summary>主键</summary>

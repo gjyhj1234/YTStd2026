@@ -1,6 +1,7 @@
 using System;
 using Xunit;
 using YTStdTenantPlatform.Entity.TenantPlatform;
+using YTStdTenantPlatform.Domain.Enums;
 
 namespace YTStdTenantPlatform.Tests;
 
@@ -17,7 +18,7 @@ public class EntityModelingTests
             Email = "admin@example.com",
             DisplayName = "超级管理员",
             PasswordHash = "hashed",
-            Status = "active",
+            Status = (int)PlatformUserStatus.Active,
             FailedLoginCount = 0,
             MfaEnabled = false,
             CreatedAt = DateTime.UtcNow,
@@ -27,7 +28,7 @@ public class EntityModelingTests
         Assert.Equal(1, user.Id);
         Assert.Equal("admin", user.Username);
         Assert.Equal("admin@example.com", user.Email);
-        Assert.Equal("active", user.Status);
+        Assert.Equal((int)PlatformUserStatus.Active, user.Status);
     }
 
     [Fact]
@@ -38,18 +39,18 @@ public class EntityModelingTests
             Id = 1,
             TenantCode = "T001",
             TenantName = "测试租户",
-            SourceType = "admin",
-            LifecycleStatus = "active",
+            SourceType = (int)TenantSourceType.Admin,
+            LifecycleStatus = (int)TenantLifecycleStatus.Active,
             DefaultLanguage = "zh-CN",
             DefaultTimezone = "Asia/Shanghai",
-            IsolationMode = "shared_database",
+            IsolationMode = (int)TenantIsolationMode.SharedDatabase,
             Enabled = true,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
 
         Assert.Equal("T001", tenant.TenantCode);
-        Assert.Equal("active", tenant.LifecycleStatus);
+        Assert.Equal((int)TenantLifecycleStatus.Active, tenant.LifecycleStatus);
         Assert.Null(tenant.CurrentPlanId);
         Assert.Null(tenant.CurrentSubscriptionId);
     }

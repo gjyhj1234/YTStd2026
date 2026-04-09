@@ -31,7 +31,7 @@ namespace YTStdTenantPlatform.Endpoints
             {
                 var user = GetCurrentUser(ctx);
                 var result = await PlatformRoleAppService.GetByIdAsync(0, user.UserId, id);
-                if (result == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.ResourceNotFound, Messages.ResourceNotFound), 404); return; }
+                if (result == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.ResourceNotFound), 404); return; }
                 await WriteJsonAsync(ctx, ApiResult<PlatformRoleRepDTO>.Ok(result));
             }).WithSummary("获取角色详情");
 
@@ -39,9 +39,9 @@ namespace YTStdTenantPlatform.Endpoints
             {
                 var user = GetCurrentUser(ctx);
                 var req = await YTStdTenantPlatform.Infrastructure.Serialization.TenantPlatformJsonRequestReader.ReadAsync<CreatePlatformRoleReqDTO>(ctx.Request, ctx.RequestAborted);
-                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody, Messages.InvalidRequestBody), 400); return; }
+                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody), 400); return; }
                 var result = await PlatformRoleAppService.CreateAsync(0, user.UserId, req);
-                if (result.Code != 0) { await WriteJsonAsync(ctx, ApiResult.Fail(result.Code, result.Message), 400); return; }
+                if (result.Code != 0) { await WriteJsonAsync(ctx, ApiResult.Fail(result.Code), 400); return; }
                 ctx.Response.StatusCode = 201;
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("创建角色");
@@ -50,7 +50,7 @@ namespace YTStdTenantPlatform.Endpoints
             {
                 var user = GetCurrentUser(ctx);
                 var req = await YTStdTenantPlatform.Infrastructure.Serialization.TenantPlatformJsonRequestReader.ReadAsync<UpdatePlatformRoleReqDTO>(ctx.Request, ctx.RequestAborted);
-                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody, Messages.InvalidRequestBody), 400); return; }
+                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody), 400); return; }
                 var result = await PlatformRoleAppService.UpdateAsync(0, user.UserId, id, req);
                 if (result.Code != 0) { await WriteJsonAsync(ctx, result, 400); return; }
                 await WriteJsonAsync(ctx, result);
@@ -74,7 +74,7 @@ namespace YTStdTenantPlatform.Endpoints
             {
                 var user = GetCurrentUser(ctx);
                 var req = await YTStdTenantPlatform.Infrastructure.Serialization.TenantPlatformJsonRequestReader.ReadAsync<RolePermissionBindReqDTO>(ctx.Request, ctx.RequestAborted);
-                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody, Messages.InvalidRequestBody), 400); return; }
+                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody), 400); return; }
                 var result = await PlatformRoleAppService.BindPermissionsAsync(0, user.UserId, id, req);
                 await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
             }).WithSummary("角色授权（绑定权限）");
@@ -83,10 +83,39 @@ namespace YTStdTenantPlatform.Endpoints
             {
                 var user = GetCurrentUser(ctx);
                 var req = await YTStdTenantPlatform.Infrastructure.Serialization.TenantPlatformJsonRequestReader.ReadAsync<RoleMemberBindReqDTO>(ctx.Request, ctx.RequestAborted);
-                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody, Messages.InvalidRequestBody), 400); return; }
+                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody), 400); return; }
                 var result = await PlatformRoleAppService.BindMembersAsync(0, user.UserId, id, req);
                 await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
             }).WithSummary("角色成员管理（绑定用户）");
+
+            group.MapDelete("/{id:long}", async (HttpContext ctx, long id) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await PlatformRoleAppService.DeleteAsync(0, user.UserId, id);
+                await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
+            }).WithSummary("删除角色");
+
+            group.MapGet("/{id:long}/permissions", async (HttpContext ctx, long id) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await PlatformRoleAppService.GetPermissionIdsAsync(0, user.UserId, id);
+                await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
+            }).WithSummary("获取角色已绑定的权限 ID 列表");
+
+            group.MapGet("/check-code-exists", async (HttpContext ctx, string? code) =>
+            {
+                if (string.IsNullOrWhiteSpace(code)) { await WriteJsonAsync(ctx, ApiResult<bool>.Ok(false)); return; }
+                var user = GetCurrentUser(ctx);
+                var result = await PlatformRoleAppService.CheckCodeExistsAsync(0, user.UserId, code);
+                await WriteJsonAsync(ctx, result);
+            }).WithSummary("检查角色编码是否存在");
+
+            group.MapGet("/all", async (HttpContext ctx) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await PlatformRoleAppService.GetAllAsync(0, user.UserId);
+                await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
+            }).WithSummary("获取全部角色（不分页）");
         }
 
         private static CurrentUser GetCurrentUser(HttpContext ctx) =>

@@ -4,7 +4,7 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>租户 Webhook</summary>
-[Entity(TableName = "tenant_webhooks", NeedAuditTable = true)]
+[Entity(TableName = "sys_webhook", NeedAuditTable = true)]
 public class TenantWebhook
 {
     /// <summary>主键</summary>
@@ -27,8 +27,8 @@ public class TenantWebhook
     public string? SecretTokenHash { get; set; }
 
     /// <summary>状态</summary>
-    [Column(Length = 32, IsRequired = true)]
-    public string Status { get; set; } = "";
+    [Column(DbType = "smallint", IsRequired = true)]
+    public int Status { get; set; }
 
     /// <summary>重试策略</summary>
     [Column(DbType = "jsonb")]

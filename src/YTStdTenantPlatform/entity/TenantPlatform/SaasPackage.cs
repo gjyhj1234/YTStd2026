@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>SaaS 套餐</summary>
-[Entity(TableName = "saas_packages", NeedAuditTable = true)]
-[Index("uq_saas_packages_package_code", "package_code", Kind = IndexKind.Unique)]
+[Entity(TableName = "sys_package", NeedAuditTable = true)]
+[Index("uq_sys_package_package_code", "package_code", Kind = IndexKind.Unique)]
 public class SaasPackage
 {
     /// <summary>主键</summary>
@@ -24,8 +24,8 @@ public class SaasPackage
     public string? Description { get; set; }
 
     /// <summary>状态</summary>
-    [Column(Length = 32, IsRequired = true)]
-    public string Status { get; set; } = "";
+    [Column(DbType = "smallint", IsRequired = true)]
+    public int Status { get; set; }
 
     /// <summary>创建人</summary>
     public long? CreatedBy { get; set; }

@@ -11,7 +11,7 @@ export const tenantResourcesHandlers = [
 
   http.get('/api/tenant-resource-quotas/:id', ({ params }) => {
     const q = mockTenantResourceQuotas.find((r) => r.Id === Number(params['id']))
-    if (!q) return HttpResponse.json(fail('error.resource_quota_not_found'), { status: 404 })
+    if (!q) return HttpResponse.json(fail(), { status: 404 })
     return HttpResponse.json(ok(q))
   }),
 
@@ -26,6 +26,6 @@ export const tenantResourcesHandlers = [
       ResetCycle: body['ResetCycle'] as string,
       CreatedAt: new Date().toISOString(),
     }
-    return HttpResponse.json(ok(newQuota, 'operation.create_success'))
+    return HttpResponse.json(ok(newQuota))
   }),
 ]

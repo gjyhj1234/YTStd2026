@@ -47,4 +47,15 @@ namespace YTStdTenantPlatform.Application.Dtos
         /// <summary>标签 ID 列表</summary>
         public long[] TagIds { get; set; } = Array.Empty<long>();
     }
+
+    /// <summary>更新租户分组请求</summary>
+    public sealed class UpdateTenantGroupReqDTO
+    {
+        /// <summary>分组名称</summary>
+        public string? GroupName { get; set; }
+        /// <summary>描述</summary>
+        public string? Description { get; set; }
+        /// <summary>父级分组 ID</summary>
+        public long? ParentId { get; set; }
+    }
 }

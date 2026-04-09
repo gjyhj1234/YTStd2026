@@ -7,6 +7,7 @@ using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
 using YTStdTenantPlatform.Application.Constants;
+using YTStdTenantPlatform.Domain.Enums;
 
 namespace YTStdTenantPlatform.Application.Services
 {
@@ -50,7 +51,7 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, CreateApiKeyReqDTO req)
         {
             if (string.IsNullOrWhiteSpace(req.KeyName))
-                return ApiResult<ApiKeyCreatedRepDTO>.Fail(ErrorCodes.InvalidParameter, Messages.InvalidParameter);
+                return ApiResult<ApiKeyCreatedRepDTO>.Fail(ErrorCodes.InvalidParameter);
 
             var accessKey = "ak_" + Guid.NewGuid().ToString("N");
             var rawSecret = Guid.NewGuid().ToString("N");
@@ -63,7 +64,7 @@ namespace YTStdTenantPlatform.Application.Services
                 KeyName = req.KeyName.Trim(),
                 AccessKey = accessKey,
                 SecretHash = secretHash,
-                Status = "active",
+                Status = (int)TenantApiKeyStatus.Active,
                 ExpiresAt = req.ExpiresAt,
                 CreatedBy = operatorId,
                 CreatedAt = now,
@@ -72,7 +73,7 @@ namespace YTStdTenantPlatform.Application.Services
 
             var insResult = await TenantApiKeyCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
-                return ApiResult<ApiKeyCreatedRepDTO>.Fail(ErrorCodes.ApiKeyCreateFailed, Messages.ApiKeyCreateFailed);
+                return ApiResult<ApiKeyCreatedRepDTO>.Fail(ErrorCodes.ApiKeyCreateFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[ApiIntegrationAppService] 创建 API 密钥: " + req.KeyName);
@@ -89,21 +90,21 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, long id)
         {
             var (getResult, keys) = await TenantApiKeyCRUD.GetListAsync(tenantId, operatorId);
-            if (!getResult.Success || keys == null) return ApiResult.Fail(ErrorCodes.ApiKeyQueryFailed, Messages.ApiKeyQueryFailed);
+            if (!getResult.Success || keys == null) return ApiResult.Fail(ErrorCodes.ApiKeyQueryFailed);
 
             TenantApiKey? target = null;
             foreach (var k in keys) { if (k.Id == id) { target = k; break; } }
-            if (target == null) return ApiResult.Fail(ErrorCodes.ApiKeyNotFound, Messages.ApiKeyNotFound);
+            if (target == null) return ApiResult.Fail(ErrorCodes.ApiKeyNotFound);
 
-            target.Status = "disabled";
+            target.Status = (int)TenantApiKeyStatus.Disabled;
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await TenantApiKeyCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.ApiKeyDisableFailed, Messages.ApiKeyDisableFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.ApiKeyDisableFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[ApiIntegrationAppService] 禁用 API 密钥: " + target.KeyName);
-            return ApiResult.Ok(Messages.OperationSuccess);
+            return ApiResult.Ok();
         }
 
         // ──────────────────────────────────────────────────────
@@ -207,9 +208,9 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, CreateWebhookReqDTO req)
         {
             if (string.IsNullOrWhiteSpace(req.WebhookName))
-                return ApiResult<long>.Fail(ErrorCodes.InvalidParameter, Messages.InvalidParameter);
+                return ApiResult<long>.Fail(ErrorCodes.InvalidParameter);
             if (string.IsNullOrWhiteSpace(req.TargetUrl))
-                return ApiResult<long>.Fail(ErrorCodes.InvalidParameter, Messages.InvalidParameter);
+                return ApiResult<long>.Fail(ErrorCodes.InvalidParameter);
 
             var now = DateTime.UtcNow;
             var entity = new TenantWebhook
@@ -217,14 +218,14 @@ namespace YTStdTenantPlatform.Application.Services
                 TenantRefId = req.TenantRefId,
                 WebhookName = req.WebhookName.Trim(),
                 TargetUrl = req.TargetUrl.Trim(),
-                Status = "active",
+                Status = (int)ActiveDisabledStatus.Active,
                 CreatedAt = now,
                 UpdatedAt = now
             };
 
             var insResult = await TenantWebhookCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
-                return ApiResult<long>.Fail(ErrorCodes.WebhookCreateFailed, Messages.WebhookCreateFailed);
+                return ApiResult<long>.Fail(ErrorCodes.WebhookCreateFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[ApiIntegrationAppService] 创建 Webhook: " + req.WebhookName);
@@ -236,22 +237,22 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, long id, UpdateWebhookReqDTO req)
         {
             var (getResult, webhooks) = await TenantWebhookCRUD.GetListAsync(tenantId, operatorId);
-            if (!getResult.Success || webhooks == null) return ApiResult.Fail(ErrorCodes.WebhookQueryFailed, Messages.WebhookQueryFailed);
+            if (!getResult.Success || webhooks == null) return ApiResult.Fail(ErrorCodes.WebhookQueryFailed);
 
             TenantWebhook? target = null;
             foreach (var w in webhooks) { if (w.Id == id) { target = w; break; } }
-            if (target == null) return ApiResult.Fail(ErrorCodes.WebhookNotFound, Messages.WebhookNotFound);
+            if (target == null) return ApiResult.Fail(ErrorCodes.WebhookNotFound);
 
             if (req.WebhookName != null) target.WebhookName = req.WebhookName;
             if (req.TargetUrl != null) target.TargetUrl = req.TargetUrl;
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await TenantWebhookCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.WebhookUpdateFailed, Messages.WebhookUpdateFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.WebhookUpdateFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[ApiIntegrationAppService] 更新 Webhook: " + target.WebhookName);
-            return ApiResult.Ok(Messages.OperationSuccess);
+            return ApiResult.Ok();
         }
 
         /// <summary>设置 Webhook 状态（启用/禁用）</summary>
@@ -259,21 +260,23 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, long id, string status)
         {
             var (getResult, webhooks) = await TenantWebhookCRUD.GetListAsync(tenantId, operatorId);
-            if (!getResult.Success || webhooks == null) return ApiResult.Fail(ErrorCodes.WebhookQueryFailed, Messages.WebhookQueryFailed);
+            if (!getResult.Success || webhooks == null) return ApiResult.Fail(ErrorCodes.WebhookQueryFailed);
 
             TenantWebhook? target = null;
             foreach (var w in webhooks) { if (w.Id == id) { target = w; break; } }
-            if (target == null) return ApiResult.Fail(ErrorCodes.WebhookNotFound, Messages.WebhookNotFound);
+            if (target == null) return ApiResult.Fail(ErrorCodes.WebhookNotFound);
 
-            target.Status = status;
+            if (!Enum.TryParse<ActiveDisabledStatus>(status, true, out var parsedStatus))
+                return ApiResult.Fail(ErrorCodes.InvalidParameter);
+            target.Status = (int)parsedStatus;
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await TenantWebhookCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.WebhookStatusChangeFailed, Messages.WebhookStatusChangeFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.WebhookStatusChangeFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[ApiIntegrationAppService] Webhook 状态变更: " + target.WebhookName + " → " + status);
-            return ApiResult.Ok(Messages.OperationSuccess);
+            return ApiResult.Ok();
         }
 
         // ──────────────────────────────────────────────────────
@@ -333,7 +336,7 @@ namespace YTStdTenantPlatform.Application.Services
         private static TenantApiKeyRepDTO MapApiKeyToDto(TenantApiKey k) => new TenantApiKeyRepDTO
         {
             Id = k.Id, TenantRefId = k.TenantRefId, KeyName = k.KeyName,
-            AccessKey = k.AccessKey, Status = k.Status,
+            AccessKey = k.AccessKey, Status = ((TenantApiKeyStatus)k.Status).ToString(),
             QuotaLimit = k.QuotaLimit, RateLimit = k.RateLimit,
             LastUsedAt = k.LastUsedAt, ExpiresAt = k.ExpiresAt,
             CreatedAt = k.CreatedAt
@@ -351,7 +354,7 @@ namespace YTStdTenantPlatform.Application.Services
         private static TenantWebhookRepDTO MapWebhookToDto(TenantWebhook w) => new TenantWebhookRepDTO
         {
             Id = w.Id, TenantRefId = w.TenantRefId, WebhookName = w.WebhookName,
-            TargetUrl = w.TargetUrl, Status = w.Status, CreatedAt = w.CreatedAt
+            TargetUrl = w.TargetUrl, Status = ((ActiveDisabledStatus)w.Status).ToString(), CreatedAt = w.CreatedAt
         };
     }
 }

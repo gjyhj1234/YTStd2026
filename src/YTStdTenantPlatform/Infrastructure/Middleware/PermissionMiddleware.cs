@@ -53,8 +53,8 @@ namespace YTStdTenantPlatform.Infrastructure.Middleware
                     static (writer, traceId) =>
                     {
                         writer.WriteStartObject();
-                        writer.WriteNumber("Code", 2006);
-                        writer.WriteString("Message", "auth.token_invalid");
+                        writer.WriteNumber("Code", 10006);
+                        writer.WriteNumber("Message", 10006);
                         writer.WriteNull("Data");
                         writer.WriteEndObject();
                     },
@@ -90,8 +90,8 @@ namespace YTStdTenantPlatform.Infrastructure.Middleware
                     static (writer, traceId) =>
                     {
                         writer.WriteStartObject();
-                        writer.WriteNumber("Code", 1007);
-                        writer.WriteString("Message", "common.forbidden");
+                        writer.WriteNumber("Code", 11001);
+                        writer.WriteNumber("Message", 11001);
                         writer.WriteNull("Data");
                         writer.WriteEndObject();
                     },

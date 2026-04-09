@@ -4,7 +4,7 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>多因素认证设置</summary>
-[Entity(TableName = "platform_mfa_settings", NeedAuditTable = true)]
+[Entity(TableName = "sys_mfa_setting", NeedAuditTable = true)]
 public class PlatformMfaSetting
 {
     /// <summary>主键</summary>
@@ -33,8 +33,8 @@ public class PlatformMfaSetting
     public bool IsPrimary { get; set; }
 
     /// <summary>状态</summary>
-    [Column(Length = 32, IsRequired = true)]
-    public string Status { get; set; } = "";
+    [Column(DbType = "smallint", IsRequired = true)]
+    public int Status { get; set; }
 
     /// <summary>验证时间</summary>
     public DateTime? VerifiedAt { get; set; }

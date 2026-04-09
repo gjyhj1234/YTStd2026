@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>平台监控指标</summary>
-[Entity(TableName = "platform_monitor_metrics")]
-[Index("idx_platform_monitor_metrics_type_time", "metric_type", "collected_at")]
+[Entity(TableName = "sys_monitor_metric")]
+[Index("idx_sys_monitor_metric_type_time", "metric_type", "collected_at")]
 public class PlatformMonitorMetric
 {
     /// <summary>主键</summary>

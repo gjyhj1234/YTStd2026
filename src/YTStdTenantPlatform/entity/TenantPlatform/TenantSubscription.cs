@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>租户订阅</summary>
-[Entity(TableName = "tenant_subscriptions", NeedAuditTable = true)]
-[Index("idx_subscriptions_tenant_status", "tenant_ref_id", "subscription_status")]
+[Entity(TableName = "sys_subscription", NeedAuditTable = true)]
+[Index("idx_sys_subscription_tenant_status", "tenant_ref_id", "subscription_status")]
 public class TenantSubscription
 {
     /// <summary>主键</summary>
@@ -33,6 +33,7 @@ public class TenantSubscription
     public DateTime ExpiresAt { get; set; }
 
     /// <summary>是否自动续费</summary>
+    [Column(ColumnName = "is_auto_renew")]
     public bool AutoRenew { get; set; }
 
     /// <summary>取消时间</summary>

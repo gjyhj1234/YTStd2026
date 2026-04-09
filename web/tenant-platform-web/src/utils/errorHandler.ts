@@ -1,20 +1,14 @@
-import { translateText } from '@/locales'
 import { AUTH_ACCOUNT_DISABLED, AUTH_ACCOUNT_LOCKED, AUTH_TOKEN_INVALID, FORBIDDEN } from '@/constants/errorCodes'
 
 /** API 错误封装 */
 export class ApiError extends Error {
   code: number
-  messageKey: string
+  messageCode: number
 
-  constructor(code: number, messageKey: string) {
-    super(messageKey)
+  constructor(code: number, messageCode: number) {
+    super(String(code))
     this.code = code
-    this.messageKey = messageKey
-  }
-
-  /** 获取翻译后的消息 */
-  get translatedMessage(): string {
-    return translateText(this.messageKey)
+    this.messageCode = messageCode
   }
 }
 

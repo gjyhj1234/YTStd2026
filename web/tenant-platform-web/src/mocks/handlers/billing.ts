@@ -17,7 +17,7 @@ export const billingHandlers = [
     const inv = mockBillingInvoices.find((i) => i.Id === Number(params['id']))
     if (!inv)
       return HttpResponse.json(
-        fail('error.invoice_not_found'),
+        fail(),
         { status: 404 },
       )
     return HttpResponse.json(ok(inv))
@@ -29,11 +29,11 @@ export const billingHandlers = [
 
   http.post('/api/billing-invoices', async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>
-    return HttpResponse.json(ok(body, 'operation.create_success'))
+    return HttpResponse.json(ok(body))
   }),
 
   http.put('/api/billing-invoices/:id/void', () => {
-    return HttpResponse.json(ok(null, 'operation.void_success'))
+    return HttpResponse.json(ok(null))
   }),
 
   http.get('/api/payment-orders', ({ request }) => {
@@ -44,7 +44,7 @@ export const billingHandlers = [
 
   http.post('/api/payment-orders', async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>
-    return HttpResponse.json(ok(body, 'operation.create_success'))
+    return HttpResponse.json(ok(body))
   }),
 
   http.get('/api/payment-refunds', ({ request }) => {
@@ -55,6 +55,6 @@ export const billingHandlers = [
 
   http.post('/api/payment-refunds', async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>
-    return HttpResponse.json(ok(body, 'operation.create_success'))
+    return HttpResponse.json(ok(body))
   }),
 ]

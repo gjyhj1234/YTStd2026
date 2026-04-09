@@ -4,7 +4,7 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>安全策略</summary>
-[Entity(TableName = "platform_security_policies", NeedAuditTable = true)]
+[Entity(TableName = "sys_security_policy", NeedAuditTable = true)]
 public class PlatformSecurityPolicy
 {
     /// <summary>主键</summary>
@@ -16,9 +16,11 @@ public class PlatformSecurityPolicy
     public string PolicyName { get; set; } = "";
 
     /// <summary>是否要求 IP 白名单</summary>
+    [Column(ColumnName = "is_ip_whitelist_required")]
     public bool IpWhitelistRequired { get; set; }
 
     /// <summary>是否要求多因素认证</summary>
+    [Column(ColumnName = "is_mfa_required")]
     public bool MfaRequired { get; set; }
 
     /// <summary>会话超时时间（分钟）</summary>

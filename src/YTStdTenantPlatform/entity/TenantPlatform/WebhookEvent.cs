@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>Webhook 事件</summary>
-[Entity(TableName = "webhook_events", NeedAuditTable = true)]
-[Index("uq_webhook_events_event_code", "event_code", Kind = IndexKind.Unique)]
+[Entity(TableName = "sys_webhook_event", NeedAuditTable = true)]
+[Index("uq_sys_webhook_event_event_code", "event_code", Kind = IndexKind.Unique)]
 public class WebhookEvent
 {
     /// <summary>主键</summary>

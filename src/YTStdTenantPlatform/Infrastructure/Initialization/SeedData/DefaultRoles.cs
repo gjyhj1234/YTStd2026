@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using YTStdTenantPlatform.Entity.TenantPlatform;
+using YTStdTenantPlatform.Domain.Enums;
 
 namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
 {
@@ -28,7 +29,7 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
                     Code = SuperAdminCode,
                     Name = "超级管理员",
                     Description = "拥有平台全部权限的超级管理员角色",
-                    Status = "active",
+                    Status = (int)PlatformRoleStatus.Active,
                     CreatedAt = now,
                     UpdatedAt = now
                 },
@@ -37,7 +38,7 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
                     Code = PlatformAdminCode,
                     Name = "平台管理员",
                     Description = "拥有平台日常管理权限，不含安全策略配置",
-                    Status = "active",
+                    Status = (int)PlatformRoleStatus.Active,
                     CreatedAt = now,
                     UpdatedAt = now
                 },
@@ -46,7 +47,7 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
                     Code = PlatformViewerCode,
                     Name = "平台只读",
                     Description = "仅拥有平台只读查看权限",
-                    Status = "active",
+                    Status = (int)PlatformRoleStatus.Active,
                     CreatedAt = now,
                     UpdatedAt = now
                 }

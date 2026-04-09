@@ -39,7 +39,7 @@ namespace YTStdTenantPlatform.Endpoints
             {
                 var user = GetCurrentUser(ctx);
                 var result = await SubscriptionAppService.GetSubscriptionByIdAsync(0, user.UserId, id);
-                if (result == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.ResourceNotFound, Messages.ResourceNotFound), 404); return; }
+                if (result == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.ResourceNotFound), 404); return; }
                 await WriteJsonAsync(ctx, ApiResult<TenantSubscriptionRepDTO>.Ok(result));
             }).WithSummary("获取订阅详情");
 
@@ -47,9 +47,9 @@ namespace YTStdTenantPlatform.Endpoints
             {
                 var user = GetCurrentUser(ctx);
                 var req = await YTStdTenantPlatform.Infrastructure.Serialization.TenantPlatformJsonRequestReader.ReadAsync<CreateSubscriptionReqDTO>(ctx.Request, ctx.RequestAborted);
-                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody, Messages.InvalidRequestBody), 400); return; }
+                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody), 400); return; }
                 var result = await SubscriptionAppService.CreateSubscriptionAsync(0, user.UserId, req);
-                if (result.Code != 0) { await WriteJsonAsync(ctx, ApiResult.Fail(result.Code, result.Message), 400); return; }
+                if (result.Code != 0) { await WriteJsonAsync(ctx, ApiResult.Fail(result.Code), 400); return; }
                 ctx.Response.StatusCode = 201;
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("创建订阅");
@@ -80,9 +80,9 @@ namespace YTStdTenantPlatform.Endpoints
             {
                 var user = GetCurrentUser(ctx);
                 var req = await YTStdTenantPlatform.Infrastructure.Serialization.TenantPlatformJsonRequestReader.ReadAsync<CreateTrialReqDTO>(ctx.Request, ctx.RequestAborted);
-                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody, Messages.InvalidRequestBody), 400); return; }
+                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody), 400); return; }
                 var result = await SubscriptionAppService.CreateTrialAsync(0, user.UserId, req);
-                if (result.Code != 0) { await WriteJsonAsync(ctx, ApiResult.Fail(result.Code, result.Message), 400); return; }
+                if (result.Code != 0) { await WriteJsonAsync(ctx, ApiResult.Fail(result.Code), 400); return; }
                 ctx.Response.StatusCode = 201;
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("创建试用");

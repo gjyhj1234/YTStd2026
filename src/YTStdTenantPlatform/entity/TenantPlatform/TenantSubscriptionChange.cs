@@ -4,7 +4,7 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>租户订阅变更</summary>
-[Entity(TableName = "tenant_subscription_changes")]
+[Entity(TableName = "sys_subscription_change")]
 public class TenantSubscriptionChange
 {
     /// <summary>主键</summary>

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using YTStdAdo;
 using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
@@ -40,7 +41,7 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, CreateTenantGroupReqDTO req)
         {
             if (string.IsNullOrWhiteSpace(req.GroupCode))
-                return ApiResult<long>.Fail(ErrorCodes.GroupCodeRequired, Messages.GroupCodeRequired);
+                return ApiResult<long>.Fail(ErrorCodes.GroupCodeRequired);
 
             var group = new TenantGroup
             {
@@ -54,10 +55,43 @@ namespace YTStdTenantPlatform.Application.Services
             };
 
             var insResult = await TenantGroupCRUD.InsertAsync(tenantId, operatorId, group);
-            if (!insResult.Success) return ApiResult<long>.Fail(ErrorCodes.GroupCreateFailed, Messages.GroupCreateFailed);
+            if (!insResult.Success) return ApiResult<long>.Fail(ErrorCodes.GroupCreateFailed);
 
             Logger.Info(tenantId, operatorId, "[TenantInfoAppService] 创建分组: " + req.GroupCode);
             return ApiResult<long>.Ok(insResult.Id);
+        }
+
+        /// <summary>更新租户分组</summary>
+        public static async ValueTask<ApiResult> UpdateGroupAsync(
+            int tenantId, long operatorId, long id, UpdateTenantGroupReqDTO req)
+        {
+            var (getResult, groups) = await TenantGroupCRUD.GetListAsync(tenantId, operatorId);
+            if (!getResult.Success || groups == null) return ApiResult.Fail(ErrorCodes.GroupQueryFailed);
+
+            TenantGroup? target = null;
+            foreach (var g in groups) { if (g.Id == id) { target = g; break; } }
+            if (target == null) return ApiResult.Fail(ErrorCodes.GroupNotFound);
+
+            if (req.GroupName != null) target.GroupName = req.GroupName;
+            if (req.Description != null) target.Description = req.Description;
+            if (req.ParentId.HasValue) target.ParentId = req.ParentId;
+            target.UpdatedAt = DateTime.UtcNow;
+
+            var updResult = await TenantGroupCRUD.UpdateAsync(tenantId, operatorId, target);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.GroupUpdateFailed);
+
+            Logger.Info(tenantId, operatorId, "[TenantInfoAppService] 更新分组: id=" + id);
+            return ApiResult.Ok();
+        }
+
+        /// <summary>删除租户分组</summary>
+        public static async ValueTask<ApiResult> DeleteGroupAsync(int tenantId, long operatorId, long id)
+        {
+            var delResult = await TenantGroupCRUD.DeleteAsync(tenantId, operatorId, id);
+            if (!delResult.Success) return ApiResult.Fail(ErrorCodes.GroupDeleteFailed);
+
+            Logger.Info(tenantId, operatorId, "[TenantInfoAppService] 删除分组: id=" + id);
+            return ApiResult.Ok();
         }
 
         // ──────────────────────────────────────────────────────
@@ -85,7 +119,7 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, CreateTenantDomainReqDTO req)
         {
             if (string.IsNullOrWhiteSpace(req.Domain))
-                return ApiResult<long>.Fail(ErrorCodes.DomainRequired, Messages.DomainRequired);
+                return ApiResult<long>.Fail(ErrorCodes.DomainRequired);
 
             var domain = new TenantDomain
             {
@@ -98,10 +132,29 @@ namespace YTStdTenantPlatform.Application.Services
             };
 
             var insResult = await TenantDomainCRUD.InsertAsync(tenantId, operatorId, domain);
-            if (!insResult.Success) return ApiResult<long>.Fail(ErrorCodes.DomainCreateFailed, Messages.DomainCreateFailed);
+            if (!insResult.Success) return ApiResult<long>.Fail(ErrorCodes.DomainCreateFailed);
 
             Logger.Info(tenantId, operatorId, "[TenantInfoAppService] 创建域名: " + req.Domain);
             return ApiResult<long>.Ok(insResult.Id);
+        }
+
+        /// <summary>删除租户域名</summary>
+        public static async ValueTask<ApiResult> DeleteDomainAsync(
+            int tenantId, long operatorId, long tenantRefId, long domainId)
+        {
+            var (getResult, domains) = await TenantDomainCRUD.GetListAsync(tenantId, operatorId);
+            if (!getResult.Success || domains == null) return ApiResult.Fail(ErrorCodes.DomainQueryFailed);
+
+            TenantDomain? target = null;
+            foreach (var d in domains) { if (d.Id == domainId) { target = d; break; } }
+            if (target == null) return ApiResult.Fail(ErrorCodes.DomainNotFound);
+            if (target.TenantRefId != tenantRefId) return ApiResult.Fail(ErrorCodes.DomainNotFound);
+
+            var delResult = await TenantDomainCRUD.DeleteAsync(tenantId, operatorId, domainId);
+            if (!delResult.Success) return ApiResult.Fail(ErrorCodes.DomainDeleteFailed);
+
+            Logger.Info(tenantId, operatorId, "[TenantInfoAppService] 删除域名: id=" + domainId);
+            return ApiResult.Ok();
         }
 
         // ──────────────────────────────────────────────────────
@@ -144,7 +197,7 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, CreateTenantTagReqDTO req)
         {
             if (string.IsNullOrWhiteSpace(req.TagKey))
-                return ApiResult<long>.Fail(ErrorCodes.TagKeyRequired, Messages.TagKeyRequired);
+                return ApiResult<long>.Fail(ErrorCodes.TagKeyRequired);
 
             var tag = new TenantTag
             {
@@ -156,10 +209,20 @@ namespace YTStdTenantPlatform.Application.Services
             };
 
             var insResult = await TenantTagCRUD.InsertAsync(tenantId, operatorId, tag);
-            if (!insResult.Success) return ApiResult<long>.Fail(ErrorCodes.TagCreateFailed, Messages.TagCreateFailed);
+            if (!insResult.Success) return ApiResult<long>.Fail(ErrorCodes.TagCreateFailed);
 
             Logger.Info(tenantId, operatorId, "[TenantInfoAppService] 创建标签: " + req.TagKey);
             return ApiResult<long>.Ok(insResult.Id);
+        }
+
+        /// <summary>删除标签</summary>
+        public static async ValueTask<ApiResult> DeleteTagAsync(int tenantId, long operatorId, long id)
+        {
+            var delResult = await TenantTagCRUD.DeleteAsync(tenantId, operatorId, id);
+            if (!delResult.Success) return ApiResult.Fail(ErrorCodes.TagDeleteFailed);
+
+            Logger.Info(tenantId, operatorId, "[TenantInfoAppService] 删除标签: id=" + id);
+            return ApiResult.Ok();
         }
 
         /// <summary>标签绑定</summary>
@@ -179,7 +242,41 @@ namespace YTStdTenantPlatform.Application.Services
 
             Logger.Info(tenantId, operatorId,
                 "[TenantInfoAppService] 标签绑定: tenant=" + req.TenantRefId + " 标签数=" + req.TagIds.Length);
-            return ApiResult.Ok(Messages.OperationSuccess);
+            return ApiResult.Ok();
+        }
+
+        /// <summary>设置租户标签（先删后插）</summary>
+        public static async ValueTask<ApiResult> SetTenantTagsAsync(
+            int tenantId, long operatorId, long tenantRefId, TagBindReqDTO req)
+        {
+            // 获取现有绑定并删除
+            var (getResult, bindings) = await TenantTagBindingCRUD.GetListAsync(tenantId, operatorId);
+            if (getResult.Success && bindings != null)
+            {
+                foreach (var b in bindings)
+                {
+                    if (b.TenantRefId == tenantRefId)
+                        await TenantTagBindingCRUD.DeleteAsync(tenantId, operatorId, b.Id);
+                }
+            }
+
+            // 插入新绑定
+            foreach (var tagId in req.TagIds)
+            {
+                var binding = new TenantTagBinding
+                {
+                    Id = await DB.GetNextLongIdAsync(),
+                    TenantRefId = tenantRefId,
+                    TagId = tagId,
+                    CreatedAt = DateTime.UtcNow
+                };
+                var insResult = await TenantTagBindingCRUD.InsertAsync(tenantId, operatorId, binding);
+                if (!insResult.Success) return ApiResult.Fail(ErrorCodes.TenantTagSetFailed);
+            }
+
+            Logger.Info(tenantId, operatorId,
+                "[TenantInfoAppService] 设置租户标签: tenant=" + tenantRefId + " 标签数=" + req.TagIds.Length);
+            return ApiResult.Ok();
         }
 
         // ──────────────────────────────────────────────────────

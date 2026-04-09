@@ -39,7 +39,7 @@ namespace YTStdTenantPlatform.Endpoints
             {
                 var user = GetCurrentUser(ctx);
                 var result = await BillingAppService.GetInvoiceByIdAsync(0, user.UserId, id);
-                if (result == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.ResourceNotFound, Messages.ResourceNotFound), 404); return; }
+                if (result == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.ResourceNotFound), 404); return; }
                 await WriteJsonAsync(ctx, ApiResult<BillingInvoiceRepDTO>.Ok(result));
             }).WithSummary("获取发票详情");
 
@@ -47,9 +47,9 @@ namespace YTStdTenantPlatform.Endpoints
             {
                 var user = GetCurrentUser(ctx);
                 var req = await YTStdTenantPlatform.Infrastructure.Serialization.TenantPlatformJsonRequestReader.ReadAsync<CreateBillingInvoiceReqDTO>(ctx.Request, ctx.RequestAborted);
-                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody, Messages.InvalidRequestBody), 400); return; }
+                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody), 400); return; }
                 var result = await BillingAppService.CreateInvoiceAsync(0, user.UserId, req);
-                if (result.Code != 0) { await WriteJsonAsync(ctx, ApiResult.Fail(result.Code, result.Message), 400); return; }
+                if (result.Code != 0) { await WriteJsonAsync(ctx, ApiResult.Fail(result.Code), 400); return; }
                 ctx.Response.StatusCode = 201;
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("创建发票");
@@ -88,9 +88,9 @@ namespace YTStdTenantPlatform.Endpoints
             {
                 var user = GetCurrentUser(ctx);
                 var req = await YTStdTenantPlatform.Infrastructure.Serialization.TenantPlatformJsonRequestReader.ReadAsync<CreatePaymentOrderReqDTO>(ctx.Request, ctx.RequestAborted);
-                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody, Messages.InvalidRequestBody), 400); return; }
+                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody), 400); return; }
                 var result = await BillingAppService.CreatePaymentOrderAsync(0, user.UserId, req);
-                if (result.Code != 0) { await WriteJsonAsync(ctx, ApiResult.Fail(result.Code, result.Message), 400); return; }
+                if (result.Code != 0) { await WriteJsonAsync(ctx, ApiResult.Fail(result.Code), 400); return; }
                 ctx.Response.StatusCode = 201;
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("创建支付订单");
@@ -114,9 +114,9 @@ namespace YTStdTenantPlatform.Endpoints
             {
                 var user = GetCurrentUser(ctx);
                 var req = await YTStdTenantPlatform.Infrastructure.Serialization.TenantPlatformJsonRequestReader.ReadAsync<CreateRefundReqDTO>(ctx.Request, ctx.RequestAborted);
-                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody, Messages.InvalidRequestBody), 400); return; }
+                if (req == null) { await WriteJsonAsync(ctx, ApiResult.Fail(ErrorCodes.InvalidRequestBody), 400); return; }
                 var result = await BillingAppService.CreateRefundAsync(0, user.UserId, req);
-                if (result.Code != 0) { await WriteJsonAsync(ctx, ApiResult.Fail(result.Code, result.Message), 400); return; }
+                if (result.Code != 0) { await WriteJsonAsync(ctx, ApiResult.Fail(result.Code), 400); return; }
                 ctx.Response.StatusCode = 201;
                 await WriteJsonAsync(ctx, result);
             }).WithSummary("创建退款");

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using YTStdTenantPlatform.Entity.TenantPlatform;
+using YTStdTenantPlatform.Domain.Enums;
 
 namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
 {
@@ -24,7 +25,7 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
                         + "请登录管理后台完成初始配置。\n\n"
                         + "如有任何问题，请联系平台客服。",
                     Variables = "[\"platform_name\",\"contact_name\",\"tenant_name\",\"tenant_code\"]",
-                    Status = "active",
+                    Status = (int)ActiveDisabledStatus.Active,
                     CreatedAt = now,
                     UpdatedAt = now
                 },
@@ -39,7 +40,7 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
                         + "为避免服务中断，请及时续费。\n\n"
                         + "感谢您的使用。",
                     Variables = "[\"contact_name\",\"tenant_name\",\"package_name\",\"expire_date\"]",
-                    Status = "active",
+                    Status = (int)ActiveDisabledStatus.Active,
                     CreatedAt = now,
                     UpdatedAt = now
                 },
@@ -56,7 +57,7 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
                         + "有效期至：{{expire_date}}\n\n"
                         + "感谢您的支持。",
                     Variables = "[\"contact_name\",\"order_no\",\"amount\",\"currency\",\"package_name\",\"expire_date\"]",
-                    Status = "active",
+                    Status = (int)ActiveDisabledStatus.Active,
                     CreatedAt = now,
                     UpdatedAt = now
                 },
@@ -72,7 +73,7 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
                         + "此链接将在 {{expire_minutes}} 分钟后失效。\n\n"
                         + "如果您未发起此操作，请忽略本邮件并确认账户安全。",
                     Variables = "[\"username\",\"reset_link\",\"expire_minutes\"]",
-                    Status = "active",
+                    Status = (int)ActiveDisabledStatus.Active,
                     CreatedAt = now,
                     UpdatedAt = now
                 },
@@ -88,7 +89,7 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
                         + "维护内容：{{maintenance_desc}}\n\n"
                         + "给您带来的不便，敬请谅解。",
                     Variables = "[\"start_time\",\"end_time\",\"maintenance_desc\"]",
-                    Status = "active",
+                    Status = (int)ActiveDisabledStatus.Active,
                     CreatedAt = now,
                     UpdatedAt = now
                 }

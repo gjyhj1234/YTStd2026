@@ -31,4 +31,18 @@ namespace YTStdTenantPlatform.Application.Dtos
         /// <summary>备注</summary>
         public string? Remark { get; set; }
     }
+
+    /// <summary>重置密码请求</summary>
+    public sealed class ResetPasswordReqDTO
+    {
+        /// <summary>新密码（为空则自动生成）</summary>
+        public string? NewPassword { get; set; }
+    }
+
+    /// <summary>批量用户 ID 请求</summary>
+    public sealed class BatchUserIdsReqDTO
+    {
+        /// <summary>用户 ID 列表</summary>
+        public long[] Ids { get; set; } = [];
+    }
 }

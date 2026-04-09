@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>通知</summary>
-[Entity(TableName = "notifications")]
-[Index("idx_notifications_tenant_status", "tenant_ref_id", "send_status")]
+[Entity(TableName = "sys_notification")]
+[Index("idx_sys_notification_tenant_status", "tenant_ref_id", "send_status")]
 public class Notification
 {
     /// <summary>主键</summary>

@@ -4,9 +4,9 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>账单发票</summary>
-[Entity(TableName = "billing_invoices", NeedAuditTable = true)]
-[Index("uq_billing_invoices_invoice_no", "invoice_no", Kind = IndexKind.Unique)]
-[Index("idx_invoices_tenant_status", "tenant_ref_id", "invoice_status")]
+[Entity(TableName = "sys_billing_invoice", NeedAuditTable = true)]
+[Index("uq_sys_billing_invoice_invoice_no", "invoice_no", Kind = IndexKind.Unique)]
+[Index("idx_sys_billing_invoice_tenant_status", "tenant_ref_id", "invoice_status")]
 public class BillingInvoice
 {
     /// <summary>主键</summary>

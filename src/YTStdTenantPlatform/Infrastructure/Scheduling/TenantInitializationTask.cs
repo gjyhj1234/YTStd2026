@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using YTStdLogger.Core;
 using YTStdTenantPlatform.Entity.TenantPlatform;
 using YTStdTenantPlatform.Infrastructure.Serialization;
+using YTStdTenantPlatform.Domain.Enums;
 
 namespace YTStdTenantPlatform.Infrastructure.Scheduling
 {
@@ -91,7 +92,7 @@ namespace YTStdTenantPlatform.Infrastructure.Scheduling
                 tenantUpdated = true;
             }
 
-            if (string.IsNullOrEmpty(tenant.DatabaseName) && !string.Equals(tenant.IsolationMode, "shared_database", StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(tenant.DatabaseName) && tenant.IsolationMode != (int)TenantIsolationMode.SharedDatabase)
             {
                 tenant.DatabaseName = "tenant_" + tenant.Id;
                 tenantUpdated = true;

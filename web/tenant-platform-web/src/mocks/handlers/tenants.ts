@@ -25,15 +25,15 @@ export const tenantsHandlers = [
       ExpiresAt: '2026-12-31T23:59:59Z',
       CreatedAt: new Date().toISOString(),
     }
-    return HttpResponse.json(ok(newTenant, 'operation.create_success'))
+    return HttpResponse.json(ok(newTenant))
   }),
 
   http.put('/api/tenants/:id', async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>
-    return HttpResponse.json(ok(body, 'operation.update_success'))
+    return HttpResponse.json(ok(body))
   }),
 
   http.put('/api/tenants/:id/status', () => {
-    return HttpResponse.json(ok(null, 'operation.status_change_success'))
+    return HttpResponse.json(ok(null))
   }),
 ]

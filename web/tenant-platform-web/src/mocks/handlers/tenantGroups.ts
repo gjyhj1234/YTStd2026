@@ -25,6 +25,6 @@ export const tenantGroupsHandlers = [
       CreatedAt: new Date().toISOString(),
       Children: [],
     }
-    return HttpResponse.json(ok(newGroup, 'operation.create_success'))
+    return HttpResponse.json(ok(newGroup))
   }),
 ]

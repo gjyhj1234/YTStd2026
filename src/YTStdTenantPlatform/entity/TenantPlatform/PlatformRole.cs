@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>平台角色</summary>
-[Entity(TableName = "platform_roles", NeedAuditTable = true)]
-[Index("uq_platform_roles_code", "code", Kind = IndexKind.Unique)]
+[Entity(TableName = "sys_role", NeedAuditTable = true)]
+[Index("uq_sys_role_code", "code", Kind = IndexKind.Unique)]
 public class PlatformRole
 {
     /// <summary>主键</summary>
@@ -24,8 +24,8 @@ public class PlatformRole
     public string? Description { get; set; }
 
     /// <summary>角色状态</summary>
-    [Column(Length = 32, IsRequired = true)]
-    public string Status { get; set; } = "";
+    [Column(DbType = "smallint", IsRequired = true)]
+    public int Status { get; set; }
 
     /// <summary>创建人</summary>
     public long? CreatedBy { get; set; }

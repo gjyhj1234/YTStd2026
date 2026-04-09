@@ -4,7 +4,7 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>数据隔离策略</summary>
-[Entity(TableName = "data_isolation_policies", NeedAuditTable = true)]
+[Entity(TableName = "sys_data_isolation_policy", NeedAuditTable = true)]
 public class DataIsolationPolicy
 {
     /// <summary>主键</summary>
@@ -27,8 +27,8 @@ public class DataIsolationPolicy
     public string PolicyConfig { get; set; } = "";
 
     /// <summary>状态</summary>
-    [Column(Length = 32, IsRequired = true)]
-    public string Status { get; set; } = "";
+    [Column(DbType = "smallint", IsRequired = true)]
+    public int Status { get; set; }
 
     /// <summary>创建时间</summary>
     public DateTime CreatedAt { get; set; }

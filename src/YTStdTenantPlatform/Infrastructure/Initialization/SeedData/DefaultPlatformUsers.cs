@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using YTStdTenantPlatform.Entity.TenantPlatform;
+using YTStdTenantPlatform.Domain.Enums;
 
 namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
 {
@@ -24,7 +25,7 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
                     DisplayName = "超级管理员",
                     PasswordHash = "gjwq1234",
                     PasswordSalt = "gjwq1234",
-                    Status = "active",
+                    Status = (int)PlatformUserStatus.Active,
                     MfaEnabled = false,
                     FailedLoginCount = 0,
                     // 设置密码立即过期，强制首次登录重置

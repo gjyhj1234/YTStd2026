@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>基础设施组件</summary>
-[Entity(TableName = "infrastructure_components", NeedAuditTable = true)]
-[Index("uq_infrastructure_components_type_name", "component_type", "component_name", Kind = IndexKind.Unique)]
+[Entity(TableName = "sys_infrastructure_component", NeedAuditTable = true)]
+[Index("uq_sys_infrastructure_component_type_name", "component_type", "component_name", Kind = IndexKind.Unique)]
 public class InfrastructureComponent
 {
     /// <summary>主键</summary>
@@ -25,8 +25,8 @@ public class InfrastructureComponent
     public string? Endpoint { get; set; }
 
     /// <summary>状态</summary>
-    [Column(Length = 32, IsRequired = true)]
-    public string Status { get; set; } = "";
+    [Column(DbType = "smallint", IsRequired = true)]
+    public int Status { get; set; }
 
     /// <summary>组件配置</summary>
     [Column(DbType = "jsonb")]

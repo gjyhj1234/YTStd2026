@@ -4,9 +4,9 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>支付订单</summary>
-[Entity(TableName = "payment_orders", NeedAuditTable = true)]
-[Index("uq_payment_orders_order_no", "order_no", Kind = IndexKind.Unique)]
-[Index("idx_payment_orders_tenant_status", "tenant_ref_id", "payment_status")]
+[Entity(TableName = "sys_payment_order", NeedAuditTable = true)]
+[Index("uq_sys_payment_order_order_no", "order_no", Kind = IndexKind.Unique)]
+[Index("idx_sys_payment_order_tenant_status", "tenant_ref_id", "payment_status")]
 public class PaymentOrder
 {
     /// <summary>主键</summary>

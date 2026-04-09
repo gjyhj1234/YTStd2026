@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>租户 API 密钥</summary>
-[Entity(TableName = "tenant_api_keys", NeedAuditTable = true)]
-[Index("uq_tenant_api_keys_access_key", "access_key", Kind = IndexKind.Unique)]
+[Entity(TableName = "sys_api_key", NeedAuditTable = true)]
+[Index("uq_sys_api_key_access_key", "access_key", Kind = IndexKind.Unique)]
 public class TenantApiKey
 {
     /// <summary>主键</summary>
@@ -28,8 +28,8 @@ public class TenantApiKey
     public string SecretHash { get; set; } = "";
 
     /// <summary>状态</summary>
-    [Column(Length = 32, IsRequired = true)]
-    public string Status { get; set; } = "";
+    [Column(DbType = "smallint", IsRequired = true)]
+    public int Status { get; set; }
 
     /// <summary>配额上限</summary>
     public long? QuotaLimit { get; set; }

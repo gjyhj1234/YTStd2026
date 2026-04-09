@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>存储策略</summary>
-[Entity(TableName = "storage_strategies", NeedAuditTable = true)]
-[Index("uq_storage_strategies_strategy_code", "strategy_code", Kind = IndexKind.Unique)]
+[Entity(TableName = "sys_storage_strategy", NeedAuditTable = true)]
+[Index("uq_sys_storage_strategy_strategy_code", "strategy_code", Kind = IndexKind.Unique)]
 public class StorageStrategy
 {
     /// <summary>主键</summary>
@@ -37,8 +37,8 @@ public class StorageStrategy
     public string? Config { get; set; }
 
     /// <summary>状态</summary>
-    [Column(Length = 32, IsRequired = true)]
-    public string Status { get; set; } = "";
+    [Column(DbType = "smallint", IsRequired = true)]
+    public int Status { get; set; }
 
     /// <summary>创建时间</summary>
     public DateTime CreatedAt { get; set; }

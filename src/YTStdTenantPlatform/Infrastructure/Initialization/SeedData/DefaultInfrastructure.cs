@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using YTStdTenantPlatform.Entity.TenantPlatform;
 using YTStdTenantPlatform.Infrastructure.Serialization;
+using YTStdTenantPlatform.Domain.Enums;
 
 namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
 {
@@ -20,7 +21,7 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
                     SubjectKey = "global",
                     WindowSeconds = 60,
                     LimitCount = 1000,
-                    Status = "active",
+                    Status = (int)ActiveDisabledStatus.Active,
                     CreatedAt = now,
                     UpdatedAt = now
                 },
@@ -30,7 +31,7 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
                     SubjectKey = "default",
                     WindowSeconds = 60,
                     LimitCount = 100,
-                    Status = "active",
+                    Status = (int)ActiveDisabledStatus.Active,
                     CreatedAt = now,
                     UpdatedAt = now
                 }
@@ -48,7 +49,7 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
                     IsolationType = "tenant_isolation",
                     PolicyName = "默认租户隔离策略",
                     PolicyConfig = BuildIsolationPolicyConfig(),
-                    Status = "active",
+                    Status = (int)ActiveDisabledStatus.Active,
                     CreatedAt = now,
                     UpdatedAt = now
                 }
@@ -65,7 +66,7 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
                 {
                     ComponentType = "cache",
                     ComponentName = "本地缓存",
-                    Status = "active",
+                    Status = (int)InfrastructureComponentStatus.Active,
                     ComponentConfig = BuildCacheComponentConfig(),
                     CreatedAt = now,
                     UpdatedAt = now
@@ -74,7 +75,7 @@ namespace YTStdTenantPlatform.Infrastructure.Initialization.SeedData
                 {
                     ComponentType = "scheduler",
                     ComponentName = "任务调度器",
-                    Status = "active",
+                    Status = (int)InfrastructureComponentStatus.Active,
                     ComponentConfig = BuildSchedulerComponentConfig(),
                     CreatedAt = now,
                     UpdatedAt = now

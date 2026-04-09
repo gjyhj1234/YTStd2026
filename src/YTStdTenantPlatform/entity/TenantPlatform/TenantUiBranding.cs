@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>租户 UI 品牌</summary>
-[Entity(TableName = "tenant_ui_brandings", NeedAuditTable = true)]
-[Index("uq_tenant_ui_brandings_tenant_ref_id", "tenant_ref_id", Kind = IndexKind.Unique)]
+[Entity(TableName = "sys_tenant_ui_branding", NeedAuditTable = true)]
+[Index("uq_sys_tenant_ui_branding_tenant_ref_id", "tenant_ref_id", Kind = IndexKind.Unique)]
 public class TenantUiBranding
 {
     /// <summary>主键</summary>

@@ -4,9 +4,9 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>SaaS 套餐能力</summary>
-[Entity(TableName = "saas_package_capabilities", NeedAuditTable = true)]
+[Entity(TableName = "sys_package_capability", NeedAuditTable = true)]
 [DetailOf(typeof(SaasPackageVersion), ForeignKey = "PackageVersionId")]
-[Index("uq_saas_package_capabilities_version_capability", "package_version_id", "capability_key", Kind = IndexKind.Unique)]
+[Index("uq_sys_package_capability_version_capability", "package_version_id", "capability_key", Kind = IndexKind.Unique)]
 public class SaasPackageCapability
 {
     /// <summary>主键</summary>

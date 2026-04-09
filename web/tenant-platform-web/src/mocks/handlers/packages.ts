@@ -17,7 +17,7 @@ export const packagesHandlers = [
     const pkg = mockSaasPackages.find((p) => p.Id === Number(params['id']))
     if (!pkg)
       return HttpResponse.json(
-        fail('error.package_not_found'),
+        fail(),
         { status: 404 },
       )
     return HttpResponse.json(ok(pkg))
@@ -33,20 +33,20 @@ export const packagesHandlers = [
       Status: 'Active',
       CreatedAt: new Date().toISOString(),
     }
-    return HttpResponse.json(ok(newPkg, 'operation.create_success'))
+    return HttpResponse.json(ok(newPkg))
   }),
 
   http.put('/api/saas-packages/:id', async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>
-    return HttpResponse.json(ok(body, 'operation.update_success'))
+    return HttpResponse.json(ok(body))
   }),
 
   http.put('/api/saas-packages/:id/enable', () => {
-    return HttpResponse.json(ok(null, 'operation.enable_success'))
+    return HttpResponse.json(ok(null))
   }),
 
   http.put('/api/saas-packages/:id/disable', () => {
-    return HttpResponse.json(ok(null, 'operation.disable_success'))
+    return HttpResponse.json(ok(null))
   }),
 
   http.get('/api/saas-packages/:packageId/versions', ({ params, request }) => {
@@ -76,7 +76,7 @@ export const packagesHandlers = [
       EffectiveTo: '2026-12-31T23:59:59Z',
       CreatedAt: new Date().toISOString(),
     }
-    return HttpResponse.json(ok(newVersion, 'operation.create_success'))
+    return HttpResponse.json(ok(newVersion))
   }),
 
   http.get(
@@ -104,7 +104,7 @@ export const packagesHandlers = [
         CapabilityValue: body['CapabilityValue'] as string,
         CreatedAt: new Date().toISOString(),
       }
-      return HttpResponse.json(ok(newCap, 'operation.create_success'))
+      return HttpResponse.json(ok(newCap))
     },
   ),
 ]

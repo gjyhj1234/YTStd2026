@@ -5,6 +5,7 @@ using YTStdLogger.Core;
 using YTStdTenantPlatform.Application.Dtos;
 using YTStdTenantPlatform.Entity.TenantPlatform;
 using YTStdTenantPlatform.Application.Constants;
+using YTStdTenantPlatform.Domain.Enums;
 
 namespace YTStdTenantPlatform.Application.Services
 {
@@ -24,7 +25,8 @@ namespace YTStdTenantPlatform.Application.Services
             {
                 if (t.DeletedAt != null) continue;
                 if (!string.IsNullOrEmpty(request.Status) &&
-                    !string.Equals(t.LifecycleStatus, request.Status, StringComparison.OrdinalIgnoreCase))
+                    (!Enum.TryParse<TenantLifecycleStatus>(request.Status, true, out var statusFilter) ||
+                     t.LifecycleStatus != (int)statusFilter))
                     continue;
                 if (!string.IsNullOrEmpty(request.Keyword) &&
                     t.TenantName.IndexOf(request.Keyword, StringComparison.OrdinalIgnoreCase) < 0 &&
@@ -64,9 +66,9 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, CreateTenantReqDTO req)
         {
             if (string.IsNullOrWhiteSpace(req.TenantCode))
-                return ApiResult<long>.Fail(ErrorCodes.TenantCodeRequired, Messages.TenantCodeRequired);
+                return ApiResult<long>.Fail(ErrorCodes.TenantCodeRequired);
             if (string.IsNullOrWhiteSpace(req.TenantName))
-                return ApiResult<long>.Fail(ErrorCodes.TenantNameRequired, Messages.TenantNameRequired);
+                return ApiResult<long>.Fail(ErrorCodes.TenantNameRequired);
 
             var now = DateTime.UtcNow;
             var tenant = new Tenant
@@ -77,9 +79,9 @@ namespace YTStdTenantPlatform.Application.Services
                 ContactName = req.ContactName,
                 ContactPhone = req.ContactPhone,
                 ContactEmail = req.ContactEmail,
-                SourceType = req.SourceType,
-                LifecycleStatus = "pending",
-                IsolationMode = req.IsolationMode,
+                SourceType = Enum.TryParse<TenantSourceType>(req.SourceType, true, out var src) ? (int)src : (int)TenantSourceType.SelfService,
+                LifecycleStatus = (int)TenantLifecycleStatus.Trial,
+                IsolationMode = Enum.TryParse<TenantIsolationMode>(req.IsolationMode, true, out var iso) ? (int)iso : (int)TenantIsolationMode.SharedDatabase,
                 DefaultLanguage = req.DefaultLanguage,
                 DefaultTimezone = req.DefaultTimezone,
                 Enabled = false,
@@ -90,10 +92,10 @@ namespace YTStdTenantPlatform.Application.Services
 
             var insResult = await TenantCRUD.InsertAsync(tenantId, operatorId, tenant);
             if (!insResult.Success)
-                return ApiResult<long>.Fail(ErrorCodes.TenantCreateFailed, Messages.TenantCreateFailed);
+                return ApiResult<long>.Fail(ErrorCodes.TenantCreateFailed);
 
             // 记录生命周期事件
-            await RecordLifecycleEventAsync(tenantId, operatorId, insResult.Id, "created", null, "pending", "新建租户", operatorId);
+            await RecordLifecycleEventAsync(tenantId, operatorId, insResult.Id, "created", null, TenantLifecycleStatus.Trial.ToString(), "新建租户", operatorId);
 
             Logger.Info(tenantId, operatorId, "[TenantLifecycleAppService] 创建租户: " + req.TenantCode);
             return ApiResult<long>.Ok(insResult.Id);
@@ -104,11 +106,11 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, long id, UpdateTenantReqDTO req)
         {
             var (getResult, tenants) = await TenantCRUD.GetListAsync(tenantId, operatorId);
-            if (!getResult.Success || tenants == null) return ApiResult.Fail(ErrorCodes.TenantQueryFailed, Messages.TenantQueryFailed);
+            if (!getResult.Success || tenants == null) return ApiResult.Fail(ErrorCodes.TenantQueryFailed);
 
             Tenant? target = null;
             foreach (var t in tenants) { if (t.Id == id && t.DeletedAt == null) { target = t; break; } }
-            if (target == null) return ApiResult.Fail(ErrorCodes.TenantNotFound, Messages.TenantNotFound);
+            if (target == null) return ApiResult.Fail(ErrorCodes.TenantNotFound);
 
             if (req.TenantName != null) target.TenantName = req.TenantName;
             if (req.EnterpriseName != null) target.EnterpriseName = req.EnterpriseName;
@@ -118,10 +120,10 @@ namespace YTStdTenantPlatform.Application.Services
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await TenantCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.TenantUpdateFailed, Messages.TenantUpdateFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.TenantUpdateFailed);
 
             Logger.Info(tenantId, operatorId, "[TenantLifecycleAppService] 更新租户: " + target.TenantCode);
-            return ApiResult.Ok(Messages.OperationSuccess);
+            return ApiResult.Ok();
         }
 
         /// <summary>租户状态流转</summary>
@@ -129,47 +131,49 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, long id, TenantStatusChangeReqDTO req)
         {
             var (getResult, tenants) = await TenantCRUD.GetListAsync(tenantId, operatorId);
-            if (!getResult.Success || tenants == null) return ApiResult.Fail(ErrorCodes.TenantQueryFailed, Messages.TenantQueryFailed);
+            if (!getResult.Success || tenants == null) return ApiResult.Fail(ErrorCodes.TenantQueryFailed);
 
             Tenant? target = null;
             foreach (var t in tenants) { if (t.Id == id && t.DeletedAt == null) { target = t; break; } }
-            if (target == null) return ApiResult.Fail(ErrorCodes.TenantNotFound, Messages.TenantNotFound);
+            if (target == null) return ApiResult.Fail(ErrorCodes.TenantNotFound);
 
             var fromStatus = target.LifecycleStatus;
-            var toStatus = req.TargetStatus;
+            if (!Enum.TryParse<TenantLifecycleStatus>(req.TargetStatus, true, out var toStatusEnum))
+                return ApiResult.Fail(ErrorCodes.TenantStatusTransitionDenied);
+            var toStatus = (int)toStatusEnum;
 
             // 状态流转校验
             if (!IsValidTransition(fromStatus, toStatus))
-                return ApiResult.Fail(ErrorCodes.TenantStatusTransitionDenied, Messages.TenantStatusTransitionDenied);
+                return ApiResult.Fail(ErrorCodes.TenantStatusTransitionDenied);
 
             target.LifecycleStatus = toStatus;
             target.UpdatedAt = DateTime.UtcNow;
 
-            if (string.Equals(toStatus, "active", StringComparison.OrdinalIgnoreCase))
+            if (toStatus == (int)TenantLifecycleStatus.Active)
             {
                 target.Enabled = true;
                 if (target.ActivatedAt == null) target.ActivatedAt = DateTime.UtcNow;
             }
-            else if (string.Equals(toStatus, "suspended", StringComparison.OrdinalIgnoreCase))
+            else if (toStatus == (int)TenantLifecycleStatus.Suspended)
             {
                 target.Enabled = false;
                 target.SuspendedAt = DateTime.UtcNow;
             }
-            else if (string.Equals(toStatus, "closed", StringComparison.OrdinalIgnoreCase))
+            else if (toStatus == (int)TenantLifecycleStatus.Closed)
             {
                 target.Enabled = false;
                 target.ClosedAt = DateTime.UtcNow;
             }
 
             var updResult = await TenantCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.TenantStatusChangeFailed, Messages.TenantStatusChangeFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.TenantStatusChangeFailed);
 
             await RecordLifecycleEventAsync(tenantId, operatorId, id, "status_changed",
-                fromStatus, toStatus, req.Reason, operatorId);
+                ((TenantLifecycleStatus)fromStatus).ToString(), toStatusEnum.ToString(), req.Reason, operatorId);
 
             Logger.Info(tenantId, operatorId,
-                "[TenantLifecycleAppService] 租户状态变更: " + target.TenantCode + " " + fromStatus + " → " + toStatus);
-            return ApiResult.Ok(Messages.OperationSuccess);
+                "[TenantLifecycleAppService] 租户状态变更: " + target.TenantCode + " " + ((TenantLifecycleStatus)fromStatus).ToString() + " → " + toStatusEnum.ToString());
+            return ApiResult.Ok();
         }
 
         /// <summary>获取租户生命周期事件列表</summary>
@@ -210,20 +214,93 @@ namespace YTStdTenantPlatform.Application.Services
         }
 
         /// <summary>校验状态流转是否合法</summary>
-        private static bool IsValidTransition(string from, string to)
+        private static bool IsValidTransition(int from, int to)
         {
-            // pending → active
-            // active → suspended / closed
-            // suspended → active / closed
-            if (string.Equals(from, "pending", StringComparison.OrdinalIgnoreCase))
-                return string.Equals(to, "active", StringComparison.OrdinalIgnoreCase);
-            if (string.Equals(from, "active", StringComparison.OrdinalIgnoreCase))
-                return string.Equals(to, "suspended", StringComparison.OrdinalIgnoreCase) ||
-                       string.Equals(to, "closed", StringComparison.OrdinalIgnoreCase);
-            if (string.Equals(from, "suspended", StringComparison.OrdinalIgnoreCase))
-                return string.Equals(to, "active", StringComparison.OrdinalIgnoreCase) ||
-                       string.Equals(to, "closed", StringComparison.OrdinalIgnoreCase);
+            // Trial → Active
+            // Active → Suspended / Closed
+            // Suspended → Active / Closed
+            if (from == (int)TenantLifecycleStatus.Trial)
+                return to == (int)TenantLifecycleStatus.Active;
+            if (from == (int)TenantLifecycleStatus.Active)
+                return to == (int)TenantLifecycleStatus.Suspended ||
+                       to == (int)TenantLifecycleStatus.Closed;
+            if (from == (int)TenantLifecycleStatus.Suspended)
+                return to == (int)TenantLifecycleStatus.Active ||
+                       to == (int)TenantLifecycleStatus.Closed;
             return false;
+        }
+
+        /// <summary>软删除租户</summary>
+        public static async ValueTask<ApiResult> DeleteAsync(int tenantId, long operatorId, long id)
+        {
+            var (getResult, tenants) = await TenantCRUD.GetListAsync(tenantId, operatorId);
+            if (!getResult.Success || tenants == null) return ApiResult.Fail(ErrorCodes.TenantQueryFailed);
+
+            Tenant? target = null;
+            foreach (var t in tenants) { if (t.Id == id && t.DeletedAt == null) { target = t; break; } }
+            if (target == null) return ApiResult.Fail(ErrorCodes.TenantNotFound);
+
+            target.DeletedAt = DateTime.UtcNow;
+            target.Enabled = false;
+            target.UpdatedAt = DateTime.UtcNow;
+
+            var updResult = await TenantCRUD.UpdateAsync(tenantId, operatorId, target);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.TenantDeleteFailed);
+
+            await RecordLifecycleEventAsync(tenantId, operatorId, id, "deleted",
+                ((TenantLifecycleStatus)target.LifecycleStatus).ToString(), "Deleted", "软删除", operatorId);
+
+            Logger.Info(tenantId, operatorId, "[TenantLifecycleAppService] 软删除租户: " + target.TenantCode);
+            return ApiResult.Ok();
+        }
+
+        /// <summary>初始化租户（Trial → Active）</summary>
+        public static async ValueTask<ApiResult> InitializeAsync(int tenantId, long operatorId, long id)
+        {
+            var req = new TenantStatusChangeReqDTO { TargetStatus = "Active", Reason = "租户初始化" };
+            return await ChangeStatusAsync(tenantId, operatorId, id, req);
+        }
+
+        /// <summary>暂停租户（Active → Suspended）</summary>
+        public static async ValueTask<ApiResult> SuspendAsync(int tenantId, long operatorId, long id)
+        {
+            var req = new TenantStatusChangeReqDTO { TargetStatus = "Suspended", Reason = "租户暂停" };
+            return await ChangeStatusAsync(tenantId, operatorId, id, req);
+        }
+
+        /// <summary>恢复租户（Suspended → Active）</summary>
+        public static async ValueTask<ApiResult> ResumeAsync(int tenantId, long operatorId, long id)
+        {
+            var req = new TenantStatusChangeReqDTO { TargetStatus = "Active", Reason = "租户恢复" };
+            return await ChangeStatusAsync(tenantId, operatorId, id, req);
+        }
+
+        /// <summary>终止租户（Active/Suspended → Closed）</summary>
+        public static async ValueTask<ApiResult> TerminateAsync(int tenantId, long operatorId, long id)
+        {
+            var req = new TenantStatusChangeReqDTO { TargetStatus = "Closed", Reason = "租户终止" };
+            return await ChangeStatusAsync(tenantId, operatorId, id, req);
+        }
+
+        /// <summary>试用转正式（Trial → Active）</summary>
+        public static async ValueTask<ApiResult> ConvertTrialAsync(int tenantId, long operatorId, long id)
+        {
+            var req = new TenantStatusChangeReqDTO { TargetStatus = "Active", Reason = "试用转正式" };
+            return await ChangeStatusAsync(tenantId, operatorId, id, req);
+        }
+
+        /// <summary>检查租户编码是否存在</summary>
+        public static async ValueTask<ApiResult<bool>> CheckCodeExistsAsync(int tenantId, long operatorId, string code)
+        {
+            var (result, data) = await TenantCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return ApiResult<bool>.Ok(false);
+
+            foreach (var t in data)
+            {
+                if (t.DeletedAt == null && string.Equals(t.TenantCode, code, StringComparison.OrdinalIgnoreCase))
+                    return ApiResult<bool>.Ok(true);
+            }
+            return ApiResult<bool>.Ok(false);
         }
 
         /// <summary>记录生命周期事件</summary>
@@ -252,8 +329,8 @@ namespace YTStdTenantPlatform.Application.Services
             {
                 Id = t.Id, TenantCode = t.TenantCode, TenantName = t.TenantName,
                 EnterpriseName = t.EnterpriseName, ContactName = t.ContactName,
-                ContactEmail = t.ContactEmail, LifecycleStatus = t.LifecycleStatus,
-                IsolationMode = t.IsolationMode, Enabled = t.Enabled,
+                ContactEmail = t.ContactEmail, LifecycleStatus = ((TenantLifecycleStatus)t.LifecycleStatus).ToString(),
+                IsolationMode = ((TenantIsolationMode)t.IsolationMode).ToString(), Enabled = t.Enabled,
                 OpenedAt = t.OpenedAt, ExpiresAt = t.ExpiresAt, CreatedAt = t.CreatedAt
             };
         }

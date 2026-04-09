@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>租户每日统计</summary>
-[Entity(TableName = "tenant_daily_stats")]
-[Index("uq_tenant_daily_stats_tenant_date", "tenant_ref_id", "stat_date", Kind = IndexKind.Unique)]
+[Entity(TableName = "sys_tenant_daily_stat")]
+[Index("uq_sys_tenant_daily_stat_tenant_date", "tenant_ref_id", "stat_date", Kind = IndexKind.Unique)]
 public class TenantDailyStat
 {
     /// <summary>主键</summary>

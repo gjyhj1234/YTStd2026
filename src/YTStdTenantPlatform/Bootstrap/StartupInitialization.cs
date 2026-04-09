@@ -149,7 +149,9 @@ namespace YTStdTenantPlatform.Bootstrap
                 new SecurityPolicySeedContributor(),
                 new PermissionSeedContributor(),
                 new RoleSeedContributor(),
+                new MenuSeedContributor(),
                 new PackageSeedContributor(),
+                new DictionarySeedContributor(),
                 new NotificationTemplateSeedContributor(),
                 new InfrastructureSeedContributor()
             };

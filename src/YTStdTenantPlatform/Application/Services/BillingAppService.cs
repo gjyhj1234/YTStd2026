@@ -67,7 +67,7 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, CreateBillingInvoiceReqDTO req)
         {
             if (req.TenantRefId <= 0)
-                return ApiResult<long>.Fail(ErrorCodes.InvalidParameter, Messages.InvalidParameter);
+                return ApiResult<long>.Fail(ErrorCodes.InvalidParameter);
 
             var now = DateTime.UtcNow;
             var entity = new BillingInvoice
@@ -85,7 +85,7 @@ namespace YTStdTenantPlatform.Application.Services
 
             var insResult = await BillingInvoiceCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
-                return ApiResult<long>.Fail(ErrorCodes.InvoiceCreateFailed, Messages.InvoiceCreateFailed);
+                return ApiResult<long>.Fail(ErrorCodes.InvoiceCreateFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[BillingAppService] 创建发票: " + entity.InvoiceNo);
@@ -97,21 +97,21 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, long id)
         {
             var (getResult, invoices) = await BillingInvoiceCRUD.GetListAsync(tenantId, operatorId);
-            if (!getResult.Success || invoices == null) return ApiResult.Fail(ErrorCodes.InvoiceQueryFailed, Messages.InvoiceQueryFailed);
+            if (!getResult.Success || invoices == null) return ApiResult.Fail(ErrorCodes.InvoiceQueryFailed);
 
             BillingInvoice? target = null;
             foreach (var inv in invoices) { if (inv.Id == id) { target = inv; break; } }
-            if (target == null) return ApiResult.Fail(ErrorCodes.InvoiceNotFound, Messages.InvoiceNotFound);
+            if (target == null) return ApiResult.Fail(ErrorCodes.InvoiceNotFound);
 
             target.InvoiceStatus = "voided";
             target.UpdatedAt = DateTime.UtcNow;
 
             var updResult = await BillingInvoiceCRUD.UpdateAsync(tenantId, operatorId, target);
-            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.InvoiceVoidFailed, Messages.InvoiceVoidFailed);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.InvoiceVoidFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[BillingAppService] 作废发票: " + target.InvoiceNo);
-            return ApiResult.Ok(Messages.OperationSuccess);
+            return ApiResult.Ok();
         }
 
         // ──────────────────────────────────────────────────────
@@ -194,7 +194,7 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, CreatePaymentOrderReqDTO req)
         {
             if (req.Amount <= 0)
-                return ApiResult<long>.Fail(ErrorCodes.InvalidParameter, Messages.InvalidParameter);
+                return ApiResult<long>.Fail(ErrorCodes.InvalidParameter);
 
             var now = DateTime.UtcNow;
             var entity = new PaymentOrder
@@ -212,7 +212,7 @@ namespace YTStdTenantPlatform.Application.Services
 
             var insResult = await PaymentOrderCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
-                return ApiResult<long>.Fail(ErrorCodes.PaymentOrderCreateFailed, Messages.PaymentOrderCreateFailed);
+                return ApiResult<long>.Fail(ErrorCodes.PaymentOrderCreateFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[BillingAppService] 创建支付订单: " + entity.OrderNo);
@@ -249,7 +249,7 @@ namespace YTStdTenantPlatform.Application.Services
             int tenantId, long operatorId, CreateRefundReqDTO req)
         {
             if (req.RefundAmount <= 0)
-                return ApiResult<long>.Fail(ErrorCodes.InvalidParameter, Messages.InvalidParameter);
+                return ApiResult<long>.Fail(ErrorCodes.InvalidParameter);
 
             var now = DateTime.UtcNow;
             var entity = new PaymentRefund
@@ -265,7 +265,7 @@ namespace YTStdTenantPlatform.Application.Services
 
             var insResult = await PaymentRefundCRUD.InsertAsync(tenantId, operatorId, entity);
             if (!insResult.Success)
-                return ApiResult<long>.Fail(ErrorCodes.RefundCreateFailed, Messages.RefundCreateFailed);
+                return ApiResult<long>.Fail(ErrorCodes.RefundCreateFailed);
 
             Logger.Info(tenantId, operatorId,
                 "[BillingAppService] 创建退款: " + entity.RefundNo);

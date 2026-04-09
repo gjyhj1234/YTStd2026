@@ -11,13 +11,18 @@ namespace YTStdTenantPlatform.Infrastructure.Serialization;
 // ── 认证 ──
 [JsonSerializable(typeof(LoginReqDTO))]
 [JsonSerializable(typeof(RefreshTokenReqDTO))]
+[JsonSerializable(typeof(ChangePasswordReqDTO))]
 [JsonSerializable(typeof(ApiResult<LoginRepDTO>))]
 [JsonSerializable(typeof(ApiResult<CurrentUserRepDTO>))]
 // ── 平台用户 ──
 [JsonSerializable(typeof(CreatePlatformUserReqDTO))]
 [JsonSerializable(typeof(UpdatePlatformUserReqDTO))]
+[JsonSerializable(typeof(ResetPasswordReqDTO))]
+[JsonSerializable(typeof(BatchUserIdsReqDTO))]
 [JsonSerializable(typeof(ApiResult<PlatformUserRepDTO>))]
 [JsonSerializable(typeof(ApiResult<PagedResult<PlatformUserRepDTO>>))]
+[JsonSerializable(typeof(ApiResult<ResetPasswordRepDTO>))]
+[JsonSerializable(typeof(ApiResult<bool>))]
 // ── 平台角色 ──
 [JsonSerializable(typeof(CreatePlatformRoleReqDTO))]
 [JsonSerializable(typeof(UpdatePlatformRoleReqDTO))]
@@ -25,7 +30,11 @@ namespace YTStdTenantPlatform.Infrastructure.Serialization;
 [JsonSerializable(typeof(RoleMemberBindReqDTO))]
 [JsonSerializable(typeof(ApiResult<PlatformRoleRepDTO>))]
 [JsonSerializable(typeof(ApiResult<PagedResult<PlatformRoleRepDTO>>))]
+[JsonSerializable(typeof(ApiResult<List<long>>))]
+[JsonSerializable(typeof(ApiResult<List<PlatformRoleSimpleRepDTO>>))]
 // ── 平台权限 ──
+[JsonSerializable(typeof(CreatePlatformPermissionReqDTO))]
+[JsonSerializable(typeof(UpdatePlatformPermissionReqDTO))]
 [JsonSerializable(typeof(ApiResult<PlatformPermissionRepDTO>))]
 [JsonSerializable(typeof(ApiResult<List<PlatformPermissionRepDTO>>))]
 // ── 租户生命周期 ──
@@ -38,6 +47,7 @@ namespace YTStdTenantPlatform.Infrastructure.Serialization;
 [JsonSerializable(typeof(ApiResult<PagedResult<TenantLifecycleEventRepDTO>>))]
 // ── 租户信息 ──
 [JsonSerializable(typeof(CreateTenantGroupReqDTO))]
+[JsonSerializable(typeof(UpdateTenantGroupReqDTO))]
 [JsonSerializable(typeof(CreateTenantDomainReqDTO))]
 [JsonSerializable(typeof(CreateTenantTagReqDTO))]
 [JsonSerializable(typeof(TagBindReqDTO))]
@@ -51,12 +61,16 @@ namespace YTStdTenantPlatform.Infrastructure.Serialization;
 [JsonSerializable(typeof(SaveTenantResourceQuotaReqDTO))]
 [JsonSerializable(typeof(ApiResult<TenantResourceQuotaRepDTO>))]
 [JsonSerializable(typeof(ApiResult<PagedResult<TenantResourceQuotaRepDTO>>))]
+[JsonSerializable(typeof(ApiResult<List<TenantResourceQuotaRepDTO>>))]
+[JsonSerializable(typeof(ApiResult<List<TenantResourceUsageRepDTO>>))]
 // ── 租户配置 ──
 [JsonSerializable(typeof(UpdateTenantSystemConfigReqDTO))]
 [JsonSerializable(typeof(SaveTenantFeatureFlagReqDTO))]
 [JsonSerializable(typeof(SaveTenantParameterReqDTO))]
 [JsonSerializable(typeof(ApiResult<TenantSystemConfigRepDTO>))]
+[JsonSerializable(typeof(ApiResult<List<TenantSystemConfigRepDTO>>))]
 [JsonSerializable(typeof(ApiResult<TenantFeatureFlagRepDTO>))]
+[JsonSerializable(typeof(ApiResult<List<TenantFeatureFlagRepDTO>>))]
 [JsonSerializable(typeof(ApiResult<PagedResult<TenantFeatureFlagRepDTO>>))]
 [JsonSerializable(typeof(ApiResult<TenantParameterRepDTO>))]
 [JsonSerializable(typeof(ApiResult<PagedResult<TenantParameterRepDTO>>))]
@@ -137,6 +151,18 @@ namespace YTStdTenantPlatform.Infrastructure.Serialization;
 [JsonSerializable(typeof(ApiResult<PagedResult<TenantFileRepDTO>>))]
 [JsonSerializable(typeof(ApiResult<FileAccessPolicyRepDTO>))]
 [JsonSerializable(typeof(ApiResult<PagedResult<FileAccessPolicyRepDTO>>))]
+// ── 菜单 ──
+[JsonSerializable(typeof(CreateMenuReqDTO))]
+[JsonSerializable(typeof(UpdateMenuReqDTO))]
+[JsonSerializable(typeof(MenuSortReqDTO))]
+[JsonSerializable(typeof(ApiResult<MenuRepDTO>))]
+[JsonSerializable(typeof(ApiResult<List<MenuRepDTO>>))]
+// ── 字典 ──
+[JsonSerializable(typeof(CreateDictionaryReqDTO))]
+[JsonSerializable(typeof(UpdateDictionaryReqDTO))]
+[JsonSerializable(typeof(ApiResult<DictionaryRepDTO>))]
+[JsonSerializable(typeof(ApiResult<List<DictionaryRepDTO>>))]
+[JsonSerializable(typeof(ApiResult<List<DictionaryTypeRepDTO>>))]
 internal partial class TenantPlatformJsonSerializerContext : JsonSerializerContext
 {
 }

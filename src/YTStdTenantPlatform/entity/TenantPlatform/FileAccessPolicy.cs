@@ -4,7 +4,7 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>文件访问策略</summary>
-[Entity(TableName = "file_access_policies", NeedAuditTable = true)]
+[Entity(TableName = "sys_file_access_policy", NeedAuditTable = true)]
 public class FileAccessPolicy
 {
     /// <summary>主键</summary>

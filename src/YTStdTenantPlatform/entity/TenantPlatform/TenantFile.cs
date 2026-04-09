@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>租户文件</summary>
-[Entity(TableName = "tenant_files", NeedAuditTable = true)]
-[Index("idx_tenant_files_tenant_visibility", "tenant_ref_id", "visibility")]
+[Entity(TableName = "sys_file", NeedAuditTable = true)]
+[Index("idx_sys_file_tenant_visibility", "tenant_ref_id", "visibility")]
 public class TenantFile
 {
     /// <summary>主键</summary>

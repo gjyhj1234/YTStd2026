@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>限流策略</summary>
-[Entity(TableName = "rate_limit_policies", NeedAuditTable = true)]
-[Index("uq_rate_limit_policies_subject_type_key", "subject_type", "subject_key", Kind = IndexKind.Unique)]
+[Entity(TableName = "sys_rate_limit_policy", NeedAuditTable = true)]
+[Index("uq_sys_rate_limit_policy_subject_type_key", "subject_type", "subject_key", Kind = IndexKind.Unique)]
 public class RateLimitPolicy
 {
     /// <summary>主键</summary>
@@ -30,8 +30,8 @@ public class RateLimitPolicy
     public int? BurstLimit { get; set; }
 
     /// <summary>状态</summary>
-    [Column(Length = 32, IsRequired = true)]
-    public string Status { get; set; } = "";
+    [Column(DbType = "smallint", IsRequired = true)]
+    public int Status { get; set; }
 
     /// <summary>创建时间</summary>
     public DateTime CreatedAt { get; set; }

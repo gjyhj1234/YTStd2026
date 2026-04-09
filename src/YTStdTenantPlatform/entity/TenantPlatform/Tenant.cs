@@ -4,8 +4,8 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>租户</summary>
-[Entity(TableName = "tenants", NeedAuditTable = true)]
-[Index("uq_tenants_tenant_code", "tenant_code", Kind = IndexKind.Unique)]
+[Entity(TableName = "sys_tenant", NeedAuditTable = true)]
+[Index("uq_sys_tenant_tenant_code", "tenant_code", Kind = IndexKind.Unique)]
 public class Tenant
 {
     /// <summary>主键</summary>
@@ -37,12 +37,12 @@ public class Tenant
     public string? ContactEmail { get; set; }
 
     /// <summary>来源类型</summary>
-    [Column(Length = 32, IsRequired = true)]
-    public string SourceType { get; set; } = "";
+    [Column(DbType = "smallint", IsRequired = true)]
+    public int SourceType { get; set; }
 
     /// <summary>生命周期状态</summary>
-    [Column(Length = 32, IsRequired = true)]
-    public string LifecycleStatus { get; set; } = "";
+    [Column(DbType = "smallint", IsRequired = true)]
+    public int LifecycleStatus { get; set; }
 
     /// <summary>当前套餐 ID</summary>
     public long? CurrentPlanId { get; set; }
@@ -74,8 +74,8 @@ public class Tenant
     public string DefaultTimezone { get; set; } = "";
 
     /// <summary>隔离模式</summary>
-    [Column(Length = 32, IsRequired = true)]
-    public string IsolationMode { get; set; } = "";
+    [Column(DbType = "smallint", IsRequired = true)]
+    public int IsolationMode { get; set; }
 
     /// <summary>数据库名称</summary>
     [Column(Length = 128)]
@@ -90,6 +90,7 @@ public class Tenant
     public string? DefaultDomain { get; set; }
 
     /// <summary>是否启用</summary>
+    [Column(ColumnName = "is_enabled")]
     public bool Enabled { get; set; }
 
     /// <summary>开通时间</summary>

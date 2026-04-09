@@ -17,7 +17,7 @@ export const logsHandlers = [
     const log = mockOperationLogs.find((l) => l.Id === Number(params['id']))
     if (!log)
       return HttpResponse.json(
-        fail('error.log_not_found'),
+        fail(),
         { status: 404 },
       )
     return HttpResponse.json(ok(log))
@@ -33,7 +33,7 @@ export const logsHandlers = [
     const log = mockAuditLogs.find((l) => l.Id === Number(params['id']))
     if (!log)
       return HttpResponse.json(
-        fail('error.log_not_found'),
+        fail(),
         { status: 404 },
       )
     return HttpResponse.json(ok(log))
@@ -49,7 +49,7 @@ export const logsHandlers = [
     const log = mockSystemLogs.find((l) => l.Id === Number(params['id']))
     if (!log)
       return HttpResponse.json(
-        fail('error.log_not_found'),
+        fail(),
         { status: 404 },
       )
     return HttpResponse.json(ok(log))

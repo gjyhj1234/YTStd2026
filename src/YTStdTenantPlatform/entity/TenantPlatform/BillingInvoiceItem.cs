@@ -4,7 +4,7 @@ using YTStdEntity.Attributes;
 namespace YTStdTenantPlatform.Entity.TenantPlatform;
 
 /// <summary>账单发票明细</summary>
-[Entity(TableName = "billing_invoice_items")]
+[Entity(TableName = "sys_billing_invoice_item")]
 [DetailOf(typeof(BillingInvoice), ForeignKey = "InvoiceId")]
 public class BillingInvoiceItem
 {

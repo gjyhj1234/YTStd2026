@@ -29,22 +29,22 @@ namespace YTStdTenantPlatform.Infrastructure.Middleware
             catch (UnauthorizedAccessException ex)
             {
                 Logger.Warn(0, 0, "[GlobalExceptionMiddleware] 未授权访问: " + ex.Message);
-                await WriteErrorResponse(context, HttpStatusCode.Forbidden, ErrorCodes.Forbidden, Messages.Forbidden);
+                await WriteErrorResponse(context, HttpStatusCode.Forbidden, ErrorCodes.Forbidden);
             }
             catch (ArgumentException ex)
             {
                 Logger.Warn(0, 0, "[GlobalExceptionMiddleware] 参数错误: " + ex.Message);
-                await WriteErrorResponse(context, HttpStatusCode.BadRequest, ErrorCodes.InvalidParameter, Messages.InvalidParameter);
+                await WriteErrorResponse(context, HttpStatusCode.BadRequest, ErrorCodes.InvalidParameter);
             }
             catch (InvalidOperationException ex)
             {
                 Logger.Warn(0, 0, "[GlobalExceptionMiddleware] 操作无效: " + ex.Message);
-                await WriteErrorResponse(context, HttpStatusCode.BadRequest, ErrorCodes.InvalidOperation, Messages.InvalidOperation);
+                await WriteErrorResponse(context, HttpStatusCode.BadRequest, ErrorCodes.InvalidOperation);
             }
             catch (Exception ex)
             {
                 Logger.Error(0, 0, "[GlobalExceptionMiddleware] 未处理异常: " + ex.ToString());
-                await WriteErrorResponse(context, HttpStatusCode.InternalServerError, ErrorCodes.InternalServerError, Messages.InternalServerError);
+                await WriteErrorResponse(context, HttpStatusCode.InternalServerError, ErrorCodes.InternalServerError);
             }
         }
 
@@ -52,12 +52,11 @@ namespace YTStdTenantPlatform.Infrastructure.Middleware
         private static async Task WriteErrorResponse(
             HttpContext context,
             HttpStatusCode statusCode,
-            int errorCode,
-            string message)
+            int errorCode)
         {
             if (context.Response.HasStarted) return;
 
-            var result = Application.Dtos.ApiResult.Fail(errorCode, message);
+            var result = Application.Dtos.ApiResult.Fail(errorCode);
             await TenantPlatformJsonResponseWriter.WriteAsync(context, result, (int)statusCode);
         }
     }
