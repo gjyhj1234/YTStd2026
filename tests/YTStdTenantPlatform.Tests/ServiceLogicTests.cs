@@ -108,7 +108,7 @@ namespace YTStdTenantPlatform.Tests
         }
 
         [Fact]
-        public void ApiResult_Ok_MessageIsZero()
+        public void ApiResult_Ok_MessageCodeIsZero()
         {
             var result = ApiResult.Ok();
             Assert.Equal(0, result.Message);
