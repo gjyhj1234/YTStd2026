@@ -1,4 +1,4 @@
-import { getCurrentLocale } from '@/locales'
+import { getCurrentLocale, i18n } from '@/locales'
 import { ApiError, handleApiError } from '@/utils/errorHandler'
 import type { ApiResult, PagedResult } from '@/types/base'
 
@@ -32,12 +32,16 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<ApiRe
     localStorage.removeItem('platform_token')
     localStorage.removeItem('platform_user')
     window.location.href = '/login'
-    throw new ApiError(10006, 10006)
+    const tokenMsg = i18n.global.t('10006')
+    throw new ApiError(10006, 10006, tokenMsg !== '10006' ? tokenMsg : undefined)
   }
 
   const result: ApiResult<T> = await response.json()
   if (result.Code !== 0) {
-    const error = new ApiError(result.Code, result.Message)
+    const codeStr = String(result.Code)
+    const translated = i18n.global.t(codeStr)
+    const message = translated !== codeStr ? translated : String(result.Message)
+    const error = new ApiError(result.Code, result.Message, message)
     handleApiError(error)
     throw error
   }
