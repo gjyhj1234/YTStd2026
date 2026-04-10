@@ -7,25 +7,34 @@ import zhCN from './zh-CN.json'
 import enUS from './en-US.json'
 import msMY from './ms-MY.json'
 import zhTW from './zh-TW.json'
+import jaJP from './ja-JP.json'
 import generatedZhCN from './generated/zh-CN.json'
 import generatedEnUS from './generated/en-US.json'
 import generatedMsMY from './generated/ms-MY.json'
 import generatedZhTW from './generated/zh-TW.json'
+import generatedJaJP from './generated/ja-JP.json'
 import commonZhCN from './common/zh-CN.json'
 import commonEnUS from './common/en-US.json'
 import commonMsMY from './common/ms-MY.json'
 import commonZhTW from './common/zh-TW.json'
+import commonJaJP from './common/ja-JP.json'
+import enumsZhCN from './enums/zh-CN.json'
+import enumsEnUS from './enums/en-US.json'
+import enumsMsMY from './enums/ms-MY.json'
+import enumsZhTW from './enums/zh-TW.json'
+import enumsJaJP from './enums/ja-JP.json'
 
-export type LocaleCode = 'zh-CN' | 'en-US' | 'ms-MY' | 'zh-TW'
+export type LocaleCode = 'zh-CN' | 'en-US' | 'ms-MY' | 'zh-TW' | 'ja-JP'
 
 const LOCALE_STORAGE_KEY = 'platform_locale'
 const DEFAULT_LOCALE: LocaleCode = 'zh-CN'
 
 const messages = {
-  'zh-CN': { ...commonZhCN, ...generatedZhCN, ...zhCN },
-  'en-US': { ...commonEnUS, ...generatedEnUS, ...enUS },
-  'ms-MY': { ...commonMsMY, ...generatedMsMY, ...msMY },
-  'zh-TW': { ...commonZhTW, ...generatedZhTW, ...zhTW },
+  'zh-CN': { ...commonZhCN, ...generatedZhCN, ...enumsZhCN, ...zhCN },
+  'en-US': { ...commonEnUS, ...generatedEnUS, ...enumsEnUS, ...enUS },
+  'ms-MY': { ...commonMsMY, ...generatedMsMY, ...enumsMsMY, ...msMY },
+  'zh-TW': { ...commonZhTW, ...generatedZhTW, ...enumsZhTW, ...zhTW },
+  'ja-JP': { ...commonJaJP, ...generatedJaJP, ...enumsJaJP, ...jaJP },
 }
 
 loadMessages(devExtremeEn)
@@ -47,6 +56,7 @@ export const localeOptions: Array<{ value: LocaleCode; labelKey: string }> = [
   { value: 'en-US', labelKey: 'languages.en-US' },
   { value: 'ms-MY', labelKey: 'languages.ms-MY' },
   { value: 'zh-TW', labelKey: 'languages.zh-TW' },
+  { value: 'ja-JP', labelKey: 'languages.ja-JP' },
 ]
 
 function resolveInitialLocale(): LocaleCode {
@@ -65,6 +75,9 @@ export function normalizeLocale(value?: string | null): LocaleCode {
     case 'zh_HK':
     case 'zh-HK':
       return 'zh-TW'
+    case 'ja':
+    case 'ja-JP':
+      return 'ja-JP'
     case 'zh':
     case 'zh-CN':
       return 'zh-CN'
@@ -81,6 +94,8 @@ function mapDevExtremeLocale(locale: LocaleCode): string {
       return 'zh-tw'
     case 'ms-MY':
       return 'en'
+    case 'ja-JP':
+      return 'ja'
     case 'en-US':
     default:
       return 'en'

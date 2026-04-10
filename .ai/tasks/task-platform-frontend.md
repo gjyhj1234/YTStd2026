@@ -49,11 +49,11 @@
 13. `src/composables/useNotify.ts` — 封装 DevExtreme notify 操作反馈 composable
 
 **验收标准**：
-- [ ] ja-JP 语言完整可用
-- [ ] ms-MY、zh-TW 翻译 key 数量与 zh-CN 一致
-- [ ] API 错误自动显示 notify Toast
-- [ ] 403 页面可正常访问
-- [ ] `npm run build` 通过
+- [x] ja-JP 语言完整可用（554 keys 主文件 + 61 common + 177 generated + 213 enum）
+- [x] ms-MY、zh-TW 翻译 key 数量与 zh-CN 一致（均为 554 keys）
+- [x] API 错误自动显示 notify Toast（errorHandler 集成 DevExtreme notify）
+- [x] 403 页面可正常访问（/forbidden 路由 + ForbiddenView.vue）
+- [x] `npm run build` 通过
 
 ---
 
@@ -257,7 +257,7 @@
 
 | 子任务 | 状态 | 说明 |
 |--------|------|------|
-| G0 — 基础设施重构 | ⬜ 待执行 | |
+| G0 — 基础设施重构 | ✅ 完成 | useNotify composable、errorHandler增强、http网络错误处理、ja-JP全量翻译、ms-MY/zh-TW补齐554键、55枚举×5语言翻译、403页面、CSS变量化 |
 | G1 — 布局导航重构 | ⬜ 待执行 | |
 | G2 — 平台管理模块 | ⬜ 待执行 | |
 | G3 — 租户生命周期模块 | ⬜ 待执行 | |

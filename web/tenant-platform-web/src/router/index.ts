@@ -86,6 +86,12 @@ const routes: RouteRecordRaw[] = [
       { path: 'system-dictionaries', name: 'SystemDictionaries', component: () => import('@/views/system-dictionaries/SystemDictionariesView.vue'), meta: { title: 'route.systemDictionaries', permissions: ['platform:management:view'] } },
     ],
   },
+  {
+    path: '/forbidden',
+    name: 'Forbidden',
+    component: () => import('@/views/error/ForbiddenView.vue'),
+    meta: { requiresAuth: false },
+  },
   { path: '/:pathMatch(.*)*', redirect: '/dashboard' },
 ]
 
@@ -109,7 +115,7 @@ router.beforeEach((to, _from, next) => {
   const requiredPermissions = to.meta.permissions as string[] | undefined
   if (requiredPermissions && requiredPermissions.length > 0) {
     if (!auth.hasAnyPermission(requiredPermissions)) {
-      return next('/dashboard')
+      return next({ path: '/forbidden', query: { from: to.fullPath } })
     }
   }
 

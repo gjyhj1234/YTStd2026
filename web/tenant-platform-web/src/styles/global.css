@@ -3,10 +3,26 @@
   --sidebar-width: 260px;
   --sidebar-collapsed-width: 64px;
   --header-height: 56px;
-  --primary-color: #1976d2;
-  --bg-color: #f5f7fa;
-  --text-color: #333;
-  --border-color: #e0e0e0;
+  --primary-color: var(--dx-color-primary, #1976d2);
+  --bg-color: var(--dx-color-background, #f5f7fa);
+  --text-color: var(--dx-color-text, #333);
+  --border-color: var(--dx-color-border, #e0e0e0);
+  --sidebar-bg: #1e1e2d;
+  --sidebar-text: #a2a5b9;
+  --sidebar-text-hover: #fff;
+  --sidebar-hover-bg: rgba(255,255,255,0.06);
+  --sidebar-border: rgba(255,255,255,0.08);
+  --header-bg: var(--dx-color-background, #fff);
+  --card-bg: var(--dx-color-background, #fff);
+  --card-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  --success-bg: #e8f5e9;
+  --success-text: #2e7d32;
+  --danger-bg: #fce4ec;
+  --danger-text: #c62828;
+  --warning-bg: #fff3e0;
+  --warning-text: #e65100;
+  --info-bg: #e3f2fd;
+  --info-text: #1565c0;
 }
 
 * {
@@ -29,8 +45,8 @@ html, body, #app {
 /* ── 侧边栏 ── */
 .app-sidebar {
   width: var(--sidebar-width);
-  background: #1e1e2d;
-  color: #a2a5b9;
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
   display: flex;
   flex-direction: column;
   transition: width 0.25s ease;
@@ -49,8 +65,8 @@ html, body, #app {
   justify-content: center;
   font-size: 18px;
   font-weight: 700;
-  color: #fff;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  color: var(--sidebar-text-hover);
+  border-bottom: 1px solid var(--sidebar-border);
   white-space: nowrap;
 }
 
@@ -66,7 +82,8 @@ html, body, #app {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #5d5f7a;
+  color: var(--sidebar-text);
+  opacity: 0.6;
   white-space: nowrap;
   overflow: hidden;
 }
@@ -76,7 +93,7 @@ html, body, #app {
   align-items: center;
   padding: 10px 20px;
   cursor: pointer;
-  color: #a2a5b9;
+  color: var(--sidebar-text);
   text-decoration: none;
   font-size: 14px;
   transition: background 0.15s, color 0.15s;
@@ -84,13 +101,13 @@ html, body, #app {
 }
 
 .menu-item:hover {
-  background: rgba(255,255,255,0.06);
-  color: #fff;
+  background: var(--sidebar-hover-bg);
+  color: var(--sidebar-text-hover);
 }
 
 .menu-item.active {
   background: var(--primary-color);
-  color: #fff;
+  color: var(--sidebar-text-hover);
 }
 
 .menu-item .dx-icon {
@@ -115,7 +132,7 @@ html, body, #app {
   align-items: center;
   padding: 10px 20px;
   cursor: pointer;
-  color: #a2a5b9;
+  color: var(--sidebar-text);
   font-size: 14px;
   white-space: nowrap;
   user-select: none;
@@ -154,7 +171,7 @@ html, body, #app {
 
 .app-header {
   height: var(--header-height);
-  background: #fff;
+  background: var(--header-bg);
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
@@ -180,18 +197,20 @@ html, body, #app {
   border: none;
   cursor: pointer;
   font-size: 20px;
-  color: #666;
+  color: var(--text-color);
+  opacity: 0.6;
   padding: 4px;
 }
 
 .breadcrumb {
   font-size: 14px;
-  color: #666;
+  color: var(--text-color);
+  opacity: 0.6;
 }
 
 .user-info {
   font-size: 14px;
-  color: #333;
+  color: var(--text-color);
 }
 
 .logout-btn {
@@ -201,12 +220,14 @@ html, body, #app {
   padding: 4px 12px;
   cursor: pointer;
   font-size: 13px;
-  color: #666;
+  color: var(--text-color);
+  opacity: 0.6;
 }
 
 .logout-btn:hover {
-  color: #d32f2f;
-  border-color: #d32f2f;
+  color: var(--danger-text);
+  border-color: var(--danger-text);
+  opacity: 1;
 }
 
 /* ── 页面内容 ── */
@@ -237,9 +258,9 @@ html, body, #app {
 
 /* ── 通用卡片 ── */
 .card {
-  background: #fff;
+  background: var(--card-bg);
   border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  box-shadow: var(--card-shadow);
   padding: 20px;
 }
 
@@ -257,12 +278,12 @@ html, body, #app {
   line-height: 20px;
 }
 
-.status-tag.active   { background: #e8f5e9; color: #2e7d32; }
-.status-tag.disabled  { background: #fce4ec; color: #c62828; }
-.status-tag.locked    { background: #fff3e0; color: #e65100; }
-.status-tag.trial     { background: #e3f2fd; color: #1565c0; }
+.status-tag.active   { background: var(--success-bg); color: var(--success-text); }
+.status-tag.disabled  { background: var(--danger-bg); color: var(--danger-text); }
+.status-tag.locked    { background: var(--warning-bg); color: var(--warning-text); }
+.status-tag.trial     { background: var(--info-bg); color: var(--info-text); }
 .status-tag.expired   { background: #efebe9; color: #5d4037; }
-.status-tag.suspended { background: #fce4ec; color: #c62828; }
+.status-tag.suspended { background: var(--danger-bg); color: var(--danger-text); }
 .status-tag.closed    { background: #eceff1; color: #546e7a; }
 .status-tag.pending   { background: #fff8e1; color: #f9a825; }
 
@@ -286,11 +307,11 @@ html, body, #app {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, #764ba2 100%);
 }
 
 .login-card {
-  background: #fff;
+  background: var(--card-bg);
   border-radius: 12px;
   padding: 48px 40px;
   width: 400px;
@@ -301,11 +322,11 @@ html, body, #app {
   text-align: center;
   margin-bottom: 32px;
   font-size: 24px;
-  color: #333;
+  color: var(--text-color);
 }
 
 .login-error {
-  color: #d32f2f;
+  color: var(--danger-text);
   font-size: 13px;
   margin-bottom: 12px;
   text-align: center;
@@ -320,10 +341,10 @@ html, body, #app {
 }
 
 .stat-card {
-  background: #fff;
+  background: var(--card-bg);
   border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  box-shadow: var(--card-shadow);
   text-align: center;
 }
 
@@ -335,7 +356,8 @@ html, body, #app {
 
 .stat-card .stat-label {
   font-size: 14px;
-  color: #666;
+  color: var(--text-color);
+  opacity: 0.6;
   margin-top: 4px;
 }
 
@@ -355,7 +377,8 @@ html, body, #app {
   align-items: center;
   justify-content: center;
   height: 400px;
-  color: #999;
+  color: var(--text-color);
+  opacity: 0.5;
 }
 
 .placeholder-page .dx-icon {

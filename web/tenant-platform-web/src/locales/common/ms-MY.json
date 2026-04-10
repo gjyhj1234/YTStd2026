@@ -52,5 +52,11 @@
   "删除成功": "Berjaya Dipadam",
   "保存成功": "Berjaya Disimpan",
   "创建成功": "Berjaya Dicipta",
-  "更新成功": "Berjaya Dikemas Kini"
+  "更新成功": "Berjaya Dikemas Kini",
+  "网络连接失败": "Sambungan rangkaian gagal, sila semak rangkaian anda",
+  "权限不足，无法访问此页面": "Akses ditolak. Anda tidak mempunyai kebenaran untuk melihat halaman ini",
+  "返回首页": "Kembali ke Utama",
+  "确认操作": "Sahkan Tindakan",
+  "启用成功": "Berjaya Diaktifkan",
+  "禁用成功": "Berjaya Dinyahaktifkan"
 }
