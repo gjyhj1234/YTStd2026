@@ -1,5 +1,5 @@
 /** API — SaaS 套餐 */
-import { get, post, put } from '@/utils/http'
+import { get, post, put, del } from '@/utils/http'
 import type { PagedResult } from '@/types/base'
 import type { SaasPackageRepDTO, CreateSaasPackageReqDTO, UpdateSaasPackageReqDTO, SaasPackageVersionRepDTO, CreateSaasPackageVersionReqDTO, SaasPackageCapabilityRepDTO, SaveSaasPackageCapabilityReqDTO } from '@/types/saasPackage'
 
@@ -49,4 +49,8 @@ export function getPackageCapabilities(packageVersionId: number, params: Record<
 
 export function savePackageCapability(packageVersionId: number, data: SaveSaasPackageCapabilityReqDTO) {
   return post<void>(`/api/saas-package-capabilities/${packageVersionId}`, data)
+}
+
+export function deletePackage(id: number) {
+  return del<void>(`/api/saas-packages/${id}`)
 }

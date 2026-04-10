@@ -1,5 +1,5 @@
 /** API — API 密钥与 Webhook */
-import { get, post, put } from '@/utils/http'
+import { get, post, put, del } from '@/utils/http'
 import type { PagedResult } from '@/types/base'
 import type { TenantApiKeyRepDTO, CreateApiKeyReqDTO, ApiKeyCreatedRepDTO, TenantApiUsageStatRepDTO, WebhookEventRepDTO, TenantWebhookRepDTO, CreateWebhookReqDTO, UpdateWebhookReqDTO, WebhookDeliveryLogRepDTO } from '@/types/apiIntegration'
 
@@ -57,4 +57,12 @@ export function disableWebhook(id: number) {
 
 export function getWebhookDeliveryLogs(params: Record<string, string | number | undefined>) {
   return get<PagedResult<WebhookDeliveryLogRepDTO>>('/api/webhook-delivery-logs', params)
+}
+
+export function deleteApiKey(id: number) {
+  return del<void>(`/api/api-keys/${id}`)
+}
+
+export function deleteWebhook(id: number) {
+  return del<void>(`/api/tenant-webhooks/${id}`)
 }

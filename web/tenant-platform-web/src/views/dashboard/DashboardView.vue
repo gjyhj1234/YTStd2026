@@ -16,28 +16,53 @@
 
     <div class="dashboard-stats">
       <div class="stat-card">
-        <div class="stat-value">{{ stats.totalTenants }}</div>
+        <div class="stat-value">{{ stats.TotalTenants }}</div>
         <div class="stat-label">{{ $t('总租户数') }}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-value">{{ stats.activeTenants }}</div>
+        <div class="stat-value">{{ stats.ActiveTenants }}</div>
         <div class="stat-label">{{ $t('活跃租户') }}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-value">{{ stats.totalSubscriptions }}</div>
+        <div class="stat-value">{{ stats.TotalSubscriptions }}</div>
         <div class="stat-label">{{ $t('有效订阅') }}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-value">{{ stats.totalUsers }}</div>
+        <div class="stat-value">{{ stats.TotalUsers }}</div>
         <div class="stat-label">{{ $t('平台用户') }}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-value">{{ stats.expiringTenants }}</div>
+        <div class="stat-value">{{ stats.ExpiringTenants }}</div>
         <div class="stat-label">{{ $t('即将到期') }}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-value">{{ stats.trialTenants }}</div>
+        <div class="stat-value">{{ stats.TrialTenants }}</div>
         <div class="stat-label">{{ $t('试用中') }}</div>
+      </div>
+    </div>
+
+    <div class="dashboard-charts">
+      <div class="card chart-card">
+        <h3 style="margin-bottom: 12px">{{ $t('租户增长趋势') }}</h3>
+        <DxChart :data-source="tenantTrend">
+          <DxArgumentAxis :value-margins-enabled="false">
+            <DxLabel :visible="true" />
+          </DxArgumentAxis>
+          <DxSeries argument-field="Date" value-field="Count" :name="$t('新增租户')" type="bar" color="#1976d2" />
+          <DxTooltip :enabled="true" />
+          <DxLegend :visible="false" />
+        </DxChart>
+      </div>
+
+      <div class="card chart-card">
+        <h3 style="margin-bottom: 12px">{{ $t('订阅分布') }}</h3>
+        <DxPieChart :data-source="subscriptionDist" :palette="'Soft Pastel'">
+          <DxPieSeries argument-field="PackageName" value-field="Count">
+            <DxPieLabel :visible="true" :connector="{ visible: true }" />
+          </DxPieSeries>
+          <DxPieTooltip :enabled="true" />
+          <DxPieLegend :visible="true" horizontal-alignment="center" vertical-alignment="bottom" />
+        </DxPieChart>
       </div>
     </div>
 
@@ -58,6 +83,8 @@
       entry-path="登录后默认进入仪表盘页面"
       :steps="[
         '查看顶部统计卡片了解平台概况',
+        '查看租户增长趋势图了解增长情况',
+        '查看订阅分布图了解套餐使用情况',
         '点击快捷入口快速进入常用功能模块',
         '左侧菜单可访问所有管理模块',
       ]"
@@ -68,22 +95,100 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { DxButton } from 'devextreme-vue/button'
+import {
+  DxChart,
+  DxSeries,
+  DxArgumentAxis,
+  DxLabel,
+  DxTooltip,
+  DxLegend,
+} from 'devextreme-vue/chart'
+import {
+  DxPieChart,
+  DxSeries as DxPieSeries,
+  DxLabel as DxPieLabel,
+  DxTooltip as DxPieTooltip,
+  DxLegend as DxPieLegend,
+} from 'devextreme-vue/pie-chart'
 import FunctionDescriptionCard from '@/components/help/FunctionDescriptionCard.vue'
 import OperationGuideDrawer from '@/components/help/OperationGuideDrawer.vue'
 import PageHelpEntry from '@/components/help/PageHelpEntry.vue'
+import { getDashboardStats, getTenantTrend, getSubscriptionDist } from '@/api/dashboard'
+import type { DashboardStats, TenantTrendItem, SubscriptionDistItem } from '@/types/dashboard'
 
 const router = useRouter()
 const showGuide = ref(false)
 
-const stats = ref({
-  totalTenants: 0,
-  activeTenants: 0,
-  totalSubscriptions: 0,
-  totalUsers: 0,
-  expiringTenants: 0,
-  trialTenants: 0,
+const stats = ref<DashboardStats>({
+  TotalTenants: 0,
+  ActiveTenants: 0,
+  TotalSubscriptions: 0,
+  TotalUsers: 0,
+  ExpiringTenants: 0,
+  TrialTenants: 0,
+})
+
+const tenantTrend = ref<TenantTrendItem[]>([])
+const subscriptionDist = ref<SubscriptionDistItem[]>([])
+
+async function loadStats() {
+  try {
+    const res = await getDashboardStats()
+    if (res.Data) {
+      stats.value = res.Data
+    }
+  } catch {
+    // 接口未就绪时保持默认值
+  }
+}
+
+async function loadTenantTrend() {
+  try {
+    const res = await getTenantTrend()
+    if (res.Data) {
+      tenantTrend.value = res.Data
+    }
+  } catch {
+    // 接口未就绪时保持空数组
+  }
+}
+
+async function loadSubscriptionDist() {
+  try {
+    const res = await getSubscriptionDist()
+    if (res.Data) {
+      subscriptionDist.value = res.Data
+    }
+  } catch {
+    // 接口未就绪时保持空数组
+  }
+}
+
+onMounted(() => {
+  loadStats()
+  loadTenantTrend()
+  loadSubscriptionDist()
 })
 </script>
+
+<style scoped>
+.dashboard-charts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.chart-card {
+  min-height: 300px;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-charts {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

@@ -55,6 +55,13 @@
             type="danger"
             @click="onDisable(cellData.data.Id)"
           />
+          <DxButton
+            v-if="perm.has(INFRA_APIKEY_DELETE)"
+            :text="$t('common.delete')"
+            styling-mode="text"
+            type="danger"
+            @click="onDelete(cellData.data.Id)"
+          />
         </template>
         <DxPaging :page-size="20" />
         <DxPager :show-page-size-selector="true" :allowed-page-sizes="[10, 20, 50]" :show-info="true" />
@@ -136,6 +143,7 @@ import {
   getApiKeys,
   createApiKey,
   disableApiKey,
+  deleteApiKey,
   type TenantApiKeyRepDTO,
   type CreateApiKeyReqDTO,
   type ApiKeyCreatedRepDTO,
@@ -143,6 +151,7 @@ import {
 import {
   INFRA_APIKEY_CREATE,
   INFRA_APIKEY_DISABLE,
+  INFRA_APIKEY_DELETE,
 } from '@/constants/permissions'
 
 const perm = usePermission()
@@ -189,6 +198,15 @@ async function handleCreate() {
 async function onDisable(id: number) {
   try {
     await disableApiKey(id)
+    await loadData()
+  } catch {
+    // 错误由 http 层统一处理
+  }
+}
+
+async function onDelete(id: number) {
+  try {
+    await deleteApiKey(id)
     await loadData()
   } catch {
     // 错误由 http 层统一处理

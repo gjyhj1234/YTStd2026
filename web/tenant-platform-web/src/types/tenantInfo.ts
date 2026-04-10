@@ -17,6 +17,12 @@ export interface CreateTenantGroupReqDTO {
   ParentId?: number | null
 }
 
+/** 更新租户分组请求 */
+export interface UpdateTenantGroupReqDTO {
+  GroupName?: string
+  Description?: string
+}
+
 /** 租户域名响应 */
 export interface TenantDomainRepDTO {
   Id: number

@@ -81,6 +81,9 @@ const routes: RouteRecordRaw[] = [
       // ── 技术基础设施 ──
       { path: 'rate-limit-policies', name: 'RateLimitPolicies', component: () => import('@/views/infrastructure/RateLimitPoliciesView.vue'), meta: { title: 'route.rateLimitPolicies', permissions: ['infra:ratelimit:view'] } },
       { path: 'infra-components', name: 'InfraComponents', component: () => import('@/views/infrastructure/InfrastructureView.vue'), meta: { title: 'route.infraComponents', permissions: ['infra:component:view'] } },
+      // ── 系统设置 ──
+      { path: 'system-menus', name: 'SystemMenus', component: () => import('@/views/system-menus/SystemMenusView.vue'), meta: { title: 'route.systemMenus', permissions: ['platform:permission:view'] } },
+      { path: 'system-dictionaries', name: 'SystemDictionaries', component: () => import('@/views/system-dictionaries/SystemDictionariesView.vue'), meta: { title: 'route.systemDictionaries', permissions: ['platform:management:view'] } },
     ],
   },
   { path: '/:pathMatch(.*)*', redirect: '/dashboard' },

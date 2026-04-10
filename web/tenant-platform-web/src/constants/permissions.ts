@@ -100,6 +100,7 @@ export const NOTIFICATION_TEMPLATE_VIEW = 'notification:template:view'
 export const NOTIFICATION_TEMPLATE_CREATE = 'notification:template:create'
 export const NOTIFICATION_TEMPLATE_UPDATE = 'notification:template:update'
 export const NOTIFICATION_TEMPLATE_TEST = 'notification:template:test'
+export const NOTIFICATION_TEMPLATE_DELETE = 'notification:template:delete'
 
 export const NOTIFICATION_RECORD_VIEW = 'notification:record:view'
 export const NOTIFICATION_RECORD_RESEND = 'notification:record:resend'
@@ -115,12 +116,14 @@ export const LOG_SYSTEM_VIEW = 'log:system:view'
 export const INFRA_APIKEY_VIEW = 'infra:apikey:view'
 export const INFRA_APIKEY_CREATE = 'infra:apikey:create'
 export const INFRA_APIKEY_DISABLE = 'infra:apikey:disable'
+export const INFRA_APIKEY_DELETE = 'infra:apikey:delete'
 
 export const INFRA_WEBHOOK_VIEW = 'infra:webhook:view'
 export const INFRA_WEBHOOK_CREATE = 'infra:webhook:create'
 export const INFRA_WEBHOOK_UPDATE = 'infra:webhook:update'
 export const INFRA_WEBHOOK_ENABLE = 'infra:webhook:enable'
 export const INFRA_WEBHOOK_DISABLE = 'infra:webhook:disable'
+export const INFRA_WEBHOOK_DELETE = 'infra:webhook:delete'
 
 // ── 平台运营 ──
 export const OPS_STAT_VIEW = 'ops:stat:view'
@@ -131,6 +134,10 @@ export const INFRA_STORAGE_VIEW = 'infra:storage:view'
 export const INFRA_STORAGE_CREATE = 'infra:storage:create'
 export const INFRA_STORAGE_UPDATE = 'infra:storage:update'
 export const INFRA_STORAGE_DELETE = 'infra:storage:delete'
+
+// ── 系统设置 ──
+export const SYSTEM_MENU_VIEW = 'platform:permission:view'
+export const SYSTEM_DICT_VIEW = 'platform:management:view'
 
 // ── 基础设施 ──
 export const INFRA_RATELIMIT_VIEW = 'infra:ratelimit:view'

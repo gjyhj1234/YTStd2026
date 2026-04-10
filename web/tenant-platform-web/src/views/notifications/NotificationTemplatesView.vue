@@ -89,6 +89,13 @@
             type="success"
             @click="onEnable(cellData.data.Id)"
           />
+          <DxButton
+            v-if="perm.has(NOTIFICATION_TEMPLATE_DELETE)"
+            :text="$t('common.delete')"
+            styling-mode="text"
+            type="danger"
+            @click="onDelete(cellData.data.Id)"
+          />
         </template>
         <DxPaging :page-size="20" />
         <DxPager :show-page-size-selector="true" :allowed-page-sizes="[10, 20, 50]" :show-info="true" />
@@ -193,6 +200,7 @@ import {
   updateNotificationTemplate,
   enableNotificationTemplate,
   disableNotificationTemplate,
+  deleteNotificationTemplate,
   type NotificationTemplateRepDTO,
   type CreateNotificationTemplateReqDTO,
   type UpdateNotificationTemplateReqDTO,
@@ -200,6 +208,7 @@ import {
 import {
   NOTIFICATION_TEMPLATE_CREATE,
   NOTIFICATION_TEMPLATE_UPDATE,
+  NOTIFICATION_TEMPLATE_DELETE,
 } from '@/constants/permissions'
 
 const perm = usePermission()
@@ -300,6 +309,15 @@ async function onEnable(id: number) {
 async function onDisable(id: number) {
   try {
     await disableNotificationTemplate(id)
+    await loadData()
+  } catch {
+    // 错误由 http 层统一处理
+  }
+}
+
+async function onDelete(id: number) {
+  try {
+    await deleteNotificationTemplate(id)
     await loadData()
   } catch {
     // 错误由 http 层统一处理

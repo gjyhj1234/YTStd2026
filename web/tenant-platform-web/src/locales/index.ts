@@ -7,6 +7,14 @@ import zhCN from './zh-CN.json'
 import enUS from './en-US.json'
 import msMY from './ms-MY.json'
 import zhTW from './zh-TW.json'
+import generatedZhCN from './generated/zh-CN.json'
+import generatedEnUS from './generated/en-US.json'
+import generatedMsMY from './generated/ms-MY.json'
+import generatedZhTW from './generated/zh-TW.json'
+import commonZhCN from './common/zh-CN.json'
+import commonEnUS from './common/en-US.json'
+import commonMsMY from './common/ms-MY.json'
+import commonZhTW from './common/zh-TW.json'
 
 export type LocaleCode = 'zh-CN' | 'en-US' | 'ms-MY' | 'zh-TW'
 
@@ -14,10 +22,10 @@ const LOCALE_STORAGE_KEY = 'platform_locale'
 const DEFAULT_LOCALE: LocaleCode = 'zh-CN'
 
 const messages = {
-  'zh-CN': zhCN,
-  'en-US': enUS,
-  'ms-MY': msMY,
-  'zh-TW': zhTW,
+  'zh-CN': { ...commonZhCN, ...generatedZhCN, ...zhCN },
+  'en-US': { ...commonEnUS, ...generatedEnUS, ...enUS },
+  'ms-MY': { ...commonMsMY, ...generatedMsMY, ...msMY },
+  'zh-TW': { ...commonZhTW, ...generatedZhTW, ...zhTW },
 }
 
 loadMessages(devExtremeEn)

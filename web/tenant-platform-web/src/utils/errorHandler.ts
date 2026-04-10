@@ -4,11 +4,13 @@ import { AUTH_ACCOUNT_DISABLED, AUTH_ACCOUNT_LOCKED, AUTH_TOKEN_INVALID, FORBIDD
 export class ApiError extends Error {
   code: number
   messageCode: number
+  localizedMessage: string
 
-  constructor(code: number, messageCode: number) {
-    super(String(code))
+  constructor(code: number, messageCode: number, localizedMessage?: string) {
+    super(localizedMessage || String(code))
     this.code = code
     this.messageCode = messageCode
+    this.localizedMessage = localizedMessage || String(code)
   }
 }
 

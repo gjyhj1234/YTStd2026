@@ -1,5 +1,5 @@
 /** API — 租户域名 */
-import { get, post } from '@/utils/http'
+import { get, post, del } from '@/utils/http'
 import type { TenantDomainRepDTO, CreateTenantDomainReqDTO } from '@/types/tenantInfo'
 
 export type { TenantDomainRepDTO, CreateTenantDomainReqDTO }
@@ -10,4 +10,8 @@ export function getTenantDomains() {
 
 export function createTenantDomain(data: CreateTenantDomainReqDTO) {
   return post<void>('/api/tenant-domains', data)
+}
+
+export function deleteTenantDomain(tenantRefId: number, domainId: number) {
+  return del<void>(`/api/tenants/${tenantRefId}/domains/${domainId}`)
 }
