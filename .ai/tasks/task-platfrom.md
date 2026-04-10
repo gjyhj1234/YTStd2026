@@ -307,7 +307,7 @@ B 阶段（核心模块后端重构）中以下服务的 `InsertAsync` 调用前
 
 ## 阶段 E：前端重构
 
-**状态：⏳ 进行中**
+**状态：✅ 完成**
 
 ### 子任务拆分（每子任务 ≤ 40 分钟）
 
@@ -383,7 +383,20 @@ B 阶段（核心模块后端重构）中以下服务的 `InsertAsync` 调用前
 
 ## 阶段 F：前端国际化
 
-- [ ] 42. `frontend/i18n.md` — 全量国际化接入
+**状态：✅ 完成**
+
+### F1. 全量国际化接入
+
+| 检查项 | 状态 | 说明 |
+|--------|------|------|
+| ErrorCodes 映射生成 | ✅ 完成 | `locales/generated/` — 4 locale × 177 个 ErrorCode 键 |
+| 公共翻译提取 | ✅ 完成 | `locales/common/` — 4 locale × 54 个公共键 |
+| 消息层级集成 | ✅ 完成 | `locales/index.ts` — common → generated → main 优先级 |
+| 错误码翻译 | ✅ 完成 | `utils/http.ts` — 使用 `i18n.global.t(code)` 翻译错误消息 |
+| 多语言键一致性 | ✅ 通过 | generated 4 locale 各 177 键完全一致，common 4 locale 各 54 键完全一致 |
+| DevExtreme 本地化 | ✅ 已有 | zh/en/zh-tw 消息包已加载 |
+| 语言切换 | ✅ 已有 | 支持 4 种语言即时切换 |
+| `npm run build` | ✅ 通过 | 0 error |
 
 ---
 
