@@ -60,12 +60,6 @@
         </template>
         <template #actionCell="{ data: cellData }">
           <DxButton
-            v-if="perm.has(TENANT_TAG_UPDATE)"
-            text="编辑"
-            styling-mode="text"
-            @click="onEdit(cellData.data)"
-          />
-          <DxButton
             v-if="perm.has(TENANT_TAG_DELETE)"
             text="删除"
             styling-mode="text"
@@ -164,6 +158,7 @@ import { formatDateTime } from '@/utils/format'
 import {
   getTenantTags,
   createTenantTag,
+  deleteTenantTag,
   bindTags,
   type TenantTagRepDTO,
   type CreateTenantTagReqDTO,
@@ -171,7 +166,6 @@ import {
 } from '@/api/tenantTags'
 import {
   TENANT_TAG_CREATE,
-  TENANT_TAG_UPDATE,
   TENANT_TAG_DELETE,
   TENANT_TAG_BIND,
 } from '@/constants/permissions'
@@ -241,12 +235,13 @@ async function handleBind() {
   }
 }
 
-function onEdit(_tag: TenantTagRepDTO) {
-  // 后续阶段完善编辑功能
-}
-
-function onDelete(_id: number) {
-  // 后续阶段完善删除功能
+async function onDelete(id: number) {
+  try {
+    await deleteTenantTag(id)
+    await loadData()
+  } catch {
+    // 错误由 http 层统一处理
+  }
 }
 
 const guideSteps = [

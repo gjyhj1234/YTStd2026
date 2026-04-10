@@ -60,12 +60,6 @@
         </template>
         <template #actionCell="{ data: cellData }">
           <DxButton
-            v-if="perm.has(TENANT_DOMAIN_UPDATE)"
-            text="编辑"
-            styling-mode="text"
-            @click="onEdit(cellData.data)"
-          />
-          <DxButton
             v-if="perm.has(TENANT_DOMAIN_VERIFY) && cellData.data.VerificationStatus !== 'Verified'"
             text="验证"
             styling-mode="text"
@@ -74,10 +68,10 @@
           />
           <DxButton
             v-if="perm.has(TENANT_DOMAIN_DELETE)"
-            text="删除"
+            :text="$t('删除域名')"
             styling-mode="text"
             type="danger"
-            @click="onDelete(cellData.data.Id)"
+            @click="onDelete(cellData.data)"
           />
         </template>
         <DxPaging :page-size="20" />
@@ -142,12 +136,12 @@ import { formatDateTime } from '@/utils/format'
 import {
   getTenantDomains,
   createTenantDomain,
+  deleteTenantDomain,
   type TenantDomainRepDTO,
   type CreateTenantDomainReqDTO,
 } from '@/api/tenantDomains'
 import {
   TENANT_DOMAIN_CREATE,
-  TENANT_DOMAIN_UPDATE,
   TENANT_DOMAIN_DELETE,
   TENANT_DOMAIN_VERIFY,
 } from '@/constants/permissions'
@@ -192,16 +186,17 @@ async function handleCreate() {
   }
 }
 
-function onEdit(_domain: TenantDomainRepDTO) {
-  // 后续阶段完善编辑功能
-}
-
 function onVerify(_id: number) {
   // 后续阶段完善验证功能
 }
 
-function onDelete(_id: number) {
-  // 后续阶段完善删除功能
+async function onDelete(domain: TenantDomainRepDTO) {
+  try {
+    await deleteTenantDomain(domain.TenantRefId, domain.Id)
+    await loadData()
+  } catch {
+    // 错误由 http 层统一处理
+  }
 }
 
 const guideSteps = [

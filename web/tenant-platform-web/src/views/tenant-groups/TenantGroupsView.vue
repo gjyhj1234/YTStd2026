@@ -102,6 +102,32 @@
       </DxForm>
     </DxPopup>
 
+    <!-- 编辑分组弹窗 -->
+    <DxPopup
+      :visible="showEditPopup"
+      :title="$t('编辑分组')"
+      :width="480"
+      :height="'auto'"
+      :show-close-button="true"
+      @hiding="showEditPopup = false"
+    >
+      <DxForm
+        :form-data="editForm"
+        :col-count="1"
+        label-mode="floating"
+      >
+        <DxSimpleItem data-field="GroupName">
+          <DxLabel text="分组名称" />
+        </DxSimpleItem>
+        <DxSimpleItem data-field="Description" editor-type="dxTextArea">
+          <DxLabel text="描述" />
+        </DxSimpleItem>
+        <DxButtonItem>
+          <DxButtonOptions text="提交" type="default" :use-submit-behavior="false" @click="handleEdit" />
+        </DxButtonItem>
+      </DxForm>
+    </DxPopup>
+
     <OperationGuideDrawer
       v-model:visible="showGuide"
       title="租户分组操作指引"
@@ -128,9 +154,12 @@ import { formatDateTime } from '@/utils/format'
 import {
   getTenantGroups,
   createTenantGroup,
+  updateTenantGroup,
+  deleteTenantGroup,
   type TenantGroupRepDTO,
   type CreateTenantGroupReqDTO,
 } from '@/api/tenantGroups'
+import type { UpdateTenantGroupReqDTO } from '@/types/tenantInfo'
 import {
   TENANT_GROUP_CREATE,
   TENANT_GROUP_UPDATE,
@@ -140,6 +169,8 @@ import {
 const perm = usePermission()
 const showGuide = ref(false)
 const showCreatePopup = ref(false)
+const showEditPopup = ref(false)
+const editingGroupId = ref(0)
 const filterKeyword = ref('')
 
 const allGroups = ref<TenantGroupRepDTO[]>([])
@@ -155,6 +186,11 @@ const treeData = computed(() => {
 const parentOptions = computed(() =>
   allGroups.value.map((g) => ({ text: `${g.GroupCode} - ${g.GroupName}`, value: g.Id })),
 )
+
+const editForm = reactive<UpdateTenantGroupReqDTO>({
+  GroupName: '',
+  Description: '',
+})
 
 const createForm = reactive<CreateTenantGroupReqDTO>({
   GroupCode: '',
@@ -183,12 +219,32 @@ async function handleCreate() {
   }
 }
 
-function onEdit(_group: TenantGroupRepDTO) {
-  // 后续阶段完善编辑功能
+function onEdit(group: TenantGroupRepDTO) {
+  editingGroupId.value = group.Id
+  Object.assign(editForm, {
+    GroupName: group.GroupName ?? '',
+    Description: group.Description ?? '',
+  })
+  showEditPopup.value = true
 }
 
-function onDelete(_id: number) {
-  // 后续阶段完善删除功能
+async function handleEdit() {
+  try {
+    await updateTenantGroup(editingGroupId.value, editForm)
+    showEditPopup.value = false
+    await loadData()
+  } catch {
+    // 错误由 http 层统一处理
+  }
+}
+
+async function onDelete(id: number) {
+  try {
+    await deleteTenantGroup(id)
+    await loadData()
+  } catch {
+    // 错误由 http 层统一处理
+  }
 }
 
 const guideSteps = [

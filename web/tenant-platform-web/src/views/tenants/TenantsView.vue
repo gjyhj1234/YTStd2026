@@ -147,6 +147,38 @@
       </DxForm>
     </DxPopup>
 
+    <!-- 编辑租户弹窗 -->
+    <DxPopup
+      :visible="showEditPopup"
+      :title="$t('编辑租户')"
+      :width="560"
+      :height="'auto'"
+      :show-close-button="true"
+      @hiding="showEditPopup = false"
+    >
+      <DxForm
+        :form-data="editForm"
+        :col-count="2"
+        label-mode="floating"
+      >
+        <DxSimpleItem data-field="EnterpriseName" :col-span="2">
+          <DxLabel :text="$t('企业名称')" />
+        </DxSimpleItem>
+        <DxSimpleItem data-field="ContactName">
+          <DxLabel :text="$t('联系人')" />
+        </DxSimpleItem>
+        <DxSimpleItem data-field="ContactPhone">
+          <DxLabel :text="$t('联系电话')" />
+        </DxSimpleItem>
+        <DxSimpleItem data-field="ContactEmail" :col-span="2">
+          <DxLabel :text="$t('联系邮箱')" />
+        </DxSimpleItem>
+        <DxButtonItem :col-span="2">
+          <DxButtonOptions :text="$t('提交')" type="default" :use-submit-behavior="false" @click="handleEdit" />
+        </DxButtonItem>
+      </DxForm>
+    </DxPopup>
+
     <OperationGuideDrawer
       v-model:visible="showGuide"
       title="租户管理操作指引"
@@ -176,10 +208,12 @@ import { formatDateTime } from '@/utils/format'
 import {
   getTenants,
   createTenant,
+  updateTenant,
   changeTenantStatus,
   type TenantRepDTO,
   type CreateTenantReqDTO,
 } from '@/api/tenants'
+import type { UpdateTenantReqDTO } from '@/types/tenant'
 import {
   TENANT_LIST_CREATE,
   TENANT_LIST_UPDATE,
@@ -192,6 +226,8 @@ const perm = usePermission()
 const { t } = useI18n()
 const showGuide = ref(false)
 const showCreatePopup = ref(false)
+const showEditPopup = ref(false)
+const editingTenantId = ref(0)
 const filterKeyword = ref('')
 const filterStatus = ref<string | undefined>(undefined)
 
@@ -218,6 +254,13 @@ const isolationModes = computed(() => [
 ])
 
 const gridData = ref<TenantRepDTO[]>([])
+
+const editForm = reactive<UpdateTenantReqDTO>({
+  ContactName: '',
+  ContactPhone: '',
+  ContactEmail: '',
+  EnterpriseName: '',
+})
 
 const createForm = reactive<CreateTenantReqDTO>({
   TenantCode: '',
@@ -259,8 +302,25 @@ async function handleCreate() {
   }
 }
 
-function onEdit(_tenant: TenantRepDTO) {
-  // 后续阶段完善编辑功能
+function onEdit(tenant: TenantRepDTO) {
+  editingTenantId.value = tenant.Id
+  Object.assign(editForm, {
+    EnterpriseName: tenant.EnterpriseName ?? '',
+    ContactName: tenant.ContactName ?? '',
+    ContactPhone: '',
+    ContactEmail: tenant.ContactEmail ?? '',
+  })
+  showEditPopup.value = true
+}
+
+async function handleEdit() {
+  try {
+    await updateTenant(editingTenantId.value, editForm)
+    showEditPopup.value = false
+    await loadData()
+  } catch {
+    // 错误由 http 层统一处理
+  }
 }
 
 async function onStatusChange(id: number, targetStatus: string, reason: string) {
