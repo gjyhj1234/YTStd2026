@@ -103,6 +103,7 @@ interface TreeItem {
 
 /** 将菜单数据转换为 DxTreeView 格式，折叠时不显示子菜单 */
 const treeMenuItems = computed<TreeItem[]>(() => {
+  // 访问 locale.value 以触发语言切换时的响应式更新
   locale.value
   return visibleMenuItems.value.map(item => {
     const node: TreeItem = {
@@ -124,6 +125,7 @@ const treeMenuItems = computed<TreeItem[]>(() => {
 })
 
 const languageOptions = computed(() => {
+  // 访问 locale.value 以触发语言切换时的响应式更新
   locale.value
   return localeOptions.map(item => ({
     value: item.value,
