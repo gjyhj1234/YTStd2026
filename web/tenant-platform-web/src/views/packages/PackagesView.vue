@@ -76,6 +76,13 @@
             type="success"
             @click="onEnable(cellData.data.Id)"
           />
+          <DxButton
+            v-if="perm.has(PACKAGE_LIST_DELETE)"
+            :text="$t('common.delete')"
+            styling-mode="text"
+            type="danger"
+            @click="onDelete(cellData.data.Id)"
+          />
         </template>
         <DxPaging :page-size="20" />
         <DxPager :show-page-size-selector="true" :allowed-page-sizes="[10, 20, 50]" :show-info="true" />
@@ -167,6 +174,7 @@ import {
   updatePackage,
   enablePackage,
   disablePackage,
+  deletePackage,
   type SaasPackageRepDTO,
   type CreateSaasPackageReqDTO,
   type UpdateSaasPackageReqDTO,
@@ -174,6 +182,7 @@ import {
 import {
   PACKAGE_LIST_CREATE,
   PACKAGE_LIST_UPDATE,
+  PACKAGE_LIST_DELETE,
 } from '@/constants/permissions'
 
 const perm = usePermission()
@@ -249,6 +258,15 @@ async function onEnable(id: number) {
 async function onDisable(id: number) {
   try {
     await disablePackage(id)
+    await loadData()
+  } catch {
+    // 错误由 http 层统一处理
+  }
+}
+
+async function onDelete(id: number) {
+  try {
+    await deletePackage(id)
     await loadData()
   } catch {
     // 错误由 http 层统一处理

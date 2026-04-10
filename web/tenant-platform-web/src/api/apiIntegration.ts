@@ -62,3 +62,7 @@ export function getWebhookDeliveryLogs(params: Record<string, string | number | 
 export function deleteApiKey(id: number) {
   return del<void>(`/api/api-keys/${id}`)
 }
+
+export function deleteWebhook(id: number) {
+  return del<void>(`/api/tenant-webhooks/${id}`)
+}

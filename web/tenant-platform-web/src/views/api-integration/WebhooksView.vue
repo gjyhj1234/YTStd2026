@@ -64,6 +64,13 @@
             type="success"
             @click="onEnable(cellData.data.Id)"
           />
+          <DxButton
+            v-if="perm.has(INFRA_WEBHOOK_DELETE)"
+            :text="$t('common.delete')"
+            styling-mode="text"
+            type="danger"
+            @click="onDelete(cellData.data.Id)"
+          />
         </template>
         <DxPaging :page-size="20" />
         <DxPager :show-page-size-selector="true" :allowed-page-sizes="[10, 20, 50]" :show-info="true" />
@@ -154,6 +161,7 @@ import {
   updateWebhook,
   enableWebhook,
   disableWebhook,
+  deleteWebhook,
   type TenantWebhookRepDTO,
   type CreateWebhookReqDTO,
   type UpdateWebhookReqDTO,
@@ -161,6 +169,7 @@ import {
 import {
   INFRA_WEBHOOK_CREATE,
   INFRA_WEBHOOK_UPDATE,
+  INFRA_WEBHOOK_DELETE,
 } from '@/constants/permissions'
 
 const perm = usePermission()
@@ -230,6 +239,15 @@ async function onEnable(id: number) {
 async function onDisable(id: number) {
   try {
     await disableWebhook(id)
+    await loadData()
+  } catch {
+    // 错误由 http 层统一处理
+  }
+}
+
+async function onDelete(id: number) {
+  try {
+    await deleteWebhook(id)
     await loadData()
   } catch {
     // 错误由 http 层统一处理
