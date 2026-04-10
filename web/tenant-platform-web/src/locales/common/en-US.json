@@ -52,5 +52,11 @@
   "删除成功": "Deleted Successfully",
   "保存成功": "Saved Successfully",
   "创建成功": "Created Successfully",
-  "更新成功": "Updated Successfully"
+  "更新成功": "Updated Successfully",
+  "网络连接失败": "Network connection failed, please check your network",
+  "权限不足，无法访问此页面": "Access denied. You do not have permission to view this page",
+  "返回首页": "Back to Home",
+  "确认操作": "Confirm Action",
+  "启用成功": "Enabled Successfully",
+  "禁用成功": "Disabled Successfully"
 }

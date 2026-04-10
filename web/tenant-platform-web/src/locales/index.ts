@@ -18,6 +18,11 @@ import commonEnUS from './common/en-US.json'
 import commonMsMY from './common/ms-MY.json'
 import commonZhTW from './common/zh-TW.json'
 import commonJaJP from './common/ja-JP.json'
+import enumsZhCN from './enums/zh-CN.json'
+import enumsEnUS from './enums/en-US.json'
+import enumsMsMY from './enums/ms-MY.json'
+import enumsZhTW from './enums/zh-TW.json'
+import enumsJaJP from './enums/ja-JP.json'
 
 export type LocaleCode = 'zh-CN' | 'en-US' | 'ms-MY' | 'zh-TW' | 'ja-JP'
 
@@ -25,11 +30,11 @@ const LOCALE_STORAGE_KEY = 'platform_locale'
 const DEFAULT_LOCALE: LocaleCode = 'zh-CN'
 
 const messages = {
-  'zh-CN': { ...commonZhCN, ...generatedZhCN, ...zhCN },
-  'en-US': { ...commonEnUS, ...generatedEnUS, ...enUS },
-  'ms-MY': { ...commonMsMY, ...generatedMsMY, ...msMY },
-  'zh-TW': { ...commonZhTW, ...generatedZhTW, ...zhTW },
-  'ja-JP': { ...commonJaJP, ...generatedJaJP, ...jaJP },
+  'zh-CN': { ...commonZhCN, ...generatedZhCN, ...enumsZhCN, ...zhCN },
+  'en-US': { ...commonEnUS, ...generatedEnUS, ...enumsEnUS, ...enUS },
+  'ms-MY': { ...commonMsMY, ...generatedMsMY, ...enumsMsMY, ...msMY },
+  'zh-TW': { ...commonZhTW, ...generatedZhTW, ...enumsZhTW, ...zhTW },
+  'ja-JP': { ...commonJaJP, ...generatedJaJP, ...enumsJaJP, ...jaJP },
 }
 
 loadMessages(devExtremeEn)
