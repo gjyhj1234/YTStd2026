@@ -187,7 +187,7 @@ async function handleChangePassword() {
       OldPassword: changePwdForm.OldPassword,
       NewPassword: changePwdForm.NewPassword,
     })
-    notifySuccess('密码修改成功')
+    notifySuccess(t('密码修改成功'))
     Object.assign(changePwdForm, { OldPassword: '', NewPassword: '', ConfirmPassword: '' })
   } catch (e: unknown) {
     notifyError(e instanceof Error ? e.message : t('密码修改失败'))

@@ -275,8 +275,8 @@
 | G0 — 基础设施重构 | ✅ 完成 | useNotify composable、errorHandler增强、http网络错误处理、ja-JP全量翻译、ms-MY/zh-TW补齐554键、55枚举×5语言翻译、403页面、CSS变量化 |
 | G1 — 布局导航重构 | ✅ 完成 | DxDrawer+DxTreeView侧边栏、DxButton替代原生按钮、登录表单验证+Loading、仪表盘DxLoadPanel+空数据、15组件语言文件、common+主语言文件新增key |
 | G2 — 平台管理模块 | ✅ 完成 | CustomStore远程分页、表单验证(required+stringLength+email+async唯一性)、确认弹窗、成功Toast、批量操作、详情弹窗、权限/成员绑定完善、CSS变量化、DxLoadPanel、20组件语言文件、99+9新locale key |
-| **G1-FIX — 登录页+导航修复** | 🔄 待执行 | 人工检查发现问题修复（Issue #1 + #2） |
-| **G2-FIX — 平台管理模块修复** | 🔄 待执行 | 人工检查发现问题修复（Issue #3~#8） |
+| **G1-FIX — 登录页+导航修复** | ✅ 完成 | Issue #1 移除 placeholder 叠加 + Issue #2 修复侧边栏偏移 CSS |
+| **G2-FIX — 平台管理模块修复** | ✅ 完成 | Issue #3~#8 弹窗 #content 插槽、Remark 回显、角色分配、权限树加载、安全中心密码修改 |
 | G3 — 租户生命周期模块 | ⬜ 待执行 | |
 | G4 — 租户配置模块 | ⬜ 待执行 | |
 | G5 — SaaS 套餐订阅 | ⬜ 待执行 | |

@@ -280,9 +280,9 @@
           :selected-row-keys="selectedRoleIds"
           @selection-changed="onRoleSelectionChanged"
         >
-          <DxRoleSelection mode="multiple" :show-check-boxes-mode="'always'" />
-          <DxRoleColumn data-field="Code" :caption="$t('角色编码')" />
-          <DxRoleColumn data-field="Name" :caption="$t('角色名称')" />
+          <DxSelection mode="multiple" :show-check-boxes-mode="'always'" />
+          <DxColumn data-field="Code" :caption="$t('角色编码')" />
+          <DxColumn data-field="Name" :caption="$t('角色名称')" />
         </DxDataGrid>
         <div style="text-align: right; margin-top: 12px">
           <DxButton :text="$t('保存')" type="default" @click="handleAssignRoles" />
@@ -303,7 +303,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
-import { DxDataGrid, DxColumn, DxPaging, DxPager, DxSelection, DxColumn as DxRoleColumn, DxSelection as DxRoleSelection } from 'devextreme-vue/data-grid'
+import { DxDataGrid, DxColumn, DxPaging, DxPager, DxSelection } from 'devextreme-vue/data-grid'
 import { DxButton } from 'devextreme-vue/button'
 import { DxTextBox } from 'devextreme-vue/text-box'
 import { DxSelectBox } from 'devextreme-vue/select-box'
@@ -316,7 +316,7 @@ import FunctionDescriptionCard from '@/components/help/FunctionDescriptionCard.v
 import OperationGuideDrawer from '@/components/help/OperationGuideDrawer.vue'
 import PageHelpEntry from '@/components/help/PageHelpEntry.vue'
 import { usePermission } from '@/composables/usePermission'
-import { notifySuccess, confirmDelete, confirmAction } from '@/composables/useNotify'
+import { notifySuccess, notifyError, confirmDelete, confirmAction } from '@/composables/useNotify'
 import { formatDateTime } from '@/utils/format'
 import {
   getPlatformUsers,
@@ -566,11 +566,16 @@ function onRoleSelectionChanged(e: { selectedRowKeys: number[] }) {
 
 async function handleAssignRoles() {
   if (!assigningUser.value) return
-  for (const roleId of selectedRoleIds.value) {
-    await bindRoleMembers(roleId, { UserIds: [assigningUser.value.Id] })
+  try {
+    const promises = selectedRoleIds.value.map(roleId =>
+      bindRoleMembers(roleId, { UserIds: [assigningUser.value!.Id] })
+    )
+    await Promise.all(promises)
+    showRolePopup.value = false
+    notifySuccess(t('分配角色成功'))
+  } catch (e: unknown) {
+    notifyError(e instanceof Error ? e.message : t('分配角色失败'))
   }
-  showRolePopup.value = false
-  notifySuccess('分配角色成功')
 }
 
 const guideSteps = computed(() => [
