@@ -14,7 +14,7 @@ export function getPlatformUser(id: number) {
 }
 
 export function createPlatformUser(data: CreatePlatformUserReqDTO) {
-  return post<void>('/api/platform-users', data)
+  return post<number>('/api/platform-users', data)
 }
 
 export function updatePlatformUser(id: number, data: UpdatePlatformUserReqDTO) {
@@ -35,4 +35,16 @@ export function disablePlatformUser(id: number) {
 
 export function resetPlatformUserPassword(id: number, data: { NewPassword: string }) {
   return put<void>(`/api/platform-users/${id}/reset-password`, data)
+}
+
+export function checkUsernameExists(username: string) {
+  return get<boolean>('/api/platform-users/check-username-exists', { Username: username })
+}
+
+export function batchEnablePlatformUsers(ids: number[]) {
+  return put<void>('/api/platform-users/batch-enable', { Ids: ids })
+}
+
+export function batchDisablePlatformUsers(ids: number[]) {
+  return put<void>('/api/platform-users/batch-disable', { Ids: ids })
 }

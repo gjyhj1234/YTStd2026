@@ -62,5 +62,14 @@
   "用户名不能为空": "Username is required",
   "密码不能为空": "Password is required",
   "密码长度至少6位": "Password must be at least 6 characters",
-  "登录中": "Signing in..."
+  "登录中": "Signing in...",
+  "状态筛选": "Status Filter",
+  "绑定权限": "Bind Permissions",
+  "绑定成员": "Bind Members",
+  "新增角色": "Add Role",
+  "角色编码": "Role Code",
+  "角色名称": "Role Name",
+  "权限编码": "Permission Code",
+  "权限名称": "Permission Name",
+  "重置密码成功": "Password reset successfully"
 }

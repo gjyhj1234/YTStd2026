@@ -1,17 +1,17 @@
 <template>
   <div>
     <div class="page-header">
-      <h2>{{ $t('route.platformPermissions') }}</h2>
+      <h2>{{ $t('平台权限管理') }}</h2>
       <div class="page-header-actions">
         <PageHelpEntry @click="showGuide = true" />
       </div>
     </div>
 
     <FunctionDescriptionCard
-      purpose="权限管理展示平台所有权限码的层级结构，包含菜单权限、API权限和操作权限。"
-      data-scope="平台全部权限数据（由系统种子数据维护）。"
-      permission-note="需要 platform:permission:view 权限查看权限树。"
-      risk-note="权限数据由系统种子数据管理，此页面仅供查看，不支持直接编辑。"
+      :purpose="$t('权限管理展示平台所有权限码层级结构')"
+      :data-scope="$t('平台全部权限数据由种子数据维护')"
+      :permission-note="$t('需要权限查看权限')"
+      :risk-note="$t('权限数据由系统种子数据管理仅供查看')"
       :collapsible="true"
     />
 
@@ -19,13 +19,15 @@
       <div class="filter-bar">
         <DxTextBox
           v-model:value="filterKeyword"
-          :placeholder="$t('搜索权限编码 / 名称')"
+          :placeholder="$t('搜索权限编码或名称')"
           :width="260"
           mode="search"
           value-change-event="input"
           @value-changed="onFilterChanged"
         />
       </div>
+
+      <DxLoadPanel :visible="isLoading" :position="{ of: '.card' }" />
 
       <DxTreeList
         :data-source="treeData"
@@ -38,7 +40,7 @@
         :filter-mode="'fullBranch'"
         :search-panel="{ visible: false }"
       >
-        <DxColumn data-field="Id" :caption="$t('common.id')" :width="60" />
+        <DxColumn data-field="Id" caption="ID" :width="80" />
         <DxColumn data-field="Code" :caption="$t('权限编码')" />
         <DxColumn data-field="Name" :caption="$t('权限名称')" />
         <DxColumn data-field="PermissionType" :caption="$t('权限类型')" cell-template="typeCell" :width="120" />
@@ -54,8 +56,8 @@
 
     <OperationGuideDrawer
       v-model:visible="showGuide"
-      title="权限管理操作指引"
-      entry-path="左侧菜单 → 平台管理体系 → 权限管理"
+      :title="$t('权限管理操作指引')"
+      :entry-path="$t('权限管理入口路径')"
       :steps="guideSteps"
       :field-notes="guideFieldNotes"
       :error-notes="guideErrorNotes"
@@ -64,10 +66,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { DxTreeList, DxColumn } from 'devextreme-vue/tree-list'
 import { DxTextBox } from 'devextreme-vue/text-box'
+import { DxLoadPanel } from 'devextreme-vue/load-panel'
 import FunctionDescriptionCard from '@/components/help/FunctionDescriptionCard.vue'
 import OperationGuideDrawer from '@/components/help/OperationGuideDrawer.vue'
 import PageHelpEntry from '@/components/help/PageHelpEntry.vue'
@@ -88,6 +91,7 @@ interface FlatPermission {
 
 const filterKeyword = ref('')
 const showGuide = ref(false)
+const isLoading = ref(false)
 const { t } = useI18n()
 
 const allData = ref<FlatPermission[]>([])
@@ -148,12 +152,10 @@ function onFilterChanged() {
     treeData.value = allData.value
     return
   }
-  // Include matching nodes and their ancestors
   const matchedIds = new Set<number>()
   for (const item of allData.value) {
     if (item.Code.toLowerCase().includes(keyword) || item.Name.toLowerCase().includes(keyword)) {
       matchedIds.add(item.Id)
-      // Walk up to include ancestors
       let current = item
       while (current.ParentId !== null) {
         matchedIds.add(current.ParentId)
@@ -167,28 +169,29 @@ function onFilterChanged() {
 }
 
 async function loadData() {
+  isLoading.value = true
   try {
     const res = await getPermissions()
     allData.value = flattenTree(res.Data!)
     treeData.value = allData.value
-  } catch {
-    // 接口未就绪时保持空列表
+  } finally {
+    isLoading.value = false
   }
 }
 
-const guideSteps = [
-  '进入权限管理页面查看平台所有权限的层级结构',
-  '使用搜索框按权限编码或名称筛选',
-  '展开/折叠树节点查看子权限',
-]
-const guideFieldNotes = [
-  '权限编码：唯一标识，格式为 模块:资源:操作',
-  '权限类型：菜单权限控制页面可见性，API权限控制接口访问，操作权限控制按钮可用性',
-  '路径和方法：仅API权限类型会显示对应的HTTP路径和方法',
-]
-const guideErrorNotes = [
-  '权限数据由系统种子数据管理，无法在此页面直接修改',
-]
+const guideSteps = computed(() => [
+  t('进入权限管理页面查看权限层级结构'),
+  t('使用搜索框按权限编码或名称筛选'),
+  t('展开折叠树节点查看子权限'),
+])
+const guideFieldNotes = computed(() => [
+  t('权限编码唯一标识格式为模块资源操作'),
+  t('权限类型菜单权限控制页面可见性API权限控制接口'),
+  t('路径和方法仅API权限类型显示'),
+])
+const guideErrorNotes = computed(() => [
+  t('权限数据由系统种子数据管理无法直接修改'),
+])
 
 onMounted(loadData)
 </script>
@@ -201,19 +204,19 @@ onMounted(loadData)
   font-size: 12px;
 }
 .permission-type-tag.menu {
-  background-color: #e3f2fd;
-  color: #1565c0;
+  background-color: var(--dx-color-primary-light, #e3f2fd);
+  color: var(--dx-color-primary, #1565c0);
 }
 .permission-type-tag.api {
-  background-color: #e8f5e9;
-  color: #2e7d32;
+  background-color: var(--dx-color-success-light, #e8f5e9);
+  color: var(--dx-color-success, #2e7d32);
 }
 .permission-type-tag.operation {
-  background-color: #fff3e0;
-  color: #e65100;
+  background-color: var(--dx-color-warning-light, #fff3e0);
+  color: var(--dx-color-warning, #e65100);
 }
 .permission-type-tag.data {
-  background-color: #f3e5f5;
-  color: #7b1fa2;
+  background-color: var(--dx-color-info-light, #f3e5f5);
+  color: var(--dx-color-info, #7b1fa2);
 }
 </style>
