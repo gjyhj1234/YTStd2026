@@ -13,5 +13,5 @@ export function createTenantDomain(data: CreateTenantDomainReqDTO) {
 }
 
 export function deleteTenantDomain(tenantRefId: number, domainId: number) {
-  return del<void>(`/api/tenant-groups/${tenantRefId}/domains/${domainId}`)
+  return del<void>(`/api/tenants/${tenantRefId}/domains/${domainId}`)
 }
