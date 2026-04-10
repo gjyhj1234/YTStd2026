@@ -120,20 +120,22 @@
       :show-close-button="true"
       @hiding="showCreatePopup = false"
     >
-      <DxForm ref="createFormRef" :form-data="createForm" :col-count="1" label-mode="floating">
-        <DxSimpleItem data-field="Code" :validation-rules="codeRules">
-          <DxLabel :text="$t('角色编码')" />
-        </DxSimpleItem>
-        <DxSimpleItem data-field="Name" :validation-rules="nameRules">
-          <DxLabel :text="$t('角色名称')" />
-        </DxSimpleItem>
-        <DxSimpleItem data-field="Description" editor-type="dxTextArea">
-          <DxLabel :text="$t('描述')" />
-        </DxSimpleItem>
-        <DxButtonItem>
-          <DxButtonOptions :text="$t('提交')" type="default" :use-submit-behavior="false" @click="handleCreate" />
-        </DxButtonItem>
-      </DxForm>
+      <template #content>
+        <DxForm ref="createFormRef" :form-data="createForm" :col-count="1" label-mode="floating">
+          <DxSimpleItem data-field="Code" :validation-rules="codeRules">
+            <DxLabel :text="$t('角色编码')" />
+          </DxSimpleItem>
+          <DxSimpleItem data-field="Name" :validation-rules="nameRules">
+            <DxLabel :text="$t('角色名称')" />
+          </DxSimpleItem>
+          <DxSimpleItem data-field="Description" editor-type="dxTextArea">
+            <DxLabel :text="$t('描述')" />
+          </DxSimpleItem>
+          <DxButtonItem>
+            <DxButtonOptions :text="$t('提交')" type="default" :use-submit-behavior="false" @click="handleCreate" />
+          </DxButtonItem>
+        </DxForm>
+      </template>
     </DxPopup>
 
     <!-- 编辑角色弹窗 -->
@@ -145,17 +147,19 @@
       :show-close-button="true"
       @hiding="showEditPopup = false"
     >
-      <DxForm ref="editFormRef" :form-data="editForm" :col-count="1" label-mode="floating">
-        <DxSimpleItem data-field="Name" :validation-rules="nameRules">
-          <DxLabel :text="$t('角色名称')" />
-        </DxSimpleItem>
-        <DxSimpleItem data-field="Description" editor-type="dxTextArea">
-          <DxLabel :text="$t('描述')" />
-        </DxSimpleItem>
-        <DxButtonItem>
-          <DxButtonOptions :text="$t('保存')" type="default" :use-submit-behavior="false" @click="handleEdit" />
-        </DxButtonItem>
-      </DxForm>
+      <template #content>
+        <DxForm ref="editFormRef" :form-data="editForm" :col-count="1" label-mode="floating">
+          <DxSimpleItem data-field="Name" :validation-rules="nameRules">
+            <DxLabel :text="$t('角色名称')" />
+          </DxSimpleItem>
+          <DxSimpleItem data-field="Description" editor-type="dxTextArea">
+            <DxLabel :text="$t('描述')" />
+          </DxSimpleItem>
+          <DxButtonItem>
+            <DxButtonOptions :text="$t('保存')" type="default" :use-submit-behavior="false" @click="handleEdit" />
+          </DxButtonItem>
+        </DxForm>
+      </template>
     </DxPopup>
 
     <!-- 绑定权限弹窗 -->
@@ -167,23 +171,25 @@
       :show-close-button="true"
       @hiding="showPermPopup = false"
     >
-      <DxTreeList
-        :data-source="permTreeData"
-        :show-borders="true"
-        :column-auto-width="true"
-        key-expr="Id"
-        parent-id-expr="ParentId"
-        :auto-expand-all="true"
-        :selected-row-keys="boundPermissionIds"
-        @selection-changed="onPermSelectionChanged"
-      >
-        <DxTreeSelection mode="multiple" :recursive="true" />
-        <DxTreeColumn data-field="Code" :caption="$t('权限编码')" />
-        <DxTreeColumn data-field="Name" :caption="$t('权限名称')" />
-      </DxTreeList>
-      <div style="text-align: right; margin-top: 12px">
-        <DxButton :text="$t('保存')" type="default" @click="handleBindPermissions" />
-      </div>
+      <template #content>
+        <DxTreeList
+          :data-source="permTreeData"
+          :show-borders="true"
+          :column-auto-width="true"
+          key-expr="Id"
+          parent-id-expr="ParentId"
+          :auto-expand-all="true"
+          :selected-row-keys="boundPermissionIds"
+          @selection-changed="onPermSelectionChanged"
+        >
+          <DxTreeSelection mode="multiple" :recursive="true" />
+          <DxTreeColumn data-field="Code" :caption="$t('权限编码')" />
+          <DxTreeColumn data-field="Name" :caption="$t('权限名称')" />
+        </DxTreeList>
+        <div style="text-align: right; margin-top: 12px">
+          <DxButton :text="$t('保存')" type="default" @click="handleBindPermissions" />
+        </div>
+      </template>
     </DxPopup>
 
     <!-- 绑定成员弹窗 -->
@@ -195,22 +201,24 @@
       :show-close-button="true"
       @hiding="showMemberPopup = false"
     >
-      <DxDataGrid
-        :data-source="allUsersData"
-        :show-borders="true"
-        :column-auto-width="true"
-        :hover-state-enabled="true"
-        key-expr="Id"
-        :selected-row-keys="boundMemberIds"
-        @selection-changed="onMemberSelectionChanged"
-      >
-        <DxMemberSelection mode="multiple" :show-check-boxes-mode="'always'" />
-        <DxMemberColumn data-field="Username" :caption="$t('用户名')" />
-        <DxMemberColumn data-field="DisplayName" :caption="$t('显示名称')" />
-      </DxDataGrid>
-      <div style="text-align: right; margin-top: 12px">
-        <DxButton :text="$t('保存')" type="default" @click="handleBindMembers" />
-      </div>
+      <template #content>
+        <DxDataGrid
+          :data-source="allUsersData"
+          :show-borders="true"
+          :column-auto-width="true"
+          :hover-state-enabled="true"
+          key-expr="Id"
+          :selected-row-keys="boundMemberIds"
+          @selection-changed="onMemberSelectionChanged"
+        >
+          <DxMemberSelection mode="multiple" :show-check-boxes-mode="'always'" />
+          <DxMemberColumn data-field="Username" :caption="$t('用户名')" />
+          <DxMemberColumn data-field="DisplayName" :caption="$t('显示名称')" />
+        </DxDataGrid>
+        <div style="text-align: right; margin-top: 12px">
+          <DxButton :text="$t('保存')" type="default" @click="handleBindMembers" />
+        </div>
+      </template>
     </DxPopup>
 
     <OperationGuideDrawer
@@ -256,7 +264,10 @@ import {
   type PlatformRoleRepDTO,
   type CreatePlatformRoleReqDTO,
 } from '@/api/platformRoles'
-import { getPermissions, type PlatformPermissionRepDTO } from '@/api/platformPermissions'
+import {
+  getPermissionTree,
+  type PlatformPermissionRepDTO,
+} from '@/api/platformPermissions'
 import { getPlatformUsers, type PlatformUserRepDTO } from '@/api/platformUsers'
 import {
   PLATFORM_ROLE_CREATE,
@@ -426,7 +437,7 @@ async function onBindPermissions(role: PlatformRoleRepDTO) {
   bindingRoleId.value = role.Id
   bindingRoleName.value = role.Name
   const [permRes, boundRes] = await Promise.all([
-    getPermissions(),
+    getPermissionTree(),
     getRolePermissions(role.Id),
   ])
   permTreeData.value = flattenPermTree(permRes.Data!)

@@ -15,3 +15,7 @@ export function refreshToken(data?: RefreshTokenReqDTO) {
 export function getCurrentUser() {
   return get<CurrentUserRepDTO>('/api/auth/me')
 }
+
+export function changePassword(data: { OldPassword: string; NewPassword: string }) {
+  return post<void>('/api/auth/change-password', data)
+}

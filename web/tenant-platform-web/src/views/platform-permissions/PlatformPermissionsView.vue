@@ -39,6 +39,7 @@
         :auto-expand-all="true"
         :filter-mode="'fullBranch'"
         :search-panel="{ visible: false }"
+        :no-data-text="$t('暂无权限数据')"
       >
         <DxColumn data-field="Id" caption="ID" :width="80" />
         <DxColumn data-field="Code" :caption="$t('权限编码')" />
@@ -74,8 +75,9 @@ import { DxLoadPanel } from 'devextreme-vue/load-panel'
 import FunctionDescriptionCard from '@/components/help/FunctionDescriptionCard.vue'
 import OperationGuideDrawer from '@/components/help/OperationGuideDrawer.vue'
 import PageHelpEntry from '@/components/help/PageHelpEntry.vue'
+import { notifyError } from '@/composables/useNotify'
 import {
-  getPermissions,
+  getPermissionTree,
   type PlatformPermissionRepDTO,
 } from '@/api/platformPermissions'
 
@@ -171,9 +173,16 @@ function onFilterChanged() {
 async function loadData() {
   isLoading.value = true
   try {
-    const res = await getPermissions()
-    allData.value = flattenTree(res.Data!)
-    treeData.value = allData.value
+    const res = await getPermissionTree()
+    if (res.Data) {
+      allData.value = flattenTree(res.Data)
+      treeData.value = allData.value
+    } else {
+      allData.value = []
+      treeData.value = []
+    }
+  } catch (e: unknown) {
+    notifyError(e instanceof Error ? e.message : t('加载权限数据失败'))
   } finally {
     isLoading.value = false
   }
