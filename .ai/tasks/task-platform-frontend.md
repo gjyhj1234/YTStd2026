@@ -112,6 +112,21 @@
 | 更新权限 | PUT `/api/platform-permissions/{id}` |
 | 删除权限 | DELETE `/api/platform-permissions/{id}` |
 
+**验收标准**：
+- [x] 远程分页使用 CustomStore（PlatformUsersView + PlatformRolesView）
+- [x] 表单验证（required + stringLength + email + password + async 唯一性检查）
+- [x] 操作确认弹窗（删除 confirmDelete、启用/禁用 confirmAction）
+- [x] 操作成功 Toast（notifySuccess）
+- [x] 批量启用/禁用功能（PlatformUsersView）
+- [x] 详情弹窗（PlatformUsersView）
+- [x] 权限绑定完善 — 预加载已绑定权限（PlatformRolesView）
+- [x] 成员绑定功能实现（PlatformRolesView）
+- [x] 所有文本使用 $t() / t()（无硬编码中文）
+- [x] CSS 硬编码颜色替换为 CSS 变量
+- [x] DxLoadPanel 加载状态指示（Permissions + Security）
+- [x] 20 个组件语言文件（4 视图 × 5 语言）
+- [x] `npm run build` 通过
+
 ---
 
 ### G3：租户生命周期模块
@@ -259,7 +274,7 @@
 |--------|------|------|
 | G0 — 基础设施重构 | ✅ 完成 | useNotify composable、errorHandler增强、http网络错误处理、ja-JP全量翻译、ms-MY/zh-TW补齐554键、55枚举×5语言翻译、403页面、CSS变量化 |
 | G1 — 布局导航重构 | ✅ 完成 | DxDrawer+DxTreeView侧边栏、DxButton替代原生按钮、登录表单验证+Loading、仪表盘DxLoadPanel+空数据、15组件语言文件、common+主语言文件新增key |
-| G2 — 平台管理模块 | ⬜ 待执行 | |
+| G2 — 平台管理模块 | ✅ 完成 | CustomStore远程分页、表单验证(required+stringLength+email+async唯一性)、确认弹窗、成功Toast、批量操作、详情弹窗、权限/成员绑定完善、CSS变量化、DxLoadPanel、20组件语言文件、99+9新locale key |
 | G3 — 租户生命周期模块 | ⬜ 待执行 | |
 | G4 — 租户配置模块 | ⬜ 待执行 | |
 | G5 — SaaS 套餐订阅 | ⬜ 待执行 | |
