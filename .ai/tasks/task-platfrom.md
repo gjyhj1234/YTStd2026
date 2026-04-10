@@ -307,20 +307,79 @@ B 阶段（核心模块后端重构）中以下服务的 `InsertAsync` 调用前
 
 ## 阶段 E：前端重构
 
-**状态：⏳ 待开始**
+**状态：⏳ 进行中**
 
 ### 子任务拆分（每子任务 ≤ 40 分钟）
 
 | 子任务 | 内容 | 预计时间 | 状态 |
 |--------|------|---------|------|
 | E0 | 修复 B 阶段 InsertAsync 违规 + Postman 路由修复 + 自审 | 40 分钟 | ✅ 完成 |
-| E1 | 前端脚手架校验 + 布局校验 + 仪表盘页面（E24-E26） | 40 分钟 | ⏳ 待开始 |
+| E1 | 前端脚手架校验 + 布局校验 + 仪表盘页面（E24-E26） | 40 分钟 | ✅ 完成 |
 | E2 | 核心管理页面 Part 1 — 用户/角色/权限（E27-E29） | 40 分钟 | ⏳ 待开始 |
 | E3 | 核心管理页面 Part 2 — 租户管理/信息/资源/配置（E30-E33） | 40 分钟 | ⏳ 待开始 |
 | E4 | 扩展模块页面 Part 1 — 套餐/订阅/计费（E34-E36） | 40 分钟 | ⏳ 待开始 |
 | E5 | 扩展模块页面 Part 2 — API集成/运营/审计/通知/存储（E37-E41） | 40 分钟 | ⏳ 待开始 |
 
+- [x] E1 完成 — 脚手架、布局、仪表盘
+- [ ] E2~E5 — 所有模块页面
 - [ ] 24~41 — 脚手架、布局、仪表盘及所有模块页面
+
+### E1 完成记录
+
+#### E24 — 脚手架校验
+
+| 检查项 | 状态 | 说明 |
+|--------|------|------|
+| DevExtreme Vue 25.2 配置 | ✅ 通过 | `devextreme@^25.2.5` + `devextreme-vue@^25.2.5` |
+| HTTP 封装处理 ApiResult | ✅ 通过 | `utils/http.ts` 正确处理 Code=0/非0 |
+| TypeScript PascalCase | ✅ 通过 | 所有类型接口属性使用 PascalCase |
+| 路由守卫 | ✅ 通过 | 鉴权 + 权限检查完整 |
+| Auth API 路由修复 | ✅ 已修复 | `/api/auth/refresh` → `/api/auth/refresh-token` 与后端一致 |
+| `npm run build` | ✅ 通过 | 0 error |
+
+#### E25 — 布局校验
+
+| 检查项 | 状态 | 说明 |
+|--------|------|------|
+| MainLayout 结构 | ✅ 通过 | Sidebar + Topbar + Breadcrumb + Content |
+| 侧边栏可折叠 | ✅ 通过 | `appStore.toggleSidebar` |
+| 菜单按权限过滤 | ✅ 通过 | `isItemVisible` 使用 `authStore.hasAnyPermission` |
+| 面包屑 | ✅ 通过 | 显示当前路由 title |
+| 语言切换 | ✅ 通过 | DxSelectBox 切换 4 种语言 |
+| 系统设置菜单 | ✅ 已添加 | 新增"系统设置"分组：菜单管理、字典管理 |
+
+#### E26 — 仪表盘页面
+
+| 检查项 | 状态 | 说明 |
+|--------|------|------|
+| 统计卡片 | ✅ 完善 | 6 个卡片（租户/活跃/订阅/用户/到期/试用）通过 API 加载 |
+| 租户增长趋势图 | ✅ 已添加 | DxChart 柱状图 |
+| 订阅分布图 | ✅ 已添加 | DxPieChart 饼图 |
+| 快捷操作 | ✅ 通过 | 5 个快捷入口 |
+| Dashboard API | ✅ 已创建 | `api/dashboard.ts` — 3 个接口 |
+
+#### E1 新增/修改文件
+
+| 操作 | 文件路径 | 说明 |
+|------|---------|------|
+| 修改 | `src/api/auth.ts` | 修复 refresh-token 路由 |
+| 新建 | `src/api/menus.ts` | 菜单管理 API |
+| 新建 | `src/api/dictionaries.ts` | 字典管理 API |
+| 新建 | `src/api/dashboard.ts` | 仪表盘数据 API |
+| 新建 | `src/types/menu.ts` | 菜单类型定义 |
+| 新建 | `src/types/dictionary.ts` | 字典类型定义 |
+| 新建 | `src/types/dashboard.ts` | 仪表盘类型定义 |
+| 修改 | `src/types/index.ts` | 导出新类型 |
+| 修改 | `src/constants/permissions.ts` | 添加系统设置权限码 |
+| 修改 | `src/constants/menus.ts` | 添加系统设置菜单组 |
+| 修改 | `src/router/index.ts` | 添加菜单/字典路由 |
+| 新建 | `src/views/system-menus/SystemMenusView.vue` | 菜单管理页面（TreeList） |
+| 新建 | `src/views/system-dictionaries/SystemDictionariesView.vue` | 字典管理页面（类型+项） |
+| 重写 | `src/views/dashboard/DashboardView.vue` | 添加 API 调用、DxChart、DxPieChart |
+| 修改 | `src/locales/zh-CN.json` | 新增 i18n 键 |
+| 修改 | `src/locales/en-US.json` | 新增 i18n 键 |
+| 修改 | `src/locales/ms-MY.json` | 新增 i18n 键 |
+| 修改 | `src/locales/zh-TW.json` | 新增 i18n 键 |
 
 ## 阶段 F：前端国际化
 

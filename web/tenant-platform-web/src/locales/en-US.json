@@ -102,7 +102,10 @@
     "tenantFiles": "File Management",
     "infrastructure": "Infrastructure",
     "rateLimitPolicies": "Rate Limit Policies",
-    "infraComponents": "Infrastructure Components"
+    "infraComponents": "Infrastructure Components",
+    "systemSettings": "System Settings",
+    "systemMenus": "Menu Management",
+    "systemDictionaries": "Dictionary Management"
   },
   "route": {
     "dashboard": "Dashboard",
@@ -137,7 +140,9 @@
     "storageStrategies": "Storage Strategies",
     "tenantFiles": "File Management",
     "rateLimitPolicies": "Rate Limit Policies",
-    "infraComponents": "Infrastructure Components"
+    "infraComponents": "Infrastructure Components",
+    "systemMenus": "Menu Management",
+    "systemDictionaries": "Dictionary Management"
   },
   "components": {
     "helpEntry": "Guide",
@@ -547,5 +552,25 @@
   "storage.strategy_update_failed": "Failed to update storage strategy",
   "storage.strategy_status_change_failed": "Failed to change storage strategy status",
   "storage.file_delete_failed": "Failed to delete file",
-  "storage.file_access_policy_save_failed": "Failed to save file access policy"
+  "storage.file_access_policy_save_failed": "Failed to save file access policy",
+  "菜单编码": "Menu Code",
+  "图标": "Icon",
+  "路由路径": "Route Path",
+  "权限编码": "Permission Code",
+  "排序": "Sort",
+  "新增菜单": "Create Menu",
+  "菜单管理操作指引": "Menu Management Guide",
+  "字典类型": "Dictionary Types",
+  "类型编码": "Type Code",
+  "类型名称": "Type Name",
+  "项数量": "Item Count",
+  "字典项": "Dictionary Items",
+  "项编码": "Item Code",
+  "项名称": "Item Name",
+  "项值": "Item Value",
+  "新增字典项": "Create Dictionary Item",
+  "字典管理操作指引": "Dictionary Management Guide",
+  "租户增长趋势": "Tenant Growth Trend",
+  "新增租户": "New Tenants",
+  "订阅分布": "Subscription Distribution"
 }

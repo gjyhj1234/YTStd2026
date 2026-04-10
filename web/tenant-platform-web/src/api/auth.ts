@@ -9,7 +9,7 @@ export function login(data: LoginReqDTO) {
 }
 
 export function refreshToken(data?: RefreshTokenReqDTO) {
-  return post<LoginRepDTO>('/api/auth/refresh', data)
+  return post<LoginRepDTO>('/api/auth/refresh-token', data)
 }
 
 export function getCurrentUser() {

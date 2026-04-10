@@ -102,7 +102,10 @@
     "tenantFiles": "文件管理",
     "infrastructure": "技术基础设施",
     "rateLimitPolicies": "限流策略",
-    "infraComponents": "基础设施组件"
+    "infraComponents": "基础设施组件",
+    "systemSettings": "系统设置",
+    "systemMenus": "菜单管理",
+    "systemDictionaries": "字典管理"
   },
   "route": {
     "dashboard": "仪表盘",
@@ -137,7 +140,9 @@
     "storageStrategies": "存储策略",
     "tenantFiles": "文件管理",
     "rateLimitPolicies": "限流策略",
-    "infraComponents": "基础设施组件"
+    "infraComponents": "基础设施组件",
+    "systemMenus": "菜单管理",
+    "systemDictionaries": "字典管理"
   },
   "components": {
     "helpEntry": "操作指引",
@@ -547,5 +552,25 @@
   "storage.strategy_update_failed": "更新存储策略失败",
   "storage.strategy_status_change_failed": "存储策略状态变更失败",
   "storage.file_delete_failed": "删除文件失败",
-  "storage.file_access_policy_save_failed": "保存文件访问策略失败"
+  "storage.file_access_policy_save_failed": "保存文件访问策略失败",
+  "菜单编码": "菜单编码",
+  "图标": "图标",
+  "路由路径": "路由路径",
+  "权限编码": "权限编码",
+  "排序": "排序",
+  "新增菜单": "新增菜单",
+  "菜单管理操作指引": "菜单管理操作指引",
+  "字典类型": "字典类型",
+  "类型编码": "类型编码",
+  "类型名称": "类型名称",
+  "项数量": "项数量",
+  "字典项": "字典项",
+  "项编码": "项编码",
+  "项名称": "项名称",
+  "项值": "项值",
+  "新增字典项": "新增字典项",
+  "字典管理操作指引": "字典管理操作指引",
+  "租户增长趋势": "租户增长趋势",
+  "新增租户": "新增租户",
+  "订阅分布": "订阅分布"
 }

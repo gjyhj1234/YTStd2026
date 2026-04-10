@@ -132,6 +132,10 @@ export const INFRA_STORAGE_CREATE = 'infra:storage:create'
 export const INFRA_STORAGE_UPDATE = 'infra:storage:update'
 export const INFRA_STORAGE_DELETE = 'infra:storage:delete'
 
+// ── 系统设置 ──
+export const SYSTEM_MENU_VIEW = 'platform:permission:view'
+export const SYSTEM_DICT_VIEW = 'platform:management:view'
+
 // ── 基础设施 ──
 export const INFRA_RATELIMIT_VIEW = 'infra:ratelimit:view'
 export const INFRA_RATELIMIT_CREATE = 'infra:ratelimit:create'

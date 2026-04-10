@@ -131,6 +131,15 @@ export const menuItems: MenuItem[] = [
     ],
   },
   {
+    key: 'system-settings',
+    label: 'menu.systemSettings',
+    icon: 'preferences',
+    children: [
+      { key: 'system-menus', label: 'menu.systemMenus', path: '/system-menus', permissions: [P.SYSTEM_MENU_VIEW] },
+      { key: 'system-dictionaries', label: 'menu.systemDictionaries', path: '/system-dictionaries', permissions: [P.SYSTEM_DICT_VIEW] },
+    ],
+  },
+  {
     key: 'infrastructure',
     label: 'menu.infrastructure',
     icon: 'toolbox',
