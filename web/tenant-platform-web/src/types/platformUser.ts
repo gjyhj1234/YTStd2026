@@ -7,6 +7,7 @@ export interface PlatformUserRepDTO {
   DisplayName: string
   Status: string
   MfaEnabled: boolean
+  Remark: string | null
   LastLoginAt: string | null
   CreatedAt: string
 }

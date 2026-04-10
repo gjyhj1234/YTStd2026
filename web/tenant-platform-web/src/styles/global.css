@@ -85,6 +85,8 @@ html, body, #app {
   color: var(--sidebar-text);
   font-size: 14px;
   white-space: nowrap;
+  /* 防止 font-weight 变化引起宽度偏移 */
+  font-variation-settings: normal;
 }
 
 .sidebar-tree-item .dx-icon {
@@ -107,6 +109,32 @@ html, body, #app {
 
 .sidebar-tree-item:hover {
   color: var(--sidebar-text-hover);
+}
+
+/* ── DxTreeView 防偏移修复 ── */
+.app-sidebar .dx-treeview-node {
+  padding: 0;
+}
+
+.app-sidebar .dx-treeview-item-content {
+  padding-left: 0 !important;
+}
+
+.app-sidebar .dx-treeview-node .dx-treeview-item {
+  padding: 8px 12px;
+}
+
+.app-sidebar .dx-treeview .dx-state-focused,
+.app-sidebar .dx-treeview .dx-state-active,
+.app-sidebar .dx-treeview .dx-state-selected {
+  background: transparent;
+}
+
+.app-sidebar .dx-treeview-toggle-item-visibility {
+  position: static;
+  width: 24px;
+  height: 24px;
+  display: none;
 }
 
 /* ── 主内容区 ── */
