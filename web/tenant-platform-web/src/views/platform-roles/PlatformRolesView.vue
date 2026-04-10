@@ -56,7 +56,7 @@
         <DxColumn data-field="Description" :caption="$t('common.description')" />
         <DxColumn data-field="Status" :caption="$t('common.status')" cell-template="statusCell" :width="100" />
         <DxColumn data-field="CreatedAt" :caption="$t('common.createdAt')" cell-template="dateCell" />
-        <DxColumn :caption="$t('common.actions')" cell-template="actionCell" :width="280" />
+        <DxColumn :caption="$t('common.actions')" cell-template="actionCell" :width="340" />
         <template #statusCell="{ data: cellData }">
           <StatusTag :status="cellData.value" />
         </template>
@@ -111,11 +111,7 @@
       :show-close-button="true"
       @hiding="showCreatePopup = false"
     >
-      <DxForm
-        :form-data="createForm"
-        :col-count="1"
-        label-mode="floating"
-      >
+      <DxForm :form-data="createForm" :col-count="1" label-mode="floating">
         <DxSimpleItem data-field="Code">
           <DxLabel :text="$t('角色编码')" />
         </DxSimpleItem>
@@ -129,6 +125,66 @@
           <DxButtonOptions :text="$t('提交')" type="default" :use-submit-behavior="false" @click="handleCreate" />
         </DxButtonItem>
       </DxForm>
+    </DxPopup>
+
+    <!-- 编辑角色弹窗 -->
+    <DxPopup
+      :visible="showEditPopup"
+      :title="$t('编辑角色')"
+      :width="480"
+      :height="'auto'"
+      :show-close-button="true"
+      @hiding="showEditPopup = false"
+    >
+      <DxForm :form-data="editForm" :col-count="1" label-mode="floating">
+        <DxSimpleItem data-field="Name">
+          <DxLabel :text="$t('角色名称')" />
+        </DxSimpleItem>
+        <DxSimpleItem data-field="Description" editor-type="dxTextArea">
+          <DxLabel :text="$t('common.description')" />
+        </DxSimpleItem>
+        <DxButtonItem>
+          <DxButtonOptions :text="$t('common.save')" type="default" :use-submit-behavior="false" @click="handleEdit" />
+        </DxButtonItem>
+      </DxForm>
+    </DxPopup>
+
+    <!-- 绑定权限弹窗 -->
+    <DxPopup
+      :visible="showPermPopup"
+      :title="$t('绑定权限') + ' — ' + bindingRoleName"
+      :width="600"
+      :height="480"
+      :show-close-button="true"
+      @hiding="showPermPopup = false"
+    >
+      <DxTreeList
+        :data-source="permTreeData"
+        :show-borders="true"
+        :column-auto-width="true"
+        key-expr="Id"
+        parent-id-expr="ParentId"
+        :auto-expand-all="true"
+      >
+        <DxSelection mode="multiple" :recursive="true" />
+        <DxColumn data-field="Code" :caption="$t('权限编码')" />
+        <DxColumn data-field="Name" :caption="$t('权限名称')" />
+      </DxTreeList>
+      <div style="text-align: right; margin-top: 12px">
+        <DxButton :text="$t('common.save')" type="default" @click="handleBindPermissions" />
+      </div>
+    </DxPopup>
+
+    <!-- 绑定成员弹窗 -->
+    <DxPopup
+      :visible="showMemberPopup"
+      :title="$t('绑定成员') + ' — ' + bindingRoleName"
+      :width="500"
+      :height="'auto'"
+      :show-close-button="true"
+      @hiding="showMemberPopup = false"
+    >
+      <p style="color: #999; font-size: 13px">{{ $t('成员绑定功能将在后续阶段完善') }}</p>
     </DxPopup>
 
     <OperationGuideDrawer
@@ -145,6 +201,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed } from 'vue'
 import { DxDataGrid, DxColumn, DxPaging, DxPager } from 'devextreme-vue/data-grid'
+import { DxTreeList, DxSelection } from 'devextreme-vue/tree-list'
 import { DxButton } from 'devextreme-vue/button'
 import { DxTextBox } from 'devextreme-vue/text-box'
 import { DxSelectBox } from 'devextreme-vue/select-box'
@@ -160,11 +217,14 @@ import { formatDateTime } from '@/utils/format'
 import {
   getPlatformRoles,
   createPlatformRole,
+  updatePlatformRole,
   enablePlatformRole,
   disablePlatformRole,
+  bindRolePermissions,
   type PlatformRoleRepDTO,
   type CreatePlatformRoleReqDTO,
 } from '@/api/platformRoles'
+import { getPermissions, type PlatformPermissionRepDTO } from '@/api/platformPermissions'
 import {
   PLATFORM_ROLE_CREATE,
   PLATFORM_ROLE_UPDATE,
@@ -174,12 +234,25 @@ import {
   PLATFORM_ROLE_ASSIGN_MEMBER,
 } from '@/constants/permissions'
 
+interface FlatPermission {
+  Id: number
+  Code: string
+  Name: string
+  ParentId: number | null
+}
+
 const perm = usePermission()
 const { t } = useI18n()
 const showGuide = ref(false)
 const showCreatePopup = ref(false)
+const showEditPopup = ref(false)
+const showPermPopup = ref(false)
+const showMemberPopup = ref(false)
 const filterKeyword = ref('')
 const filterStatus = ref<string | undefined>(undefined)
+const editingRoleId = ref<number>(0)
+const bindingRoleId = ref<number>(0)
+const bindingRoleName = ref('')
 
 const statusOptions = computed(() => [
   { text: t('status.Active'), value: 'Active' },
@@ -187,12 +260,26 @@ const statusOptions = computed(() => [
 ])
 
 const gridData = ref<PlatformRoleRepDTO[]>([])
+const permTreeData = ref<FlatPermission[]>([])
 
 const createForm = reactive<CreatePlatformRoleReqDTO>({
   Code: '',
   Name: '',
   Description: '',
 })
+
+const editForm = reactive({ Name: '', Description: '' })
+
+function flattenPermTree(nodes: PlatformPermissionRepDTO[]): FlatPermission[] {
+  const result: FlatPermission[] = []
+  for (const node of nodes) {
+    result.push({ Id: node.Id, Code: node.Code, Name: node.Name, ParentId: node.ParentId })
+    if (node.Children && node.Children.length > 0) {
+      result.push(...flattenPermTree(node.Children))
+    }
+  }
+  return result
+}
 
 async function loadData() {
   try {
@@ -219,8 +306,20 @@ async function handleCreate() {
   }
 }
 
-function onEdit(_role: PlatformRoleRepDTO) {
-  // 后续阶段完善编辑功能
+function onEdit(role: PlatformRoleRepDTO) {
+  editingRoleId.value = role.Id
+  Object.assign(editForm, { Name: role.Name, Description: role.Description ?? '' })
+  showEditPopup.value = true
+}
+
+async function handleEdit() {
+  try {
+    await updatePlatformRole(editingRoleId.value, editForm)
+    showEditPopup.value = false
+    await loadData()
+  } catch {
+    // 错误由 http 层统一处理
+  }
 }
 
 async function onEnable(id: number) {
@@ -241,12 +340,31 @@ async function onDisable(id: number) {
   }
 }
 
-function onBindPermissions(_role: PlatformRoleRepDTO) {
-  // 后续阶段完善权限绑定功能
+async function onBindPermissions(role: PlatformRoleRepDTO) {
+  bindingRoleId.value = role.Id
+  bindingRoleName.value = role.Name
+  try {
+    const res = await getPermissions()
+    permTreeData.value = flattenPermTree(res.Data!)
+  } catch {
+    permTreeData.value = []
+  }
+  showPermPopup.value = true
 }
 
-function onBindMembers(_role: PlatformRoleRepDTO) {
-  // 后续阶段完善成员绑定功能
+async function handleBindPermissions() {
+  try {
+    await bindRolePermissions(bindingRoleId.value, { PermissionIds: [] })
+    showPermPopup.value = false
+  } catch {
+    // 错误由 http 层统一处理
+  }
+}
+
+function onBindMembers(role: PlatformRoleRepDTO) {
+  bindingRoleId.value = role.Id
+  bindingRoleName.value = role.Name
+  showMemberPopup.value = true
 }
 
 const guideSteps = [

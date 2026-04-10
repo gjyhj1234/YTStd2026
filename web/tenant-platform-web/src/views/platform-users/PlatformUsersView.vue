@@ -58,7 +58,7 @@
         <DxColumn data-field="Status" :caption="$t('common.status')" cell-template="statusCell" :width="100" />
         <DxColumn data-field="LastLoginAt" :caption="$t('common.lastLoginAt')" cell-template="dateCell" />
         <DxColumn data-field="CreatedAt" :caption="$t('common.createdAt')" cell-template="dateCell" />
-        <DxColumn :caption="$t('common.actions')" cell-template="actionCell" :width="160" />
+        <DxColumn :caption="$t('common.actions')" cell-template="actionCell" :width="280" />
         <template #statusCell="{ data: cellData }">
           <StatusTag :status="cellData.value" />
         </template>
@@ -85,6 +85,19 @@
             styling-mode="text"
             type="success"
             @click="onEnable(cellData.data.Id)"
+          />
+          <DxButton
+            v-if="perm.has(PLATFORM_USER_RESET_PASSWORD)"
+            :text="$t('重置密码')"
+            styling-mode="text"
+            @click="onResetPassword(cellData.data)"
+          />
+          <DxButton
+            v-if="perm.has(PLATFORM_USER_DELETE)"
+            :text="$t('common.delete')"
+            styling-mode="text"
+            type="danger"
+            @click="onDelete(cellData.data.Id)"
           />
         </template>
         <DxPaging :page-size="20" />
@@ -130,6 +143,61 @@
       </DxForm>
     </DxPopup>
 
+    <!-- 编辑用户弹窗 -->
+    <DxPopup
+      :visible="showEditPopup"
+      :title="$t('编辑用户')"
+      :width="480"
+      :height="'auto'"
+      :show-close-button="true"
+      @hiding="showEditPopup = false"
+    >
+      <DxForm
+        :form-data="editForm"
+        :col-count="1"
+        label-mode="floating"
+      >
+        <DxSimpleItem data-field="DisplayName">
+          <DxLabel :text="$t('显示名称')" />
+        </DxSimpleItem>
+        <DxSimpleItem data-field="Email">
+          <DxLabel :text="$t('邮箱')" />
+        </DxSimpleItem>
+        <DxSimpleItem data-field="Phone">
+          <DxLabel :text="$t('手机号')" />
+        </DxSimpleItem>
+        <DxSimpleItem data-field="Remark" editor-type="dxTextArea">
+          <DxLabel :text="$t('备注')" />
+        </DxSimpleItem>
+        <DxButtonItem>
+          <DxButtonOptions :text="$t('common.save')" type="default" :use-submit-behavior="false" @click="handleEdit" />
+        </DxButtonItem>
+      </DxForm>
+    </DxPopup>
+
+    <!-- 重置密码弹窗 -->
+    <DxPopup
+      :visible="showResetPwdPopup"
+      :title="$t('重置密码')"
+      :width="400"
+      :height="'auto'"
+      :show-close-button="true"
+      @hiding="showResetPwdPopup = false"
+    >
+      <DxForm
+        :form-data="resetPwdForm"
+        :col-count="1"
+        label-mode="floating"
+      >
+        <DxSimpleItem data-field="NewPassword" :editor-options="{ mode: 'password' }">
+          <DxLabel :text="$t('新密码')" />
+        </DxSimpleItem>
+        <DxButtonItem>
+          <DxButtonOptions :text="$t('common.submit')" type="default" :use-submit-behavior="false" @click="handleResetPassword" />
+        </DxButtonItem>
+      </DxForm>
+    </DxPopup>
+
     <OperationGuideDrawer
       v-model:visible="showGuide"
       title="用户管理操作指引"
@@ -159,14 +227,20 @@ import { formatDateTime } from '@/utils/format'
 import {
   getPlatformUsers,
   createPlatformUser,
+  updatePlatformUser,
+  deletePlatformUser,
   enablePlatformUser,
   disablePlatformUser,
+  resetPlatformUserPassword,
   type PlatformUserRepDTO,
   type CreatePlatformUserReqDTO,
+  type UpdatePlatformUserReqDTO,
 } from '@/api/platformUsers'
 import {
   PLATFORM_USER_CREATE,
   PLATFORM_USER_UPDATE,
+  PLATFORM_USER_DELETE,
+  PLATFORM_USER_RESET_PASSWORD,
   PLATFORM_USER_LOCK,
   PLATFORM_USER_UNLOCK,
 } from '@/constants/permissions'
@@ -175,8 +249,12 @@ const perm = usePermission()
 const { t } = useI18n()
 const showGuide = ref(false)
 const showCreatePopup = ref(false)
+const showEditPopup = ref(false)
+const showResetPwdPopup = ref(false)
 const filterKeyword = ref('')
 const filterStatus = ref<string | undefined>(undefined)
+const editingUserId = ref<number>(0)
+const resetPwdUserId = ref<number>(0)
 
 const statusOptions = computed(() => [
   { text: t('status.Active'), value: 'Active' },
@@ -194,6 +272,15 @@ const createForm = reactive<CreatePlatformUserReqDTO>({
   Password: '',
   Remark: '',
 })
+
+const editForm = reactive<UpdatePlatformUserReqDTO>({
+  DisplayName: '',
+  Email: '',
+  Phone: '',
+  Remark: '',
+})
+
+const resetPwdForm = reactive({ NewPassword: '' })
 
 async function loadData() {
   try {
@@ -220,8 +307,25 @@ async function handleCreate() {
   }
 }
 
-function onEdit(_user: PlatformUserRepDTO) {
-  // 后续阶段完善编辑功能
+function onEdit(user: PlatformUserRepDTO) {
+  editingUserId.value = user.Id
+  Object.assign(editForm, {
+    DisplayName: user.DisplayName,
+    Email: user.Email,
+    Phone: user.Phone ?? '',
+    Remark: '',
+  })
+  showEditPopup.value = true
+}
+
+async function handleEdit() {
+  try {
+    await updatePlatformUser(editingUserId.value, editForm)
+    showEditPopup.value = false
+    await loadData()
+  } catch {
+    // 错误由 http 层统一处理
+  }
 }
 
 async function onEnable(id: number) {
@@ -242,11 +346,38 @@ async function onDisable(id: number) {
   }
 }
 
+function onResetPassword(user: PlatformUserRepDTO) {
+  resetPwdUserId.value = user.Id
+  resetPwdForm.NewPassword = ''
+  showResetPwdPopup.value = true
+}
+
+async function handleResetPassword() {
+  try {
+    await resetPlatformUserPassword(resetPwdUserId.value, { NewPassword: resetPwdForm.NewPassword })
+    showResetPwdPopup.value = false
+    resetPwdForm.NewPassword = ''
+  } catch {
+    // 错误由 http 层统一处理
+  }
+}
+
+async function onDelete(id: number) {
+  try {
+    await deletePlatformUser(id)
+    await loadData()
+  } catch {
+    // 错误由 http 层统一处理
+  }
+}
+
 const guideSteps = [
   '点击【新增用户】按钮创建管理员账号',
   '在列表中使用搜索框按用户名/邮箱筛选',
   '点击【编辑】修改用户信息',
   '点击【禁用/启用】切换用户状态',
+  '点击【重置密码】设置新密码',
+  '点击【删除】删除用户',
 ]
 const guideFieldNotes = [
   '用户名：全局唯一，创建后不可修改',
