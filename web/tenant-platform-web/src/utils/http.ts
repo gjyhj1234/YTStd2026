@@ -1,5 +1,6 @@
 import { getCurrentLocale, i18n } from '@/locales'
 import { ApiError, handleApiError } from '@/utils/errorHandler'
+import { notifyError } from '@/composables/useNotify'
 import type { ApiResult, PagedResult } from '@/types/base'
 
 export type { ApiResult, PagedResult }
@@ -23,10 +24,18 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<ApiRe
     headers['Authorization'] = `Bearer ${token}`
   }
 
-  const response = await fetch(`${BASE_URL}${url}`, {
-    ...options,
-    headers,
-  })
+  let response: Response
+  try {
+    response = await fetch(`${BASE_URL}${url}`, {
+      ...options,
+      headers,
+    })
+  } catch {
+    const networkMsg = i18n.global.t('网络连接失败')
+    const displayMsg = networkMsg !== '网络连接失败' ? networkMsg : 'Network connection failed'
+    notifyError(displayMsg)
+    throw new ApiError(0, 0, displayMsg)
+  }
 
   if (response.status === 401) {
     localStorage.removeItem('platform_token')
