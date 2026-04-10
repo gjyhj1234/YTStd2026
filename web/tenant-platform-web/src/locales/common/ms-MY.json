@@ -62,5 +62,14 @@
   "用户名不能为空": "Nama pengguna diperlukan",
   "密码不能为空": "Kata laluan diperlukan",
   "密码长度至少6位": "Kata laluan mestilah sekurang-kurangnya 6 aksara",
-  "登录中": "Sedang log masuk..."
+  "登录中": "Sedang log masuk...",
+  "状态筛选": "Tapis Status",
+  "绑定权限": "Pautkan Kebenaran",
+  "绑定成员": "Pautkan Ahli",
+  "新增角色": "Tambah Peranan",
+  "角色编码": "Kod Peranan",
+  "角色名称": "Nama Peranan",
+  "权限编码": "Kod Kebenaran",
+  "权限名称": "Nama Kebenaran",
+  "重置密码成功": "Kata laluan berjaya diset semula"
 }

@@ -168,7 +168,6 @@
       @hiding="showPermPopup = false"
     >
       <DxTreeList
-        ref="permTreeRef"
         :data-source="permTreeData"
         :show-borders="true"
         :column-auto-width="true"
@@ -293,7 +292,6 @@ const selectedPermissionIds = ref<number[]>([])
 const boundMemberIds = ref<number[]>([])
 const selectedMemberIds = ref<number[]>([])
 const gridRef = ref<InstanceType<typeof DxDataGrid> | null>(null)
-const permTreeRef = ref<InstanceType<typeof DxTreeList> | null>(null)
 const createFormRef = ref<InstanceType<typeof DxForm> | null>(null)
 const editFormRef = ref<InstanceType<typeof DxForm> | null>(null)
 
@@ -336,7 +334,7 @@ const codeRules = computed(() => [
   { type: 'stringLength' as const, min: 1, max: 100, message: t('角色编码最长100字') },
   {
     type: 'async' as const,
-    validationCallback: async (params: { value: string }) => {
+    validationCallback: async (params: { value?: string }) => {
       if (!params.value) return true
       const res = await checkRoleCodeExists(params.value)
       if (res.Data === true) throw new Error(t('角色编码已存在'))

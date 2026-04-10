@@ -364,7 +364,7 @@ const createUsernameRules = computed(() => [
   { type: 'stringLength' as const, min: 2, max: 50, message: t('用户名长度2到50') },
   {
     type: 'async' as const,
-    validationCallback: async (params: { value: string }) => {
+    validationCallback: async (params: { value?: string }) => {
       if (!params.value || params.value.length < 2) return true
       const res = await checkUsernameExists(params.value)
       if (res.Data === true) throw new Error(t('用户名已存在'))
