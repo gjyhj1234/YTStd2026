@@ -58,5 +58,9 @@
   "返回首页": "Kembali ke Utama",
   "确认操作": "Sahkan Tindakan",
   "启用成功": "Berjaya Diaktifkan",
-  "禁用成功": "Berjaya Dinyahaktifkan"
+  "禁用成功": "Berjaya Dinyahaktifkan",
+  "用户名不能为空": "Nama pengguna diperlukan",
+  "密码不能为空": "Kata laluan diperlukan",
+  "密码长度至少6位": "Kata laluan mestilah sekurang-kurangnya 6 aksara",
+  "登录中": "Sedang log masuk..."
 }

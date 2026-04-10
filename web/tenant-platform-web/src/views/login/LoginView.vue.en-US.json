@@ -1,0 +1,12 @@
+{
+  "用户名": null,
+  "密码": null,
+  "请输入用户名": "Enter username",
+  "请输入密码": "Enter password",
+  "用户名不能为空": null,
+  "密码不能为空": null,
+  "密码长度至少6位": null,
+  "登录中": null,
+  "登 录": "Sign In",
+  "登录失败": "Login failed"
+}

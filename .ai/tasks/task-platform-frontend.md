@@ -68,11 +68,11 @@
 4. 每个组件的 5 个语言文件
 
 **验收标准**：
-- [ ] 侧边栏使用 DevExtreme 组件
-- [ ] 登录表单有必填验证
-- [ ] 仪表盘有加载状态指示
-- [ ] 所有文本使用 t()
-- [ ] `npm run build` 通过
+- [x] 侧边栏使用 DevExtreme 组件（DxDrawer + DxTreeView）
+- [x] 登录表单有必填验证（validationRules + stringLength）
+- [x] 仪表盘有加载状态指示（DxLoadPanel + isLoading）
+- [x] 所有文本使用 t()（包括 FunctionDescriptionCard 和 OperationGuideDrawer）
+- [x] `npm run build` 通过
 
 ---
 
@@ -258,7 +258,7 @@
 | 子任务 | 状态 | 说明 |
 |--------|------|------|
 | G0 — 基础设施重构 | ✅ 完成 | useNotify composable、errorHandler增强、http网络错误处理、ja-JP全量翻译、ms-MY/zh-TW补齐554键、55枚举×5语言翻译、403页面、CSS变量化 |
-| G1 — 布局导航重构 | ⬜ 待执行 | |
+| G1 — 布局导航重构 | ✅ 完成 | DxDrawer+DxTreeView侧边栏、DxButton替代原生按钮、登录表单验证+Loading、仪表盘DxLoadPanel+空数据、15组件语言文件、common+主语言文件新增key |
 | G2 — 平台管理模块 | ⬜ 待执行 | |
 | G3 — 租户生命周期模块 | ⬜ 待执行 | |
 | G4 — 租户配置模块 | ⬜ 待执行 | |
