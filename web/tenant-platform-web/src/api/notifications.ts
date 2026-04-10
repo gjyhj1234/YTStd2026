@@ -1,5 +1,5 @@
 /** API — 通知管理 */
-import { get, post, put } from '@/utils/http'
+import { get, post, put, del } from '@/utils/http'
 import type { PagedResult } from '@/types/base'
 import type { NotificationTemplateRepDTO, CreateNotificationTemplateReqDTO, UpdateNotificationTemplateReqDTO, NotificationRepDTO, CreateNotificationReqDTO } from '@/types/notification'
 
@@ -47,4 +47,8 @@ export function createNotification(data: CreateNotificationReqDTO) {
 
 export function markNotificationRead(id: number) {
   return put<void>(`/api/notifications/${id}/read`)
+}
+
+export function deleteNotificationTemplate(id: number) {
+  return del<void>(`/api/notification-templates/${id}`)
 }
