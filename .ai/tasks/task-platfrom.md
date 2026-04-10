@@ -442,7 +442,7 @@ if (!insResult.Success)
 | `Application/Services/MenuAppService.cs` | 修改 | CreateAsync 已有前置校验，补充后置复核 |
 | `Application/Services/NotificationAppService.cs` | 修改 | CreateTemplateAsync 添加 TemplateCode 前置校验 + 后置复核 |
 
-**修复状态：⏳ 待执行（下一轮编码任务）**
+**修复状态：✅ 已完成（第 10 轮 — 9 个 ErrorCodes + 15 个方法修复，383 tests passed）**
 
 ---
 

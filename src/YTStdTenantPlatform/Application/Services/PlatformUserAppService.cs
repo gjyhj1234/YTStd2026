@@ -64,6 +64,20 @@ namespace YTStdTenantPlatform.Application.Services
             if (string.IsNullOrWhiteSpace(req.Password))
                 return ApiResult<long>.Fail(ErrorCodes.UserPasswordRequired);
 
+            // 唯一性前置校验
+            var (chkResult, existing) = await PlatformUserCRUD.GetListAsync(tenantId, operatorId);
+            if (chkResult.Success && existing != null)
+            {
+                foreach (var item in existing)
+                {
+                    if (item.DeletedAt != null) continue;
+                    if (string.Equals(item.Username, req.Username.Trim(), StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.UsernameExists);
+                    if (string.Equals(item.Email, req.Email.Trim(), StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.EmailExists);
+                }
+            }
+
             var salt = GenerateSalt();
             var hash = HashPassword(req.Password, salt);
             var now = DateTime.UtcNow;
@@ -86,7 +100,22 @@ namespace YTStdTenantPlatform.Application.Services
 
             var insResult = await PlatformUserCRUD.InsertAsync(tenantId, operatorId, user);
             if (!insResult.Success)
+            {
+                // 唯一性后置复核
+                var (rechkResult, rechkData) = await PlatformUserCRUD.GetListAsync(tenantId, operatorId);
+                if (rechkResult.Success && rechkData != null)
+                {
+                    foreach (var item in rechkData)
+                    {
+                        if (item.DeletedAt != null) continue;
+                        if (string.Equals(item.Username, user.Username, StringComparison.OrdinalIgnoreCase))
+                            return ApiResult<long>.Fail(ErrorCodes.UsernameExists);
+                        if (string.Equals(item.Email, user.Email, StringComparison.OrdinalIgnoreCase))
+                            return ApiResult<long>.Fail(ErrorCodes.EmailExists);
+                    }
+                }
                 return ApiResult<long>.Fail(ErrorCodes.UserCreateFailed);
+            }
 
             Logger.Info(tenantId, operatorId, "[PlatformUserAppService] 创建用户: " + req.Username);
             return ApiResult<long>.Ok(insResult.Id);

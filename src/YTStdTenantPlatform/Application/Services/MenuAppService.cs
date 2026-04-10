@@ -61,7 +61,20 @@ namespace YTStdTenantPlatform.Application.Services
             };
 
             var insResult = await PlatformMenuCRUD.InsertAsync(tenantId, operatorId, menu);
-            if (!insResult.Success) return ApiResult<long>.Fail(ErrorCodes.MenuCreateFailed);
+            if (!insResult.Success)
+            {
+                // 唯一性后置复核
+                var (rechkResult, rechkData) = await PlatformMenuCRUD.GetListAsync(tenantId, operatorId);
+                if (rechkResult.Success && rechkData != null)
+                {
+                    foreach (var item in rechkData)
+                    {
+                        if (string.Equals(item.Code, menu.Code, StringComparison.OrdinalIgnoreCase))
+                            return ApiResult<long>.Fail(ErrorCodes.MenuCodeExists);
+                    }
+                }
+                return ApiResult<long>.Fail(ErrorCodes.MenuCreateFailed);
+            }
 
             Logger.Info(tenantId, operatorId, "[MenuAppService] 创建菜单: " + req.Code);
             return ApiResult<long>.Ok(menu.Id);

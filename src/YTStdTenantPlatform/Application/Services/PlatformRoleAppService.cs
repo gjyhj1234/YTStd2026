@@ -84,6 +84,17 @@ namespace YTStdTenantPlatform.Application.Services
             if (string.IsNullOrWhiteSpace(req.Name))
                 return ApiResult<long>.Fail(ErrorCodes.RoleNameRequired);
 
+            // 唯一性前置校验
+            var (chkResult, existing) = await PlatformRoleCRUD.GetListAsync(tenantId, operatorId);
+            if (chkResult.Success && existing != null)
+            {
+                foreach (var item in existing)
+                {
+                    if (string.Equals(item.Code, req.Code.Trim(), StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.RoleCodeExists);
+                }
+            }
+
             var now = DateTime.UtcNow;
             var role = new PlatformRole
             {
@@ -100,7 +111,19 @@ namespace YTStdTenantPlatform.Application.Services
 
             var insResult = await PlatformRoleCRUD.InsertAsync(tenantId, operatorId, role);
             if (!insResult.Success)
+            {
+                // 唯一性后置复核
+                var (rechkResult, rechkData) = await PlatformRoleCRUD.GetListAsync(tenantId, operatorId);
+                if (rechkResult.Success && rechkData != null)
+                {
+                    foreach (var item in rechkData)
+                    {
+                        if (string.Equals(item.Code, role.Code, StringComparison.OrdinalIgnoreCase))
+                            return ApiResult<long>.Fail(ErrorCodes.RoleCodeExists);
+                    }
+                }
                 return ApiResult<long>.Fail(ErrorCodes.RoleCreateFailed);
+            }
 
             await PlatformCacheCoordinator.InvalidatePermissionsAsync();
             Logger.Info(tenantId, operatorId, "[PlatformRoleAppService] 创建角色: " + req.Code);

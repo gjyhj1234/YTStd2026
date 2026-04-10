@@ -217,6 +217,18 @@ namespace YTStdTenantPlatform.Application.Services
             if (string.IsNullOrWhiteSpace(req.FeatureKey))
                 return ApiResult<long>.Fail(ErrorCodes.FeatureKeyRequired);
 
+            // 唯一性前置校验（同一租户内 FeatureKey 唯一）
+            var (chkResult, existingFlags) = await TenantFeatureFlagCRUD.GetListAsync(tenantId, operatorId);
+            if (chkResult.Success && existingFlags != null)
+            {
+                foreach (var item in existingFlags)
+                {
+                    if (item.TenantRefId == req.TenantRefId &&
+                        string.Equals(item.FeatureKey, req.FeatureKey.Trim(), StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.FeatureKeyExists);
+                }
+            }
+
             var now = DateTime.UtcNow;
             var flag = new TenantFeatureFlag
             {
@@ -232,7 +244,20 @@ namespace YTStdTenantPlatform.Application.Services
 
             var insResult = await TenantFeatureFlagCRUD.InsertAsync(tenantId, operatorId, flag);
             if (!insResult.Success)
+            {
+                // 唯一性后置复核
+                var (rechkResult, rechkData) = await TenantFeatureFlagCRUD.GetListAsync(tenantId, operatorId);
+                if (rechkResult.Success && rechkData != null)
+                {
+                    foreach (var item in rechkData)
+                    {
+                        if (item.TenantRefId == flag.TenantRefId &&
+                            string.Equals(item.FeatureKey, flag.FeatureKey, StringComparison.OrdinalIgnoreCase))
+                            return ApiResult<long>.Fail(ErrorCodes.FeatureKeyExists);
+                    }
+                }
                 return ApiResult<long>.Fail(ErrorCodes.FeatureFlagSaveFailed);
+            }
 
             await PlatformCacheCoordinator.InvalidateFeatureFlagsAsync();
             Logger.Info(tenantId, operatorId,
@@ -314,6 +339,18 @@ namespace YTStdTenantPlatform.Application.Services
             if (string.IsNullOrWhiteSpace(req.ParamKey))
                 return ApiResult<long>.Fail(ErrorCodes.ParamKeyRequired);
 
+            // 唯一性前置校验（同一租户内 ParamKey 唯一）
+            var (chkResult, existingParams) = await TenantParameterCRUD.GetListAsync(tenantId, operatorId);
+            if (chkResult.Success && existingParams != null)
+            {
+                foreach (var item in existingParams)
+                {
+                    if (item.TenantRefId == req.TenantRefId &&
+                        string.Equals(item.ParamKey, req.ParamKey.Trim(), StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.ParamKeyExists);
+                }
+            }
+
             var now = DateTime.UtcNow;
             var param = new TenantParameter
             {
@@ -329,7 +366,20 @@ namespace YTStdTenantPlatform.Application.Services
 
             var insResult = await TenantParameterCRUD.InsertAsync(tenantId, operatorId, param);
             if (!insResult.Success)
+            {
+                // 唯一性后置复核
+                var (rechkResult, rechkData) = await TenantParameterCRUD.GetListAsync(tenantId, operatorId);
+                if (rechkResult.Success && rechkData != null)
+                {
+                    foreach (var item in rechkData)
+                    {
+                        if (item.TenantRefId == param.TenantRefId &&
+                            string.Equals(item.ParamKey, param.ParamKey, StringComparison.OrdinalIgnoreCase))
+                            return ApiResult<long>.Fail(ErrorCodes.ParamKeyExists);
+                    }
+                }
                 return ApiResult<long>.Fail(ErrorCodes.ParamSaveFailed);
+            }
 
             Logger.Info(tenantId, operatorId,
                 "[TenantConfigAppService] 保存参数: " + req.ParamKey);

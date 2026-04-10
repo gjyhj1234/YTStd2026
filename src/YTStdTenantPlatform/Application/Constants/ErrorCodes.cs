@@ -55,6 +55,24 @@ public static class ErrorCodes
     public const int TenantCodeExists = 18003;
     /// <summary>权限编码已存在</summary>
     public const int PermissionCodeExists = 18004;
+    /// <summary>邮箱已存在</summary>
+    public const int EmailExists = 18007;
+    /// <summary>分组编码已存在</summary>
+    public const int GroupCodeExists = 18008;
+    /// <summary>域名已存在</summary>
+    public const int DomainExists = 18009;
+    /// <summary>标签键已存在</summary>
+    public const int TagKeyExists = 18010;
+    /// <summary>功能开关键已存在</summary>
+    public const int FeatureKeyExists = 18011;
+    /// <summary>参数键已存在</summary>
+    public const int ParamKeyExists = 18012;
+    /// <summary>字典项编码已存在</summary>
+    public const int DictItemCodeExists = 18013;
+    /// <summary>套餐版本编码已存在</summary>
+    public const int PackageVersionCodeExists = 18014;
+    /// <summary>通知模板编码已存在</summary>
+    public const int NotificationTemplateCodeExists = 18015;
 
     // ── 平台用户 (19001-19099) ──
 

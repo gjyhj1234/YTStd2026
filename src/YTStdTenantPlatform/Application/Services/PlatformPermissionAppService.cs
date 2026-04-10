@@ -99,7 +99,19 @@ namespace YTStdTenantPlatform.Application.Services
 
             var insResult = await PlatformPermissionCRUD.InsertAsync(tenantId, operatorId, perm);
             if (!insResult.Success)
+            {
+                // 唯一性后置复核
+                var (rechkResult, rechkData) = await PlatformPermissionCRUD.GetListAsync(tenantId, operatorId);
+                if (rechkResult.Success && rechkData != null)
+                {
+                    foreach (var item in rechkData)
+                    {
+                        if (string.Equals(item.Code, perm.Code, StringComparison.OrdinalIgnoreCase))
+                            return ApiResult<long>.Fail(ErrorCodes.PermissionCodeExists);
+                    }
+                }
                 return ApiResult<long>.Fail(ErrorCodes.PermissionCreateFailed);
+            }
 
             await PlatformCacheCoordinator.InvalidatePermissionsAsync();
             Logger.Info(tenantId, operatorId, "[PlatformPermissionAppService] 创建权限: " + req.Code);

@@ -71,6 +71,18 @@ namespace YTStdTenantPlatform.Application.Services
             if (string.IsNullOrWhiteSpace(req.TenantName))
                 return ApiResult<long>.Fail(ErrorCodes.TenantNameRequired);
 
+            // 唯一性前置校验
+            var (chkResult, existing) = await TenantCRUD.GetListAsync(tenantId, operatorId);
+            if (chkResult.Success && existing != null)
+            {
+                foreach (var item in existing)
+                {
+                    if (item.DeletedAt == null &&
+                        string.Equals(item.TenantCode, req.TenantCode.Trim(), StringComparison.OrdinalIgnoreCase))
+                        return ApiResult<long>.Fail(ErrorCodes.TenantCodeExists);
+                }
+            }
+
             var now = DateTime.UtcNow;
             var tenant = new Tenant
             {
@@ -94,7 +106,20 @@ namespace YTStdTenantPlatform.Application.Services
 
             var insResult = await TenantCRUD.InsertAsync(tenantId, operatorId, tenant);
             if (!insResult.Success)
+            {
+                // 唯一性后置复核
+                var (rechkResult, rechkData) = await TenantCRUD.GetListAsync(tenantId, operatorId);
+                if (rechkResult.Success && rechkData != null)
+                {
+                    foreach (var item in rechkData)
+                    {
+                        if (item.DeletedAt == null &&
+                            string.Equals(item.TenantCode, tenant.TenantCode, StringComparison.OrdinalIgnoreCase))
+                            return ApiResult<long>.Fail(ErrorCodes.TenantCodeExists);
+                    }
+                }
                 return ApiResult<long>.Fail(ErrorCodes.TenantCreateFailed);
+            }
 
             // 记录生命周期事件
             await RecordLifecycleEventAsync(tenantId, operatorId, insResult.Id, "created", null, TenantLifecycleStatus.Trial.ToString(), "新建租户", operatorId);
