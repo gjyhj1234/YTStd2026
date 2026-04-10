@@ -553,7 +553,7 @@ if (!insResult.Success)
 
 | 子任务 | 状态 | 说明 |
 |--------|------|------|
-| G0 — 基础设施重构 | ⬜ 待执行 | i18n 架构升级、http 增强、global.css 重构、403 页面 |
+| G0 — 基础设施重构 | ✅ 完成 | useNotify、errorHandler增强、http网络错误、ja-JP全量、ms-MY/zh-TW补齐、55枚举翻译、403页面、CSS变量化 |
 | G1 — 布局导航重构 | ⬜ 待执行 | MainLayout DxDrawer 化、LoginView 增强、Dashboard 完善 |
 | G2 — 平台管理模块 | ⬜ 待执行 | 用户/角色/权限/安全 |
 | G3 — 租户生命周期模块 | ⬜ 待执行 | 租户/分组/域名/标签 |

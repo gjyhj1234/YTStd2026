@@ -115,7 +115,7 @@ router.beforeEach((to, _from, next) => {
   const requiredPermissions = to.meta.permissions as string[] | undefined
   if (requiredPermissions && requiredPermissions.length > 0) {
     if (!auth.hasAnyPermission(requiredPermissions)) {
-      return next('/forbidden')
+      return next({ path: '/forbidden', query: { from: to.fullPath } })
     }
   }
 
