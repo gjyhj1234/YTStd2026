@@ -58,5 +58,9 @@
   "返回首页": "Back to Home",
   "确认操作": "Confirm Action",
   "启用成功": "Enabled Successfully",
-  "禁用成功": "Disabled Successfully"
+  "禁用成功": "Disabled Successfully",
+  "用户名不能为空": "Username is required",
+  "密码不能为空": "Password is required",
+  "密码长度至少6位": "Password must be at least 6 characters",
+  "登录中": "Signing in..."
 }

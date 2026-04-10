@@ -576,5 +576,12 @@
   "点击【取消】终止有效订阅": "Klik [Batal] untuk menamatkan langganan aktif",
   "租户编码": "Kod Penyewa",
   "状态：Active（正常）/ Disabled（已禁用）": "Status: Active (Aktif) / Disabled (Dilumpuhkan)",
-  "禁用套餐不影响已有订阅，但新订阅将无法选择该套餐": "Menyahaktifkan pakej tidak menjejaskan langganan sedia ada, tetapi langganan baharu tidak boleh memilih pakej tersebut"
+  "禁用套餐不影响已有订阅，但新订阅将无法选择该套餐": "Menyahaktifkan pakej tidak menjejaskan langganan sedia ada, tetapi langganan baharu tidak boleh memilih pakej tersebut",
+  "展示平台核心运营指标概览": "Gambaran keseluruhan metrik operasi teras platform, termasuk statistik penyewa, status langganan, dan kesihatan sistem.",
+  "全平台汇总数据实时更新": "Data agregat seluruh platform, dikemas kini secara masa nyata.",
+  "仪表盘对所有已登录用户可见": "Papan pemuka boleh dilihat oleh semua pengguna yang telah log masuk.",
+  "查看租户增长趋势图了解增长情况": "Lihat carta trend pertumbuhan penyewa untuk memahami pertumbuhan",
+  "查看订阅分布图了解套餐使用情况": "Lihat carta taburan langganan untuk penggunaan pakej",
+  "统计数据实时更新来源于后端接口": "Statistik dikemas kini secara masa nyata daripada API backend",
+  "若统计数据加载失败请检查网络连接": "Jika statistik gagal dimuatkan, sila semak sambungan rangkaian anda"
 }

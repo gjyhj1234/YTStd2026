@@ -8,10 +8,19 @@
     </div>
 
     <FunctionDescriptionCard
-      purpose="展示平台核心运营指标概览，包括租户统计、订阅状态、系统健康度等关键数据。"
-      data-scope="全平台汇总数据，实时更新。"
-      permission-note="仪表盘对所有已登录用户可见。"
+      :purpose="$t('展示平台核心运营指标概览')"
+      :data-scope="$t('全平台汇总数据实时更新')"
+      :permission-note="$t('仪表盘对所有已登录用户可见')"
       :collapsible="true"
+    />
+
+    <DxLoadPanel
+      :visible="isLoading"
+      :show-indicator="true"
+      :show-pane="true"
+      :shading="true"
+      :close-on-outside-click="false"
+      :message="$t('加载中')"
     />
 
     <div class="dashboard-stats">
@@ -44,25 +53,31 @@
     <div class="dashboard-charts">
       <div class="card chart-card">
         <h3 style="margin-bottom: 12px">{{ $t('租户增长趋势') }}</h3>
-        <DxChart :data-source="tenantTrend">
-          <DxArgumentAxis :value-margins-enabled="false">
-            <DxLabel :visible="true" />
-          </DxArgumentAxis>
-          <DxSeries argument-field="Date" value-field="Count" :name="$t('新增租户')" type="bar" color="#1976d2" />
-          <DxTooltip :enabled="true" />
-          <DxLegend :visible="false" />
-        </DxChart>
+        <template v-if="tenantTrend.length > 0">
+          <DxChart :data-source="tenantTrend">
+            <DxArgumentAxis :value-margins-enabled="false">
+              <DxLabel :visible="true" />
+            </DxArgumentAxis>
+            <DxSeries argument-field="Date" value-field="Count" :name="$t('新增租户')" type="bar" color="var(--primary-color, #1976d2)" />
+            <DxTooltip :enabled="true" />
+            <DxLegend :visible="false" />
+          </DxChart>
+        </template>
+        <div v-else-if="!isLoading" class="empty-chart">{{ $t('暂无数据') }}</div>
       </div>
 
       <div class="card chart-card">
         <h3 style="margin-bottom: 12px">{{ $t('订阅分布') }}</h3>
-        <DxPieChart :data-source="subscriptionDist" :palette="'Soft Pastel'">
-          <DxPieSeries argument-field="PackageName" value-field="Count">
-            <DxPieLabel :visible="true" :connector="{ visible: true }" />
-          </DxPieSeries>
-          <DxPieTooltip :enabled="true" />
-          <DxPieLegend :visible="true" horizontal-alignment="center" vertical-alignment="bottom" />
-        </DxPieChart>
+        <template v-if="subscriptionDist.length > 0">
+          <DxPieChart :data-source="subscriptionDist" :palette="'Soft Pastel'">
+            <DxPieSeries argument-field="PackageName" value-field="Count">
+              <DxPieLabel :visible="true" :connector="{ visible: true }" />
+            </DxPieSeries>
+            <DxPieTooltip :enabled="true" />
+            <DxPieLegend :visible="true" horizontal-alignment="center" vertical-alignment="bottom" />
+          </DxPieChart>
+        </template>
+        <div v-else-if="!isLoading" class="empty-chart">{{ $t('暂无数据') }}</div>
       </div>
     </div>
 
@@ -79,17 +94,17 @@
 
     <OperationGuideDrawer
       v-model:visible="showGuide"
-      title="仪表盘操作指引"
-      entry-path="登录后默认进入仪表盘页面"
+      :title="$t('仪表盘操作指引')"
+      :entry-path="$t('登录后默认进入仪表盘页面')"
       :steps="[
-        '查看顶部统计卡片了解平台概况',
-        '查看租户增长趋势图了解增长情况',
-        '查看订阅分布图了解套餐使用情况',
-        '点击快捷入口快速进入常用功能模块',
-        '左侧菜单可访问所有管理模块',
+        $t('查看顶部统计卡片了解平台概况'),
+        $t('查看租户增长趋势图了解增长情况'),
+        $t('查看订阅分布图了解套餐使用情况'),
+        $t('点击快捷入口快速进入常用功能模块'),
+        $t('左侧菜单可访问所有管理模块'),
       ]"
-      :field-notes="['统计数据实时更新，来源于后端接口']"
-      :error-notes="['若统计数据加载失败，请检查网络连接']"
+      :field-notes="[$t('统计数据实时更新来源于后端接口')]"
+      :error-notes="[$t('若统计数据加载失败请检查网络连接')]"
     />
   </div>
 </template>
@@ -98,6 +113,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { DxButton } from 'devextreme-vue/button'
+import { DxLoadPanel } from 'devextreme-vue/load-panel'
 import {
   DxChart,
   DxSeries,
@@ -121,6 +137,7 @@ import type { DashboardStats, TenantTrendItem, SubscriptionDistItem } from '@/ty
 
 const router = useRouter()
 const showGuide = ref(false)
+const isLoading = ref(true)
 
 const stats = ref<DashboardStats>({
   TotalTenants: 0,
@@ -167,10 +184,17 @@ async function loadSubscriptionDist() {
   }
 }
 
+async function loadAllData() {
+  isLoading.value = true
+  try {
+    await Promise.all([loadStats(), loadTenantTrend(), loadSubscriptionDist()])
+  } finally {
+    isLoading.value = false
+  }
+}
+
 onMounted(() => {
-  loadStats()
-  loadTenantTrend()
-  loadSubscriptionDist()
+  loadAllData()
 })
 </script>
 
@@ -184,6 +208,16 @@ onMounted(() => {
 
 .chart-card {
   min-height: 300px;
+}
+
+.empty-chart {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--text-color);
+  opacity: 0.5;
+  font-size: 14px;
 }
 
 @media (max-width: 1024px) {
