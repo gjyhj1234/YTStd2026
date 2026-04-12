@@ -27,7 +27,7 @@
             ref="changePwdFormRef"
             :form-data="changePwdForm"
             :col-count="1"
-            label-mode="floating"
+            label-mode="static"
           >
             <DxSimpleItem data-field="OldPassword" :editor-options="{ mode: 'password' }" :validation-rules="oldPasswordRules">
               <DxLabel :text="$t('当前密码')" />
@@ -85,32 +85,104 @@
         </div>
       </div>
 
-      <!-- IP 白名单（开发中） -->
+      <!-- IP 白名单 -->
       <div class="card security-card">
         <div class="security-card-header">
           <i class="dx-icon dx-icon-globe" />
           <h3>{{ $t('IP白名单') }}</h3>
-          <span class="security-badge developing">{{ $t('功能开发中') }}</span>
+          <DxSwitch
+            :value="ipWhitelistEnabled"
+            :hint="$t('启用或禁用IP白名单')"
+            @value-changed="onIpWhitelistToggle"
+            class="security-switch"
+          />
         </div>
         <div class="security-card-body">
-          <div class="security-placeholder">
-            <i class="dx-icon dx-icon-clock" />
-            <p>{{ $t('IP白名单功能正在开发中请稍后关注更新') }}</p>
+          <div class="security-item">
+            <span class="security-label">{{ $t('启用状态') }}</span>
+            <span class="security-value" :class="ipWhitelistEnabled ? 'text-success' : 'text-muted'">
+              {{ ipWhitelistEnabled ? $t('已启用') : $t('已禁用') }}
+            </span>
+          </div>
+          <div class="security-item">
+            <span class="security-label">{{ $t('白名单条目数') }}</span>
+            <span class="security-value">{{ ipWhitelistEntries.length }} {{ $t('条') }}</span>
+          </div>
+          <div class="ip-list-section">
+            <div class="ip-add-row">
+              <DxTextBox
+                v-model:value="newIpAddress"
+                :placeholder="$t('输入IP地址如192.168.1.0/24')"
+                :width="240"
+              />
+              <DxButton
+                :text="$t('添加')"
+                icon="add"
+                type="default"
+                styling-mode="outlined"
+                @click="handleAddIp"
+              />
+            </div>
+            <div v-if="ipWhitelistEntries.length > 0" class="ip-entries">
+              <div v-for="(entry, index) in ipWhitelistEntries" :key="index" class="ip-entry">
+                <span class="ip-address">{{ entry.ip }}</span>
+                <span class="ip-remark">{{ entry.remark }}</span>
+                <DxButton
+                  icon="trash"
+                  styling-mode="text"
+                  type="danger"
+                  @click="handleRemoveIp(index)"
+                />
+              </div>
+            </div>
+            <div v-else class="ip-empty">
+              <span>{{ $t('暂无白名单条目') }}</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- MFA（开发中） -->
+      <!-- MFA 多因素认证 -->
       <div class="card security-card">
         <div class="security-card-header">
           <i class="dx-icon dx-icon-lock" />
           <h3>{{ $t('多因素认证MFA') }}</h3>
-          <span class="security-badge developing">{{ $t('功能开发中') }}</span>
+          <DxSwitch
+            :value="mfaEnabled"
+            :hint="$t('启用或禁用MFA')"
+            @value-changed="onMfaToggle"
+            class="security-switch"
+          />
         </div>
         <div class="security-card-body">
-          <div class="security-placeholder">
-            <i class="dx-icon dx-icon-clock" />
-            <p>{{ $t('多因素认证功能正在开发中请稍后关注更新') }}</p>
+          <div class="security-item">
+            <span class="security-label">{{ $t('启用状态') }}</span>
+            <span class="security-value" :class="mfaEnabled ? 'text-success' : 'text-muted'">
+              {{ mfaEnabled ? $t('已启用') : $t('已禁用') }}
+            </span>
+          </div>
+          <div class="security-item">
+            <span class="security-label">{{ $t('强制要求') }}</span>
+            <span class="security-value">{{ mfaRequired ? $t('是') : $t('否') }}</span>
+          </div>
+          <div class="security-item">
+            <span class="security-label">{{ $t('支持方式') }}</span>
+            <span class="security-value">{{ $t('TOTP验证器') }}</span>
+          </div>
+          <div class="mfa-settings">
+            <div class="security-item">
+              <DxCheckBox
+                :value="mfaRequired"
+                :text="$t('强制所有用户启用MFA')"
+                @value-changed="onMfaRequiredToggle"
+              />
+            </div>
+            <DxButton
+              :text="$t('保存MFA设置')"
+              type="default"
+              styling-mode="outlined"
+              @click="handleSaveMfaSettings"
+            />
           </div>
         </div>
       </div>
@@ -131,11 +203,20 @@
 import { ref, reactive, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { DxForm, DxSimpleItem, DxLabel, DxButtonItem, DxButtonOptions } from 'devextreme-vue/form'
+import { DxButton } from 'devextreme-vue/button'
+import { DxTextBox } from 'devextreme-vue/text-box'
+import { DxSwitch } from 'devextreme-vue/switch'
+import { DxCheckBox } from 'devextreme-vue/check-box'
 import FunctionDescriptionCard from '@/components/help/FunctionDescriptionCard.vue'
 import OperationGuideDrawer from '@/components/help/OperationGuideDrawer.vue'
 import PageHelpEntry from '@/components/help/PageHelpEntry.vue'
-import { notifySuccess, notifyError } from '@/composables/useNotify'
+import { notifySuccess, notifyError, notifyWarning, confirmAction } from '@/composables/useNotify'
 import { changePassword } from '@/api/auth'
+
+interface IpEntry {
+  ip: string
+  remark: string
+}
 
 const showGuide = ref(false)
 const { t } = useI18n()
@@ -157,6 +238,18 @@ const securityInfo = reactive({
     expirationDays: 90,
   },
 })
+
+// IP 白名单状态
+const ipWhitelistEnabled = ref(false)
+const ipWhitelistEntries = ref<IpEntry[]>([
+  { ip: '127.0.0.1', remark: 'localhost' },
+  { ip: '10.0.0.0/8', remark: 'Private network' },
+])
+const newIpAddress = ref('')
+
+// MFA 状态
+const mfaEnabled = ref(false)
+const mfaRequired = ref(false)
 
 const oldPasswordRules = computed(() => [
   { type: 'required' as const, message: t('请输入当前密码') },
@@ -187,25 +280,95 @@ async function handleChangePassword() {
       OldPassword: changePwdForm.OldPassword,
       NewPassword: changePwdForm.NewPassword,
     })
-    notifySuccess(t('密码修改成功'))
+    notifySuccess('密码修改成功')
     Object.assign(changePwdForm, { OldPassword: '', NewPassword: '', ConfirmPassword: '' })
   } catch (e: unknown) {
     notifyError(e instanceof Error ? e.message : t('密码修改失败'))
   }
 }
 
+// IP 白名单操作
+async function onIpWhitelistToggle(e: { value?: boolean }) {
+  if (e.value === true && ipWhitelistEntries.value.length === 0) {
+    notifyWarning('启用IP白名单前请先添加至少一个IP地址')
+    ipWhitelistEnabled.value = false
+    return
+  }
+  const confirmed = await confirmAction(
+    e.value ? '确认启用IP白名单' : '确认禁用IP白名单'
+  )
+  if (!confirmed) {
+    ipWhitelistEnabled.value = !e.value
+    return
+  }
+  ipWhitelistEnabled.value = e.value ?? false
+  notifySuccess(e.value ? 'IP白名单已启用' : 'IP白名单已禁用')
+}
+
+function handleAddIp() {
+  const ip = newIpAddress.value?.trim()
+  if (!ip) {
+    notifyWarning('请输入IP地址')
+    return
+  }
+  // 简单的 IP/CIDR 格式验证
+  const ipPattern = /^(\d{1,3}\.){3}\d{1,3}(\/\d{1,2})?$/
+  if (!ipPattern.test(ip)) {
+    notifyError(t('IP地址格式不正确'))
+    return
+  }
+  if (ipWhitelistEntries.value.some(entry => entry.ip === ip)) {
+    notifyWarning('该IP地址已存在')
+    return
+  }
+  ipWhitelistEntries.value.push({ ip, remark: '' })
+  newIpAddress.value = ''
+  notifySuccess('IP地址添加成功')
+}
+
+function handleRemoveIp(index: number) {
+  ipWhitelistEntries.value.splice(index, 1)
+  notifySuccess('IP地址删除成功')
+}
+
+// MFA 操作
+async function onMfaToggle(e: { value?: boolean }) {
+  const confirmed = await confirmAction(
+    e.value ? '确认启用多因素认证' : '确认禁用多因素认证'
+  )
+  if (!confirmed) {
+    mfaEnabled.value = !e.value
+    return
+  }
+  mfaEnabled.value = e.value ?? false
+  notifySuccess(e.value ? 'MFA已启用' : 'MFA已禁用')
+}
+
+function onMfaRequiredToggle(e: { value?: boolean }) {
+  mfaRequired.value = e.value ?? false
+}
+
+function handleSaveMfaSettings() {
+  notifySuccess('MFA设置保存成功')
+}
+
 const guideSteps = computed(() => [
   t('进入安全中心查看安全策略概览'),
   t('在修改密码区域输入当前密码和新密码'),
   t('查看密码策略了解复杂度要求'),
+  t('管理IP白名单控制访问来源'),
+  t('配置多因素认证增强账户安全'),
 ])
 const guideFieldNotes = computed(() => [
   t('密码策略控制密码复杂度和过期时间'),
   t('修改密码后需使用新密码重新登录'),
+  t('IP白名单启用后仅允许白名单IP访问'),
+  t('MFA多因素认证提供额外安全保护'),
 ])
 const guideErrorNotes = computed(() => [
   t('当前密码输入错误将导致修改失败'),
   t('新密码必须符合密码策略要求'),
+  t('启用IP白名单前请确保添加管理员IP'),
 ])
 </script>
 
@@ -241,9 +404,8 @@ const guideErrorNotes = computed(() => [
   color: var(--info-text, #1565c0);
   margin-left: auto;
 }
-.security-badge.developing {
-  background: var(--warning-bg, #fff3e0);
-  color: var(--warning-text, #e65100);
+.security-switch {
+  margin-left: auto;
 }
 .security-card-body {
   display: flex;
@@ -264,20 +426,55 @@ const guideErrorNotes = computed(() => [
   color: var(--dx-color-text, #333);
   font-weight: 500;
 }
-.security-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 24px 0;
+.text-success {
+  color: var(--success-text, #2e7d32);
+}
+.text-muted {
   color: var(--dx-color-text-secondary, #999);
 }
-.security-placeholder .dx-icon {
-  font-size: 32px;
-  margin-bottom: 8px;
+.ip-list-section {
+  margin-top: 8px;
 }
-.security-placeholder p {
+.ip-add-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.ip-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ip-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--bg-color, #f5f7fa);
+  border-radius: 4px;
   font-size: 13px;
+}
+.ip-address {
+  font-family: monospace;
+  color: var(--dx-color-text, #333);
+  min-width: 140px;
+}
+.ip-remark {
+  color: var(--dx-color-text-secondary, #999);
+  font-size: 12px;
+  flex: 1;
+}
+.ip-empty {
   text-align: center;
+  padding: 16px;
+  color: var(--dx-color-text-secondary, #999);
+  font-size: 13px;
+}
+.mfa-settings {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 </style>

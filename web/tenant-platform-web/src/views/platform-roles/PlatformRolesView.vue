@@ -52,7 +52,7 @@
         :remote-operations="true"
         key-expr="Id"
       >
-        <DxColumn data-field="Id" caption="ID" :width="80" :allow-sorting="false" />
+        <DxColumn data-field="Id" :caption="$t('ID')" :width="80" :allow-sorting="false" />
         <DxColumn data-field="Code" :caption="$t('角色编码')" />
         <DxColumn data-field="Name" :caption="$t('角色名称')" />
         <DxColumn data-field="Description" :caption="$t('描述')" />
