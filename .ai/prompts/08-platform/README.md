@@ -8,8 +8,9 @@
 
 ## 技术栈
 
-- **后端项目**：`src/YTStdTenantPlatform/`
-- **前端项目**：`web/tenant-platform-web/`
+- **后端项目**：`src/YTStdTenantPlatform/`（已完成，383 个测试全部通过）
+- **新前端项目**：`src/WebTenantPlatfrom`（基于 DevExtreme Vue Application Template 重建，提示词重写中）
+- **旧前端项目**：`web/tenant-platform-web/`（仅作参考，不得删除）
 - **底层框架**：YTStdSqlBuilder、YTStdLogger、YTStdAdo、YTStdEntity、YTStdI18n（及其 Generator）
 - **数据库**：PostgreSQL，表前缀 `sys_`
 - **文档**：`docs/TenantPlatform/`
@@ -20,45 +21,59 @@
 
 ### 核心模块（P5）
 
-| 模块 | 后端提示词 | 前端提示词 | 状态 |
-|------|-----------|-----------|------|
-| 认证 | `backend/auth-api.md` | —（登录页内嵌） | 已有代码,需重构 |
-| 平台用户 | `backend/platform-user-api.md` | `frontend/0021_platform-user-page.md` | 已有代码,需重构 |
-| 平台角色 | `backend/platform-role-api.md` | `frontend/0022_platform-role-page.md` | 已有代码,需重构 |
-| 平台权限 | `backend/platform-permission-api.md` | `frontend/0023_platform-permission-page.md` | 已有代码,需重构 |
-| 租户生命周期 | `backend/tenant-lifecycle-api.md` | `frontend/0024_tenant-page.md` | 已有代码,需重构 |
-| 租户信息 | `backend/tenant-info-api.md` | `frontend/0025_tenant-info-page.md` | 已有代码,需重构 |
-| 租户资源 | `backend/tenant-resource-api.md` | `frontend/0026_tenant-resource-page.md` | 已有代码,需重构 |
-| 租户配置 | `backend/tenant-config-api.md` | `frontend/0027_tenant-config-page.md` | 已有代码,需重构 |
+| 模块 | 后端提示词 | 前端提示词 | 后端状态 | 前端提示词状态 |
+|------|-----------|-----------|---------|--------------|
+| 认证 | `backend/auth-api.md` | —（登录页内嵌） | ✅ 已完成 | ✅ 已重写 |
+| 平台用户 | `backend/platform-user-api.md` | `frontend/0021_platform-user-page.md` | ✅ 已完成 | ✅ 已重写 |
+| 平台角色 | `backend/platform-role-api.md` | `frontend/0022_platform-role-page.md` | ✅ 已完成 | ✅ 已重写 |
+| 平台权限 | `backend/platform-permission-api.md` | `frontend/0023_platform-permission-page.md` | ✅ 已完成 | ✅ 已重写 |
+| 租户生命周期 | `backend/tenant-lifecycle-api.md` | `frontend/0024_tenant-page.md` | ✅ 已完成 | ✅ 已重写 |
+| 租户信息 | `backend/tenant-info-api.md` | `frontend/0025_tenant-info-page.md` | ✅ 已完成 | ✅ 已重写 |
+| 租户资源 | `backend/tenant-resource-api.md` | `frontend/0026_tenant-resource-page.md` | ✅ 已完成 | ✅ 已重写 |
+| 租户配置 | `backend/tenant-config-api.md` | `frontend/0027_tenant-config-page.md` | ✅ 已完成 | ✅ 已重写 |
 
 ### 扩展模块（P6）
 
-| 模块 | 后端提示词 | 前端提示词 | 状态 |
-|------|-----------|-----------|------|
-| 套餐管理 | `backend/package-api.md` | `frontend/0028_package-page.md` | 已有代码,需重构 |
-| 订阅管理 | `backend/subscription-api.md` | `frontend/0029_subscription-page.md` | 已有代码,需重构 |
-| 计费账单 | `backend/billing-api.md` | `frontend/0030_billing-page.md` | 已有代码,需重构 |
-| API 集成 | `backend/api-integration-api.md` | `frontend/0031_api-integration-page.md` | 已有代码,需重构 |
-| 平台运营 | `backend/platform-operation-api.md` | `frontend/0035_platform-operation-page.md` | 已有代码,需重构 |
-| 审计日志 | `backend/audit-api.md` | `frontend/0032_audit-page.md` | 已有代码,需重构 |
-| 通知系统 | `backend/notification-api.md` | `frontend/0033_notification-page.md` | 已有代码,需重构 |
-| 文件存储 | `backend/storage-api.md` | `frontend/0034_storage-page.md` | 已有代码,需重构 |
+| 模块 | 后端提示词 | 前端提示词 | 后端状态 | 前端提示词状态 |
+|------|-----------|-----------|---------|--------------|
+| 套餐管理 | `backend/package-api.md` | `frontend/0028_package-page.md` | ✅ 已完成 | ✅ 已重写 |
+| 订阅管理 | `backend/subscription-api.md` | `frontend/0029_subscription-page.md` | ✅ 已完成 | ✅ 已重写 |
+| 计费账单 | `backend/billing-api.md` | `frontend/0030_billing-page.md` | ✅ 已完成 | ✅ 已重写 |
+| API 集成 | `backend/api-integration-api.md` | `frontend/0031_api-integration-page.md` | ✅ 已完成 | ✅ 已重写 |
+| 平台运营 | `backend/platform-operation-api.md` | `frontend/0035_platform-operation-page.md` | ✅ 已完成 | ⬜ 待评估 |
+| 审计日志 | `backend/audit-api.md` | `frontend/0032_audit-page.md` | ✅ 已完成 | ✅ 已重写 |
+| 通知系统 | `backend/notification-api.md` | `frontend/0033_notification-page.md` | ✅ 已完成 | ✅ 已重写 |
+| 文件存储 | `backend/storage-api.md` | `frontend/0034_storage-page.md` | ✅ 已完成 | ✅ 已重写 |
 
 ### 基础设施
 
 | 内容 | 提示词 | 状态 |
 |------|--------|------|
-| 数据库设计 | `database/schema.md` | 已有,需校验 |
-| 初始化数据 | `database/seed-data.md` | 已有,需校验 |
-| 后端基础设施 | `backend/infrastructure.md` | 已有代码,需重构 |
-| 错误码 | `backend/error-codes.md` | 已有,需校验 |
-| 菜单与字典 | `backend/menu-dictionary-api.md` | 已有代码,需重构 |
-| 前端脚手架 | `frontend/0001_scaffold.md` | 已有代码 |
-| 前端布局 | `frontend/0010_layout.md` | 已有代码 |
-| 前端首页 | `frontend/0020_dashboard-page.md` | 已有代码,需完善 |
-| 前端国际化 | `frontend/0002_i18n.md` | 待开发 |
-| 后端测试 | `testing/backend-tests.md` | 已有部分 |
-| Postman 集合 | `testing/postman.md` | 已有 |
+| 数据库设计 | `database/schema.md` | ✅ 已完成 |
+| 初始化数据 | `database/seed-data.md` | ✅ 已完成 |
+| 后端基础设施 | `backend/infrastructure.md` | ✅ 已完成 |
+| 错误码 | `backend/error-codes.md` | ✅ 已完成 |
+| 菜单与字典 | `backend/menu-dictionary-api.md` | ✅ 已完成 |
+| 前端脚手架 | `frontend/0001_scaffold.md` | ✅ 提示词已重写 |
+| 前端布局 | `frontend/0010_layout.md` | ✅ 提示词已重写 |
+| 前端首页 | `frontend/0020_dashboard-page.md` | ✅ 提示词已重写 |
+| 前端国际化 | `frontend/0002_i18n.md` | ⬜ 待重写 |
+| 后端测试 | `testing/backend-tests.md` | ✅ 已完成（383 个测试通过） |
+| Postman 集合 | `testing/postman.md` | ✅ 已完成 |
+
+### 顶层模块概要文件
+
+本目录根下的 `.md` 文件是各模块的功能概要与设计说明（非子目录内的 API/前端/数据库提示词）：
+
+| 文件 | 说明 |
+|------|------|
+| `auth.md` | 认证模块功能概要 |
+| `permission.md` | 权限模块功能概要 |
+| `tenant.md` | 租户模块功能概要 |
+| `config.md` | 配置模块功能概要 |
+| `menu.md` | 菜单模块功能概要 |
+| `dictionary.md` | 字典模块功能概要 |
+| `audit.md` | 审计模块功能概要 |
 
 ---
 

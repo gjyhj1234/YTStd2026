@@ -916,19 +916,19 @@
 | 9 | 租户资源 | `0026_tenant-resource-page.md` | ✅ |
 | 10 | 租户配置 | `0027_tenant-config-page.md` | ✅ |
 
-### 阶段 S3：业务提示词重写（运营 + 系统管理页面） — ⬜ 待执行
+### 阶段 S3：业务提示词重写（运营 + 系统管理页面） — ✅ 已完成
 
 **目标**：重写 SaaS 运营、API 集成、系统管理相关页面提示词
 
 | 序号 | 内容 | 文件 | 状态 |
 |:----:|------|------|:----:|
-| 1 | 套餐管理 | `0028_package-page.md` | ⬜ |
-| 2 | 订阅管理 | `0029_subscription-page.md` | ⬜ |
-| 3 | 账单管理 | `0030_billing-page.md` | ⬜ |
-| 4 | API 集成 | `0031_api-integration-page.md` | ⬜ |
-| 5 | 审计日志 | `0032_audit-page.md` | ⬜ |
-| 6 | 通知管理 | `0033_notification-page.md` | ⬜ |
-| 7 | 文件管理 | `0034_storage-page.md` | ⬜ |
+| 1 | 套餐管理 | `0028_package-page.md` | ✅ |
+| 2 | 订阅管理 | `0029_subscription-page.md` | ✅ |
+| 3 | 账单管理 | `0030_billing-page.md` | ✅ |
+| 4 | API 集成 | `0031_api-integration-page.md` | ✅ |
+| 5 | 审计日志 | `0032_audit-page.md` | ✅ |
+| 6 | 通知管理 | `0033_notification-page.md` | ✅ |
+| 7 | 文件管理 | `0034_storage-page.md` | ✅ |
 
 ### 阶段 S4：清理与规范化 — ⬜ 待执行
 

@@ -16,7 +16,7 @@
 |----|-----------|------|
 | 底层框架 | `.ai/prompts/11-base-library/` | YTStdSqlBuilder、YTStdLogger、YTStdAdo、YTStdEntity、YTStdI18n 及其 Generator |
 | 后端通用 | `.ai/prompts/02-backend/` | 实体建模、应用服务、端点、中间件的通用规范 |
-| 前端通用 | `.ai/prompts/03-frontend/` | 脚手架、页面模块、组件的通用规范 |
+| 前端通用 | `.ai/prompts/03-frontend/` | 前端治理、任务拆分、DevExtreme 规范、axios 规范、i18n 执行规范、业务模板 |
 | 数据库通用 | `.ai/prompts/04-database/` | 表结构设计、种子数据的通用规范 |
 | 国际化通用 | `.ai/prompts/05-i18n/` | 后端/前端国际化的通用规范 |
 | 生成器通用 | `.ai/prompts/06-generator/` | 实体生成器、CRUD 生成器的通用规范 |
