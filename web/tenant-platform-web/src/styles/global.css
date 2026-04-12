@@ -104,7 +104,8 @@ html, body, #app {
 
 .sidebar-tree-item.active {
   color: var(--sidebar-text-hover);
-  font-weight: 600;
+  /* 使用 text-shadow 模拟粗体效果，避免 font-weight 变化导致文本宽度偏移 */
+  text-shadow: 0 0 0.5px currentColor, 0 0 0.5px currentColor;
 }
 
 .sidebar-tree-item:hover {
@@ -113,23 +114,40 @@ html, body, #app {
 
 /* ── DxTreeView 防偏移修复 ── */
 .app-sidebar .dx-treeview-node {
-  padding: 0;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
-.app-sidebar .dx-treeview-item-content {
+/* 保留 DxTreeView 子节点缩进，仅清除多余内边距 */
+.app-sidebar .dx-treeview-node-container {
   padding-left: 0 !important;
 }
 
-.app-sidebar .dx-treeview-node .dx-treeview-item {
-  padding: 8px 12px;
+/* 二级子节点固定缩进 */
+.app-sidebar .dx-treeview-node-container .dx-treeview-node-container {
+  padding-left: 20px !important;
 }
 
+.app-sidebar .dx-treeview-node .dx-treeview-item {
+  padding: 8px 12px !important;
+}
+
+/* 清除所有交互状态样式，防止选中/聚焦时布局变化 */
 .app-sidebar .dx-treeview .dx-state-focused,
 .app-sidebar .dx-treeview .dx-state-active,
-.app-sidebar .dx-treeview .dx-state-selected {
-  background: transparent;
+.app-sidebar .dx-treeview .dx-state-selected,
+.app-sidebar .dx-treeview .dx-state-hover {
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
+/* 确保 DxTreeView item-content 不改变布局 */
+.app-sidebar .dx-treeview-item-content {
+  padding: 0 !important;
+}
+
+/* 禁用 DxTreeView 内置展开/折叠图标（树由 computed 控制展开） */
 .app-sidebar .dx-treeview-toggle-item-visibility {
   position: static;
   width: 24px;

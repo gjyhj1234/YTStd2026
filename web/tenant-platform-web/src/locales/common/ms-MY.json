@@ -71,5 +71,21 @@
   "角色名称": "Nama Peranan",
   "权限编码": "Kod Kebenaran",
   "权限名称": "Nama Kebenaran",
-  "重置密码成功": "Kata laluan berjaya diset semula"
+  "重置密码成功": "Kata laluan berjaya diset semula",
+  "密码修改成功": "Kata laluan berjaya ditukar",
+  "密码修改失败": "Gagal menukar kata laluan",
+  "IP白名单已启用": "Senarai putih IP diaktifkan",
+  "IP白名单已禁用": "Senarai putih IP dinyahaktifkan",
+  "启用IP白名单前请先添加至少一个IP地址": "Sila tambah sekurang-kurangnya satu alamat IP sebelum mengaktifkan senarai putih",
+  "请输入IP地址": "Sila masukkan alamat IP",
+  "该IP地址已存在": "Alamat IP ini sudah wujud",
+  "IP地址添加成功": "Alamat IP berjaya ditambah",
+  "IP地址删除成功": "Alamat IP berjaya dipadamkan",
+  "确认启用IP白名单": "Sahkan untuk mengaktifkan senarai putih IP?",
+  "确认禁用IP白名单": "Sahkan untuk menyahaktifkan senarai putih IP?",
+  "确认启用多因素认证": "Sahkan untuk mengaktifkan pengesahan pelbagai faktor?",
+  "确认禁用多因素认证": "Sahkan untuk menyahaktifkan pengesahan pelbagai faktor?",
+  "MFA已启用": "MFA diaktifkan",
+  "MFA已禁用": "MFA dinyahaktifkan",
+  "MFA设置保存成功": "Tetapan MFA berjaya disimpan"
 }

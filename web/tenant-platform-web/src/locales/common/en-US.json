@@ -71,5 +71,21 @@
   "角色名称": "Role Name",
   "权限编码": "Permission Code",
   "权限名称": "Permission Name",
-  "重置密码成功": "Password reset successfully"
+  "重置密码成功": "Password reset successfully",
+  "密码修改成功": "Password changed successfully",
+  "密码修改失败": "Failed to change password",
+  "IP白名单已启用": "IP whitelist enabled",
+  "IP白名单已禁用": "IP whitelist disabled",
+  "启用IP白名单前请先添加至少一个IP地址": "Please add at least one IP address before enabling the whitelist",
+  "请输入IP地址": "Please enter an IP address",
+  "该IP地址已存在": "This IP address already exists",
+  "IP地址添加成功": "IP address added successfully",
+  "IP地址删除成功": "IP address removed successfully",
+  "确认启用IP白名单": "Confirm to enable IP whitelist?",
+  "确认禁用IP白名单": "Confirm to disable IP whitelist?",
+  "确认启用多因素认证": "Confirm to enable multi-factor authentication?",
+  "确认禁用多因素认证": "Confirm to disable multi-factor authentication?",
+  "MFA已启用": "MFA enabled",
+  "MFA已禁用": "MFA disabled",
+  "MFA设置保存成功": "MFA settings saved successfully"
 }
