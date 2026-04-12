@@ -36,9 +36,9 @@
 | P6 | 扩展后端 API | 套餐、订阅、计费等扩展 API | P5 | 3-5 | `08-platform/backend/*-api.md`（扩展） |
 | P7 | 后端测试 | 单元测试、集成测试 | P5-P6 | 2-3 | `08-platform/testing/backend-tests.md` |
 | P8 | Postman 测试 | 生成 Postman 测试集合 | P5-P6 | 1-2 | `08-platform/testing/postman.md` |
-| P9 | 前端骨架 | 前端工程、登录、布局 | P5 | 2-3 | `08-platform/frontend/scaffold.md` + `layout.md` |
-| P10 | 前端模块 | 业务页面、API 对接 | P6, P9 | 5-8 | `08-platform/frontend/*-page.md` |
-| P11 | 前端国际化 | 全量 i18n 接入 | P10, P0.6 | 2-3 | `08-platform/frontend/i18n.md` |
+| P9 | 前端骨架 | 前端工程、登录、布局 | P5 | 2-3 | `08-platform/frontend/0001_scaffold.md` + `0010_layout.md` |
+| P10 | 前端模块 | 业务页面、API 对接 | P6, P9 | 5-8 | `08-platform/frontend/00xx_*-page.md` |
+| P11 | 前端国际化 | 全量 i18n 接入 | P10, P0.6 | 2-3 | `08-platform/frontend/0002_i18n.md` |
 | P12 | 文档整理 | API 文档、架构文档 | P6, P10 | 1-2 | `09-docs/*.md` |
 | P13 | 最终审查 | 全量校验、补漏、收尾 | 全部 | 1-2 | `10-review/*.md` |
 

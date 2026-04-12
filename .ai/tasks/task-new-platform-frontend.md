@@ -861,3 +861,124 @@
 - 可 code-review 验收优先于概念描述
 - 减少 AI 漂移优先于节省文字
 - 功能完整性、规则完整性、国际化完整性优先于编译成功
+
+---
+
+## 十二、文件命名规范（`00xx_xxx.md`）
+
+`.ai/prompts/08-platform/frontend/` 下所有业务提示词文件必须遵循 `00xx_xxx.md` 或 `00xx_xxx_async.md` 命名规则：
+
+| 编号范围 | 层级 | 文件 |
+|:--------:|------|------|
+| 0000 | 总览 | `0000_overview.md` |
+| 0001-0009 | 层级 0（基础设施） | `0001_scaffold.md`、`0002_i18n.md` |
+| 0010-0019 | 层级 1（布局） | `0010_layout.md`、`0011_login-page.md` |
+| 0020-0039 | 层级 2（业务页面） | `0020_dashboard-page.md` 至 `0035_platform-operation-page.md` |
+| 9900+ | 归档 | `9900_refactoring-master.md` |
+
+新增文件在对应层级编号范围内顺序递增。`_async` 后缀表示该任务可并行执行。
+
+---
+
+## 十三、分阶段执行计划与进度跟踪
+
+本任务规模大，需分多轮执行。以下为分阶段计划与当前状态。
+
+### 阶段 S1：提示词体系重构（基础骨架） — ✅ 已完成
+
+**目标**：建立治理层、规则层、模板层
+
+| 序号 | 内容 | 文件 | 状态 |
+|:----:|------|------|:----:|
+| 1 | 前端总治理 | `03-frontend/00-governance.md` | ✅ |
+| 2 | 任务拆分规范 | `03-frontend/01-task-splitting.md` | ✅ |
+| 3 | 并行执行规范 | `03-frontend/02-parallel-execution.md` | ✅ |
+| 4 | 反模式清单 | `03-frontend/03-anti-patterns.md` | ✅ |
+| 5 | DevExtreme 规范 | `03-frontend/04-devextreme-templates.md` | ✅ |
+| 6 | axios 标准 | `03-frontend/05-axios-standard.md` | ✅ |
+| 7 | i18n 执行规范 | `03-frontend/06-i18n-execution.md` | ✅ |
+| 8 | 业务模板 | `03-frontend/07-business-prompt-template.md` | ✅ |
+
+### 阶段 S2：业务提示词重写（布局 + 核心页面） — ✅ 已完成
+
+**目标**：重写布局、登录、仪表盘及核心管理页面提示词
+
+| 序号 | 内容 | 文件 | 状态 |
+|:----:|------|------|:----:|
+| 1 | 主布局 | `0010_layout.md` | ✅ |
+| 2 | 登录页 | `0011_login-page.md` | ✅ |
+| 3 | 仪表盘 | `0020_dashboard-page.md` | ✅ |
+| 4 | 平台用户 | `0021_platform-user-page.md` | ✅ |
+| 5 | 平台角色 | `0022_platform-role-page.md` | ✅ |
+| 6 | 平台权限 | `0023_platform-permission-page.md` | ✅ |
+| 7 | 租户管理 | `0024_tenant-page.md` | ✅ |
+| 8 | 租户信息 | `0025_tenant-info-page.md` | ✅ |
+| 9 | 租户资源 | `0026_tenant-resource-page.md` | ✅ |
+| 10 | 租户配置 | `0027_tenant-config-page.md` | ✅ |
+
+### 阶段 S3：业务提示词重写（运营 + 系统管理页面） — ⬜ 待执行
+
+**目标**：重写 SaaS 运营、API 集成、系统管理相关页面提示词
+
+| 序号 | 内容 | 文件 | 状态 |
+|:----:|------|------|:----:|
+| 1 | 套餐管理 | `0028_package-page.md` | ⬜ |
+| 2 | 订阅管理 | `0029_subscription-page.md` | ⬜ |
+| 3 | 账单管理 | `0030_billing-page.md` | ⬜ |
+| 4 | API 集成 | `0031_api-integration-page.md` | ⬜ |
+| 5 | 审计日志 | `0032_audit-page.md` | ⬜ |
+| 6 | 通知管理 | `0033_notification-page.md` | ⬜ |
+| 7 | 文件管理 | `0034_storage-page.md` | ⬜ |
+
+### 阶段 S4：清理与规范化 — ⬜ 待执行
+
+**目标**：清理历史文件，确保所有提示词符合新标准
+
+| 序号 | 内容 | 文件 | 状态 |
+|:----:|------|------|:----:|
+| 1 | 重写 scaffold | `0001_scaffold.md` | ✅ |
+| 2 | 重写 i18n | `0002_i18n.md` | ⬜ |
+| 3 | 评估 platform-operation | `0035_platform-operation-page.md` | ⬜ |
+| 4 | 文件命名规范化 | 所有文件 → `00xx_xxx.md` | ✅ |
+| 5 | 更新 overview | `0000_overview.md` | ✅ |
+| 6 | 更新交叉引用 | 全仓库 | ✅ |
+
+### 阶段 S5：前端项目实现（基于新提示词） — ⬜ 待执行
+
+**目标**：基于新提示词体系，在 `src/WebTenantPlatfrom` 中实现新前端项目
+
+> 此阶段由实现类 Agent 执行，按 `0000_overview.md` 中定义的层级顺序进行。
+
+---
+
+## 十四、续接说明（给下一轮 Agent）
+
+### 当前已完成
+
+1. `.ai/prompts/03-frontend/` 下 8 个治理/规则层文件（S1 完成）
+2. `.ai/prompts/08-platform/frontend/` 下文件全部重命名为 `00xx_xxx.md` 格式
+3. 布局（`0010_layout.md`）已基于 DevExtreme Vue Application Template 完全重写
+4. 脚手架（`0001_scaffold.md`）已基于 Application Template CLI 重写
+5. 核心页面提示词已重写（S2 的 10 个文件已完成）
+6. 总览（`0000_overview.md`）已更新为新文件名
+7. 所有交叉引用已更新
+
+### 下一轮优先处理
+
+1. **阶段 S3**：重写 7 个待重写的业务页面提示词（`0028`-`0034`），按 `07-business-prompt-template.md` 模板格式
+2. **阶段 S4 剩余**：重写 `0002_i18n.md`，评估 `0035_platform-operation-page.md` 是否需要保留
+
+### 不需要重复阅读的已稳定文件
+
+- `03-frontend/00-governance.md` 至 `07-business-prompt-template.md`（8 个文件已稳定）
+- `0000_overview.md`（已更新）
+- `0010_layout.md`、`0011_login-page.md`、`0020_dashboard-page.md`（已重写）
+- `0021`-`0027` 核心页面提示词（已重写）
+
+### 仍需保持不变的规则
+
+- 新前端项目路径固定为 `src/WebTenantPlatfrom`
+- 旧项目 `web/tenant-platform-web` 不得删除
+- 所有布局必须基于 DevExtreme Vue Application Template
+- 所有文件命名必须遵循 `00xx_xxx.md` 规范
+- 提示词目标是新建干净的前端项目，不考虑旧项目已生成的代码

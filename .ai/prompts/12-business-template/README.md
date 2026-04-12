@@ -52,11 +52,13 @@
 │   ├── infrastructure.md        # 后端基础设施（Program.cs、中间件、认证）
 │   ├── {module}-api.md          # 各业务模块 API（每个模块一个文件）
 │   └── error-codes.md           # 错误码定义
-├── frontend/                    # 前端提示词
-│   ├── scaffold.md              # 前端工程脚手架
-│   ├── layout.md                # 布局与导航
-│   ├── {module}-page.md         # 各模块页面（每个模块一个文件）
-│   └── i18n.md                  # 前端国际化接入
+├── frontend/                    # 前端提示词（00xx_xxx.md 命名规范）
+│   ├── 0000_overview.md         # 前端总览
+│   ├── 0001_scaffold.md         # 前端工程脚手架
+│   ├── 0002_i18n.md             # 前端国际化接入
+│   ├── 0010_layout.md           # 布局与导航
+│   ├── 0011_login-page.md       # 登录页
+│   └── 00xx_{module}-page.md    # 各模块页面（每个模块一个文件）
 └── testing/                     # 测试提示词
     ├── backend-tests.md         # 后端测试
     └── postman.md               # Postman 集合

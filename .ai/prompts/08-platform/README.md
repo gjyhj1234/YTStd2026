@@ -23,26 +23,26 @@
 | 模块 | 后端提示词 | 前端提示词 | 状态 |
 |------|-----------|-----------|------|
 | 认证 | `backend/auth-api.md` | —（登录页内嵌） | 已有代码,需重构 |
-| 平台用户 | `backend/platform-user-api.md` | `frontend/platform-user-page.md` | 已有代码,需重构 |
-| 平台角色 | `backend/platform-role-api.md` | `frontend/platform-role-page.md` | 已有代码,需重构 |
-| 平台权限 | `backend/platform-permission-api.md` | `frontend/platform-permission-page.md` | 已有代码,需重构 |
-| 租户生命周期 | `backend/tenant-lifecycle-api.md` | `frontend/tenant-page.md` | 已有代码,需重构 |
-| 租户信息 | `backend/tenant-info-api.md` | `frontend/tenant-info-page.md` | 已有代码,需重构 |
-| 租户资源 | `backend/tenant-resource-api.md` | `frontend/tenant-resource-page.md` | 已有代码,需重构 |
-| 租户配置 | `backend/tenant-config-api.md` | `frontend/tenant-config-page.md` | 已有代码,需重构 |
+| 平台用户 | `backend/platform-user-api.md` | `frontend/0021_platform-user-page.md` | 已有代码,需重构 |
+| 平台角色 | `backend/platform-role-api.md` | `frontend/0022_platform-role-page.md` | 已有代码,需重构 |
+| 平台权限 | `backend/platform-permission-api.md` | `frontend/0023_platform-permission-page.md` | 已有代码,需重构 |
+| 租户生命周期 | `backend/tenant-lifecycle-api.md` | `frontend/0024_tenant-page.md` | 已有代码,需重构 |
+| 租户信息 | `backend/tenant-info-api.md` | `frontend/0025_tenant-info-page.md` | 已有代码,需重构 |
+| 租户资源 | `backend/tenant-resource-api.md` | `frontend/0026_tenant-resource-page.md` | 已有代码,需重构 |
+| 租户配置 | `backend/tenant-config-api.md` | `frontend/0027_tenant-config-page.md` | 已有代码,需重构 |
 
 ### 扩展模块（P6）
 
 | 模块 | 后端提示词 | 前端提示词 | 状态 |
 |------|-----------|-----------|------|
-| 套餐管理 | `backend/package-api.md` | `frontend/package-page.md` | 已有代码,需重构 |
-| 订阅管理 | `backend/subscription-api.md` | `frontend/subscription-page.md` | 已有代码,需重构 |
-| 计费账单 | `backend/billing-api.md` | `frontend/billing-page.md` | 已有代码,需重构 |
-| API 集成 | `backend/api-integration-api.md` | `frontend/api-integration-page.md` | 已有代码,需重构 |
-| 平台运营 | `backend/platform-operation-api.md` | `frontend/platform-operation-page.md` | 已有代码,需重构 |
-| 审计日志 | `backend/audit-api.md` | `frontend/audit-page.md` | 已有代码,需重构 |
-| 通知系统 | `backend/notification-api.md` | `frontend/notification-page.md` | 已有代码,需重构 |
-| 文件存储 | `backend/storage-api.md` | `frontend/storage-page.md` | 已有代码,需重构 |
+| 套餐管理 | `backend/package-api.md` | `frontend/0028_package-page.md` | 已有代码,需重构 |
+| 订阅管理 | `backend/subscription-api.md` | `frontend/0029_subscription-page.md` | 已有代码,需重构 |
+| 计费账单 | `backend/billing-api.md` | `frontend/0030_billing-page.md` | 已有代码,需重构 |
+| API 集成 | `backend/api-integration-api.md` | `frontend/0031_api-integration-page.md` | 已有代码,需重构 |
+| 平台运营 | `backend/platform-operation-api.md` | `frontend/0035_platform-operation-page.md` | 已有代码,需重构 |
+| 审计日志 | `backend/audit-api.md` | `frontend/0032_audit-page.md` | 已有代码,需重构 |
+| 通知系统 | `backend/notification-api.md` | `frontend/0033_notification-page.md` | 已有代码,需重构 |
+| 文件存储 | `backend/storage-api.md` | `frontend/0034_storage-page.md` | 已有代码,需重构 |
 
 ### 基础设施
 
@@ -53,10 +53,10 @@
 | 后端基础设施 | `backend/infrastructure.md` | 已有代码,需重构 |
 | 错误码 | `backend/error-codes.md` | 已有,需校验 |
 | 菜单与字典 | `backend/menu-dictionary-api.md` | 已有代码,需重构 |
-| 前端脚手架 | `frontend/scaffold.md` | 已有代码 |
-| 前端布局 | `frontend/layout.md` | 已有代码 |
-| 前端首页 | `frontend/dashboard-page.md` | 已有代码,需完善 |
-| 前端国际化 | `frontend/i18n.md` | 待开发 |
+| 前端脚手架 | `frontend/0001_scaffold.md` | 已有代码 |
+| 前端布局 | `frontend/0010_layout.md` | 已有代码 |
+| 前端首页 | `frontend/0020_dashboard-page.md` | 已有代码,需完善 |
+| 前端国际化 | `frontend/0002_i18n.md` | 待开发 |
 | 后端测试 | `testing/backend-tests.md` | 已有部分 |
 | Postman 集合 | `testing/postman.md` | 已有 |
 
@@ -101,28 +101,28 @@
 
 ### 阶段 E：前端重构
 
-24. `frontend/scaffold.md` — 校验前端工程
-25. `frontend/layout.md` — 校验布局
-26. `frontend/dashboard-page.md` — 首页仪表盘
-27. `frontend/platform-user-page.md` — 平台用户
-28. `frontend/platform-role-page.md` — 平台角色
-29. `frontend/platform-permission-page.md` — 平台权限
-30. `frontend/tenant-page.md` — 租户管理
-31. `frontend/tenant-info-page.md` — 租户信息
-32. `frontend/tenant-resource-page.md` — 租户资源
-33. `frontend/tenant-config-page.md` — 租户配置
-34. `frontend/package-page.md` — 套餐
-35. `frontend/subscription-page.md` — 订阅
-36. `frontend/billing-page.md` — 计费
-37. `frontend/api-integration-page.md` — API 集成
-38. `frontend/platform-operation-page.md` — 平台运营
-39. `frontend/audit-page.md` — 审计日志
-40. `frontend/notification-page.md` — 通知
-41. `frontend/storage-page.md` — 文件存储
+24. `frontend/0001_scaffold.md` — 校验前端工程
+25. `frontend/0010_layout.md` — 校验布局
+26. `frontend/0020_dashboard-page.md` — 首页仪表盘
+27. `frontend/0021_platform-user-page.md` — 平台用户
+28. `frontend/0022_platform-role-page.md` — 平台角色
+29. `frontend/0023_platform-permission-page.md` — 平台权限
+30. `frontend/0024_tenant-page.md` — 租户管理
+31. `frontend/0025_tenant-info-page.md` — 租户信息
+32. `frontend/0026_tenant-resource-page.md` — 租户资源
+33. `frontend/0027_tenant-config-page.md` — 租户配置
+34. `frontend/0028_package-page.md` — 套餐
+35. `frontend/0029_subscription-page.md` — 订阅
+36. `frontend/0030_billing-page.md` — 计费
+37. `frontend/0031_api-integration-page.md` — API 集成
+38. `frontend/0035_platform-operation-page.md` — 平台运营
+39. `frontend/0032_audit-page.md` — 审计日志
+40. `frontend/0033_notification-page.md` — 通知
+41. `frontend/0034_storage-page.md` — 文件存储
 
 ### 阶段 F：前端国际化
 
-42. `frontend/i18n.md` — 全量国际化接入
+42. `frontend/0002_i18n.md` — 全量国际化接入
 
 ---
 

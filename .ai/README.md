@@ -108,13 +108,15 @@
 │   │   │   ├── audit-api.md
 │   │   │   ├── notification-api.md
 │   │   │   └── storage-api.md
-│   │   ├── frontend/              # 前端页面（每模块一文件）
-│   │   │   ├── scaffold.md
-│   │   │   ├── layout.md
-│   │   │   ├── dashboard-page.md
-│   │   │   ├── platform-user-page.md
-│   │   │   ├── ... (每模块一文件)
-│   │   │   └── i18n.md            # 前端国际化接入
+│   │   ├── frontend/              # 前端页面（00xx_xxx.md 命名规范）
+│   │   │   ├── 0000_overview.md
+│   │   │   ├── 0001_scaffold.md
+│   │   │   ├── 0002_i18n.md
+│   │   │   ├── 0010_layout.md
+│   │   │   ├── 0011_login-page.md
+│   │   │   ├── 0020_dashboard-page.md
+│   │   │   ├── 00xx_*-page.md     # 每业务模块一文件
+│   │   │   └── 9900_refactoring-master.md  # 已归档
 │   │   └── testing/               # 测试
 │   │       ├── backend-tests.md
 │   │       └── postman.md
