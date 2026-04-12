@@ -19,10 +19,21 @@
 
 ## DevExpress 文档查阅（强制前置步骤）
 
+按照官方 dxdocs 工作流查阅相关组件文档：
+
+1. **调用 `devexpress_docs_search`**（每个问题仅调用一次，使用 `technologies: ["Vue"]`）
+2. **调用 `devexpress_docs_get_content`** 获取最相关帮助主题的全文
+3. **反思内容**，提取可用的 API、属性、代码示例
+4. **基于检索到的信息编码**，引用具体控件和属性名称
+
+**本模块必须查阅的组件：**
+
 ```
 devexpress_docs_search(technologies: ["Vue"], question: "DxTreeList parent-id-expr key-expr auto-expand-all filter-mode")
 devexpress_docs_search(technologies: ["Vue"], question: "DxLoadPanel visible position usage in Vue")
 ```
+
+查阅后必须调用 `devexpress_docs_get_content` 获取全文，阅读其中的代码示例并在编码中参考。
 
 ---
 
