@@ -61,10 +61,10 @@
 | F2-2 | 平台用户管理 | `platform-user-page.md`（✅ 已重写） | ⬜ | A |
 | F2-3 | 平台角色管理 | `platform-role-page.md`（✅ 已重写） | ⬜ | A |
 | F2-4 | 平台权限管理 | `platform-permission-page.md`（✅ 已重写） | ⬜ | A |
-| F2-5 | 租户管理 | `tenant-page.md`（待重写） | ⬜ | B |
-| F2-6 | 租户信息管理 | `tenant-info-page.md`（待重写） | ⬜ | B |
-| F2-7 | 租户资源管理 | `tenant-resource-page.md`（待重写） | ⬜ | B |
-| F2-8 | 租户配置管理 | `tenant-config-page.md`（待重写） | ⬜ | B |
+| F2-5 | 租户管理 | `tenant-page.md`（✅ 已重写） | ⬜ | B |
+| F2-6 | 租户信息管理 | `tenant-info-page.md`（✅ 已重写） | ⬜ | B |
+| F2-7 | 租户资源管理 | `tenant-resource-page.md`（✅ 已重写） | ⬜ | B |
+| F2-8 | 租户配置管理 | `tenant-config-page.md`（✅ 已重写） | ⬜ | B |
 | F2-9 | 套餐管理 | `package-page.md`（待重写） | ⬜ | C |
 | F2-10 | 订阅管理 | `subscription-page.md`（待重写） | ⬜ | C |
 | F2-11 | 账单管理 | `billing-page.md`（待重写） | ⬜ | C |
