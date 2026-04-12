@@ -213,9 +213,24 @@ ComponentName.vue.ms-MY.json  ← 必须
 ComponentName.vue.zh-TW.json  ← 必须
 ```
 
+**组件特有的翻译 key 必须放在组件级语言文件中**，禁止放在主语言文件 `src/locales/{locale}.json` 中。`locales/index.ts` 使用 `import.meta.glob` 自动加载组件级文件并以最高优先级合并。
+
 ### 12. 侧边栏 DxTreeView 必须禁止选中态样式偏移
 
 DxTreeView 用于侧边栏时，必须确保点击子菜单后不出现靠左对齐偏移。需使用 dxdocs 查阅 DxTreeView 的 `selectByClick`、`focusStateEnabled`、CSS 覆盖方案。
+
+### 13. 组件级语言文件自动加载（import.meta.glob）
+
+`src/locales/index.ts` 使用 Vite 的 `import.meta.glob` 自动收集 `views/**`、`components/**`、`layouts/**` 下的 `*.vue.{locale}.json` 文件。非 null 值以最高优先级合并到 vue-i18n 全局消息中。
+
+```typescript
+// ✅ 正确 — 修改组件级语言文件后界面直接生效
+// PlatformRolesView.vue.zh-CN.json 中: "平台角色管理": "平台角色管理"
+// 由 import.meta.glob 自动加载，优先级最高
+
+// ❌ 错误 — 将组件特有 key 放在主语言文件中
+// src/locales/zh-CN.json 中: "平台角色管理": "平台角色管理" ← 禁止
+```
 
 ---
 
