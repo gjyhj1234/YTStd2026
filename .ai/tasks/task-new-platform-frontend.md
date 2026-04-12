@@ -930,15 +930,15 @@
 | 6 | 通知管理 | `0033_notification-page.md` | ✅ |
 | 7 | 文件管理 | `0034_storage-page.md` | ✅ |
 
-### 阶段 S4：清理与规范化 — ⬜ 待执行
+### 阶段 S4：清理与规范化 — ✅ 已完成
 
 **目标**：清理历史文件，确保所有提示词符合新标准
 
 | 序号 | 内容 | 文件 | 状态 |
 |:----:|------|------|:----:|
 | 1 | 重写 scaffold | `0001_scaffold.md` | ✅ |
-| 2 | 重写 i18n | `0002_i18n.md` | ⬜ |
-| 3 | 评估 platform-operation | `0035_platform-operation-page.md` | ⬜ |
+| 2 | 重写 i18n | `0002_i18n.md` | ✅ |
+| 3 | 评估并重写 platform-operation | `0035_platform-operation-page.md` | ✅ |
 | 4 | 文件命名规范化 | 所有文件 → `00xx_xxx.md` | ✅ |
 | 5 | 更新 overview | `0000_overview.md` | ✅ |
 | 6 | 更新交叉引用 | 全仓库 | ✅ |
@@ -960,20 +960,24 @@
 3. 布局（`0010_layout.md`）已基于 DevExtreme Vue Application Template 完全重写
 4. 脚手架（`0001_scaffold.md`）已基于 Application Template CLI 重写
 5. 核心页面提示词已重写（S2 的 10 个文件已完成）
-6. 总览（`0000_overview.md`）已更新为新文件名
-7. 所有交叉引用已更新
+6. 运营/系统管理页面提示词已重写（S3 的 7 个文件已完成：`0028`-`0034`）
+7. 国际化提示词（`0002_i18n.md`）已重写、平台运营（`0035_platform-operation-page.md`）已重写（S4 完成）
+8. 总览（`0000_overview.md`）已更新为最新状态
+9. 所有交叉引用已更新
 
 ### 下一轮优先处理
 
-1. **阶段 S3**：重写 7 个待重写的业务页面提示词（`0028`-`0034`），按 `07-business-prompt-template.md` 模板格式
-2. **阶段 S4 剩余**：重写 `0002_i18n.md`，评估 `0035_platform-operation-page.md` 是否需要保留
+1. **阶段 S5**：基于新提示词体系，在 `src/WebTenantPlatfrom` 中实现新前端项目
+   - 按 `0000_overview.md` 中定义的层级顺序执行：F0（基础设施）→ F1（布局）→ F2（业务页面）→ F3（集成验证）
+   - 首先执行 F0-1 脚手架搭建（`0001_scaffold.md`）
 
 ### 不需要重复阅读的已稳定文件
 
 - `03-frontend/00-governance.md` 至 `07-business-prompt-template.md`（8 个文件已稳定）
 - `0000_overview.md`（已更新）
+- `0001_scaffold.md`、`0002_i18n.md`（已重写）
 - `0010_layout.md`、`0011_login-page.md`、`0020_dashboard-page.md`（已重写）
-- `0021`-`0027` 核心页面提示词（已重写）
+- `0021`-`0035` 全部业务页面提示词（已重写）
 
 ### 仍需保持不变的规则
 
