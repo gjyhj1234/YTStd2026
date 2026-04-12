@@ -39,11 +39,11 @@
 | 套餐管理 | `backend/package-api.md` | `frontend/0028_package-page.md` | ✅ 已完成 | ✅ 已重写 |
 | 订阅管理 | `backend/subscription-api.md` | `frontend/0029_subscription-page.md` | ✅ 已完成 | ✅ 已重写 |
 | 计费账单 | `backend/billing-api.md` | `frontend/0030_billing-page.md` | ✅ 已完成 | ✅ 已重写 |
-| API 集成 | `backend/api-integration-api.md` | `frontend/0031_api-integration-page.md` | ✅ 已完成 | ⬜ 待重写 |
+| API 集成 | `backend/api-integration-api.md` | `frontend/0031_api-integration-page.md` | ✅ 已完成 | ✅ 已重写 |
 | 平台运营 | `backend/platform-operation-api.md` | `frontend/0035_platform-operation-page.md` | ✅ 已完成 | ⬜ 待评估 |
-| 审计日志 | `backend/audit-api.md` | `frontend/0032_audit-page.md` | ✅ 已完成 | ⬜ 待重写 |
-| 通知系统 | `backend/notification-api.md` | `frontend/0033_notification-page.md` | ✅ 已完成 | ⬜ 待重写 |
-| 文件存储 | `backend/storage-api.md` | `frontend/0034_storage-page.md` | ✅ 已完成 | ⬜ 待重写 |
+| 审计日志 | `backend/audit-api.md` | `frontend/0032_audit-page.md` | ✅ 已完成 | ✅ 已重写 |
+| 通知系统 | `backend/notification-api.md` | `frontend/0033_notification-page.md` | ✅ 已完成 | ✅ 已重写 |
+| 文件存储 | `backend/storage-api.md` | `frontend/0034_storage-page.md` | ✅ 已完成 | ✅ 已重写 |
 
 ### 基础设施
 
