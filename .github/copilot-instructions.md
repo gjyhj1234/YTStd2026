@@ -146,6 +146,21 @@ if (!insResult.Success)
 3. 配置 DevExtreme 组件的高级功能时（远程分页 CustomStore、表单验证 validationRules、树形选择等）
 4. 处理 DevExtreme 组件的样式定制时（CSS 变量、主题切换、DxDrawer 布局）
 
+**官方 dxdocs 工作流（必须严格遵循）：**
+
+1. **调用 `devexpress_docs_search`** 获取与问题相关的帮助主题列表（每个问题仅调用一次，避免冗余查询）
+2. **调用 `devexpress_docs_get_content`** 获取并阅读最相关的帮助主题全文
+3. **反思获取到的内容**，思考其与当前编码需求的关系
+4. **基于检索到的信息编码**，而非凭记忆或猜测
+
+**dxdocs 使用约束：**
+
+- 每个问题仅调用一次 `devexpress_docs_search`，避免冗余查询
+- **必须基于从 dxdocs 获取的信息编码**，禁止凭猜测或过时记忆
+- 如果文档中有相关代码示例，**必须参考这些代码示例**
+- 必须引用文档中提到的**具体 DevExtreme 控件和属性名称**
+- 调用时使用 `technologies: ["Vue"]` 限定 Vue 相关文档
+
 ```
 // 查阅示例
 devexpress_docs_search(technologies: ["Vue"], question: "DxForm label-mode floating static browser autofill difference")

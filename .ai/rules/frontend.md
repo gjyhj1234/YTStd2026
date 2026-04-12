@@ -141,8 +141,25 @@ export function getPlatformUsers(params: object): Promise<ApiResult<PagedResult<
 - 弹窗使用 `DxPopup`
 - 按钮使用 `DxButton`
 - 按照 DevExtreme 文档正确配置列、编辑、分页
-- **首次使用任何 DevExtreme 组件时，必须先通过 `dxdocs` MCP 工具（`devexpress_docs_search`）查阅官方文档**
-- **遇到组件行为异常时，必须先通过 `dxdocs` 查阅已知问题和最佳实践**
+
+### DevExtreme 组件 — 强制使用 dxdocs MCP 工具
+
+本仓库已配置 DevExpress MCP Server（工具名：`dxdocs`），提供 `devexpress_docs_search` 和 `devexpress_docs_get_content` 两个工具。
+
+**官方 dxdocs 工作流（必须严格遵循）：**
+
+1. **调用 `devexpress_docs_search`** — 获取相关帮助主题列表（每个问题仅调用一次）
+2. **调用 `devexpress_docs_get_content`** — 获取最相关帮助主题的全文内容
+3. **反思获取到的内容** — 分析文档中的 API、属性、代码示例
+4. **基于检索到的信息编码** — 使用文档中的具体控件和属性名称
+
+**使用约束：**
+
+- 每个问题仅调用一次 `devexpress_docs_search`，避免冗余查询
+- **必须基于从 dxdocs 获取的信息编码**，禁止凭记忆或猜测
+- 如果文档中有相关代码示例，**必须参考这些代码示例**
+- 必须引用文档中提到的**具体 DevExtreme 控件和属性名称**
+- 调用时使用 `technologies: ["Vue"]` 限定 Vue 相关文档
 - 调用示例：`devexpress_docs_search(technologies: ["Vue"], question: "DxDataGrid remote paging CustomStore")`
 
 ### DevExtreme 组件使用约束
