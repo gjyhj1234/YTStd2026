@@ -41,7 +41,7 @@
 |:----:|------|--------|:----:|
 | F0-1 | 脚手架搭建 | `0001_scaffold.md`（待重写） | ⬜ |
 | F0-2 | axios 封装 | `03-frontend/05-axios-standard.md` | ⬜ |
-| F0-3 | i18n 基础设施 | `0002_i18n.md` / `03-frontend/06-i18n-execution.md` | ⬜ |
+| F0-3 | i18n 基础设施 | `0002_i18n.md`（✅ 已重写） / `03-frontend/06-i18n-execution.md` | ⬜ |
 | F0-4 | 路由与权限守卫 | 待创建 | ⬜ |
 | F0-5 | 状态管理 | 待创建 | ⬜ |
 | F0-6 | 通用组件 | 待创建 | ⬜ |
@@ -65,13 +65,14 @@
 | F2-6 | 租户信息管理 | `0025_tenant-info-page.md`（✅ 已重写） | ⬜ | B |
 | F2-7 | 租户资源管理 | `0026_tenant-resource-page.md`（✅ 已重写） | ⬜ | B |
 | F2-8 | 租户配置管理 | `0027_tenant-config-page.md`（✅ 已重写） | ⬜ | B |
-| F2-9 | 套餐管理 | `0028_package-page.md`（待重写） | ⬜ | C |
-| F2-10 | 订阅管理 | `0029_subscription-page.md`（待重写） | ⬜ | C |
-| F2-11 | 账单管理 | `0030_billing-page.md`（待重写） | ⬜ | C |
-| F2-12 | API 集成 | `0031_api-integration-page.md`（待重写） | ⬜ | D |
-| F2-13 | 审计日志 | `0032_audit-page.md`（待重写） | ⬜ | D |
-| F2-14 | 通知管理 | `0033_notification-page.md`（待重写） | ⬜ | D |
-| F2-15 | 文件管理 | `0034_storage-page.md`（待重写） | ⬜ | D |
+| F2-9 | 套餐管理 | `0028_package-page.md`（✅ 已重写） | ⬜ | C |
+| F2-10 | 订阅管理 | `0029_subscription-page.md`（✅ 已重写） | ⬜ | C |
+| F2-11 | 账单管理 | `0030_billing-page.md`（✅ 已重写） | ⬜ | C |
+| F2-12 | API 集成 | `0031_api-integration-page.md`（✅ 已重写） | ⬜ | D |
+| F2-13 | 审计日志 | `0032_audit-page.md`（✅ 已重写） | ⬜ | D |
+| F2-14 | 通知管理 | `0033_notification-page.md`（✅ 已重写） | ⬜ | D |
+| F2-15 | 文件管理 | `0034_storage-page.md`（✅ 已重写） | ⬜ | D |
+| F2-16 | 平台运营 | `0035_platform-operation-page.md`（✅ 已重写） | ⬜ | D |
 
 ### 层级 3：集成验证（串行）
 
@@ -99,7 +100,8 @@
 ├── SaaS 运营
 │   ├── 套餐管理          → F2-9
 │   ├── 订阅管理          → F2-10
-│   └── 账单管理          → F2-11
+│   ├── 账单管理          → F2-11
+│   └── 平台运营          → F2-16
 ├── API 集成              → F2-12
 └── 系统管理
     ├── 审计日志          → F2-13

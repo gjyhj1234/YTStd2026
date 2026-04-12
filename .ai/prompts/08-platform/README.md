@@ -40,7 +40,7 @@
 | 订阅管理 | `backend/subscription-api.md` | `frontend/0029_subscription-page.md` | ✅ 已完成 | ✅ 已重写 |
 | 计费账单 | `backend/billing-api.md` | `frontend/0030_billing-page.md` | ✅ 已完成 | ✅ 已重写 |
 | API 集成 | `backend/api-integration-api.md` | `frontend/0031_api-integration-page.md` | ✅ 已完成 | ✅ 已重写 |
-| 平台运营 | `backend/platform-operation-api.md` | `frontend/0035_platform-operation-page.md` | ✅ 已完成 | ⬜ 待评估 |
+| 平台运营 | `backend/platform-operation-api.md` | `frontend/0035_platform-operation-page.md` | ✅ 已完成 | ✅ 已重写 |
 | 审计日志 | `backend/audit-api.md` | `frontend/0032_audit-page.md` | ✅ 已完成 | ✅ 已重写 |
 | 通知系统 | `backend/notification-api.md` | `frontend/0033_notification-page.md` | ✅ 已完成 | ✅ 已重写 |
 | 文件存储 | `backend/storage-api.md` | `frontend/0034_storage-page.md` | ✅ 已完成 | ✅ 已重写 |
@@ -57,7 +57,7 @@
 | 前端脚手架 | `frontend/0001_scaffold.md` | ✅ 提示词已重写 |
 | 前端布局 | `frontend/0010_layout.md` | ✅ 提示词已重写 |
 | 前端首页 | `frontend/0020_dashboard-page.md` | ✅ 提示词已重写 |
-| 前端国际化 | `frontend/0002_i18n.md` | ⬜ 待重写 |
+| 前端国际化 | `frontend/0002_i18n.md` | ✅ 提示词已重写 |
 | 后端测试 | `testing/backend-tests.md` | ✅ 已完成（383 个测试通过） |
 | Postman 集合 | `testing/postman.md` | ✅ 已完成 |
 
