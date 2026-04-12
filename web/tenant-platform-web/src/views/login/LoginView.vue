@@ -11,14 +11,13 @@
       >
         <DxSimpleItem
           data-field="Username"
-          :editor-options="{ placeholder: $t('请输入用户名') }"
           :validation-rules="usernameRules"
         >
           <DxLabel :text="$t('用户名')" />
         </DxSimpleItem>
         <DxSimpleItem
           data-field="Password"
-          :editor-options="{ mode: 'password', placeholder: $t('请输入密码') }"
+          :editor-options="{ mode: 'password' }"
           :validation-rules="passwordRules"
         >
           <DxLabel :text="$t('密码')" />

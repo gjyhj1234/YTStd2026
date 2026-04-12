@@ -78,7 +78,7 @@
         <DxColumn data-field="Status" :caption="$t('状态')" cell-template="statusCell" :width="100" />
         <DxColumn data-field="LastLoginAt" :caption="$t('最后登录')" cell-template="dateCell" />
         <DxColumn data-field="CreatedAt" :caption="$t('创建时间')" cell-template="dateCell" />
-        <DxColumn :caption="$t('操作')" cell-template="actionCell" :width="320" :allow-sorting="false" />
+        <DxColumn :caption="$t('操作')" cell-template="actionCell" :width="380" :allow-sorting="false" />
         <template #statusCell="{ data: cellData }">
           <StatusTag :status="cellData.value" />
         </template>
@@ -118,6 +118,11 @@
             @click="onResetPassword(cellData.data)"
           />
           <DxButton
+            :text="$t('分配角色')"
+            styling-mode="text"
+            @click="onAssignRoles(cellData.data)"
+          />
+          <DxButton
             v-if="perm.has(PLATFORM_USER_DELETE)"
             :text="$t('删除')"
             styling-mode="text"
@@ -139,34 +144,36 @@
       :show-close-button="true"
       @hiding="showCreatePopup = false"
     >
-      <DxForm
-        ref="createFormRef"
-        :form-data="createForm"
-        :col-count="1"
-        label-mode="floating"
-      >
-        <DxSimpleItem data-field="Username" :validation-rules="createUsernameRules">
-          <DxLabel :text="$t('用户名')" />
-        </DxSimpleItem>
-        <DxSimpleItem data-field="DisplayName" :validation-rules="requiredDisplayNameRules">
-          <DxLabel :text="$t('显示名称')" />
-        </DxSimpleItem>
-        <DxSimpleItem data-field="Email" :validation-rules="emailRules">
-          <DxLabel :text="$t('邮箱')" />
-        </DxSimpleItem>
-        <DxSimpleItem data-field="Phone">
-          <DxLabel :text="$t('手机')" />
-        </DxSimpleItem>
-        <DxSimpleItem data-field="Password" :editor-options="{ mode: 'password' }" :validation-rules="passwordRules">
-          <DxLabel :text="$t('密码')" />
-        </DxSimpleItem>
-        <DxSimpleItem data-field="Remark" editor-type="dxTextArea">
-          <DxLabel :text="$t('备注')" />
-        </DxSimpleItem>
-        <DxButtonItem>
-          <DxButtonOptions :text="$t('提交')" type="default" :use-submit-behavior="false" @click="handleCreate" />
-        </DxButtonItem>
-      </DxForm>
+      <template #content>
+        <DxForm
+          ref="createFormRef"
+          :form-data="createForm"
+          :col-count="1"
+          label-mode="floating"
+        >
+          <DxSimpleItem data-field="Username" :validation-rules="createUsernameRules">
+            <DxLabel :text="$t('用户名')" />
+          </DxSimpleItem>
+          <DxSimpleItem data-field="DisplayName" :validation-rules="requiredDisplayNameRules">
+            <DxLabel :text="$t('显示名称')" />
+          </DxSimpleItem>
+          <DxSimpleItem data-field="Email" :validation-rules="emailRules">
+            <DxLabel :text="$t('邮箱')" />
+          </DxSimpleItem>
+          <DxSimpleItem data-field="Phone">
+            <DxLabel :text="$t('手机')" />
+          </DxSimpleItem>
+          <DxSimpleItem data-field="Password" :editor-options="{ mode: 'password' }" :validation-rules="passwordRules">
+            <DxLabel :text="$t('密码')" />
+          </DxSimpleItem>
+          <DxSimpleItem data-field="Remark" editor-type="dxTextArea">
+            <DxLabel :text="$t('备注')" />
+          </DxSimpleItem>
+          <DxButtonItem>
+            <DxButtonOptions :text="$t('提交')" type="default" :use-submit-behavior="false" @click="handleCreate" />
+          </DxButtonItem>
+        </DxForm>
+      </template>
     </DxPopup>
 
     <!-- 编辑用户弹窗 -->
@@ -178,28 +185,30 @@
       :show-close-button="true"
       @hiding="showEditPopup = false"
     >
-      <DxForm
-        ref="editFormRef"
-        :form-data="editForm"
-        :col-count="1"
-        label-mode="floating"
-      >
-        <DxSimpleItem data-field="DisplayName" :validation-rules="requiredDisplayNameRules">
-          <DxLabel :text="$t('显示名称')" />
-        </DxSimpleItem>
-        <DxSimpleItem data-field="Email" :validation-rules="emailRules">
-          <DxLabel :text="$t('邮箱')" />
-        </DxSimpleItem>
-        <DxSimpleItem data-field="Phone">
-          <DxLabel :text="$t('手机')" />
-        </DxSimpleItem>
-        <DxSimpleItem data-field="Remark" editor-type="dxTextArea">
-          <DxLabel :text="$t('备注')" />
-        </DxSimpleItem>
-        <DxButtonItem>
-          <DxButtonOptions :text="$t('保存')" type="default" :use-submit-behavior="false" @click="handleEdit" />
-        </DxButtonItem>
-      </DxForm>
+      <template #content>
+        <DxForm
+          ref="editFormRef"
+          :form-data="editForm"
+          :col-count="1"
+          label-mode="floating"
+        >
+          <DxSimpleItem data-field="DisplayName" :validation-rules="requiredDisplayNameRules">
+            <DxLabel :text="$t('显示名称')" />
+          </DxSimpleItem>
+          <DxSimpleItem data-field="Email" :validation-rules="emailRules">
+            <DxLabel :text="$t('邮箱')" />
+          </DxSimpleItem>
+          <DxSimpleItem data-field="Phone">
+            <DxLabel :text="$t('手机')" />
+          </DxSimpleItem>
+          <DxSimpleItem data-field="Remark" editor-type="dxTextArea">
+            <DxLabel :text="$t('备注')" />
+          </DxSimpleItem>
+          <DxButtonItem>
+            <DxButtonOptions :text="$t('保存')" type="default" :use-submit-behavior="false" @click="handleEdit" />
+          </DxButtonItem>
+        </DxForm>
+      </template>
     </DxPopup>
 
     <!-- 重置密码弹窗 -->
@@ -211,19 +220,21 @@
       :show-close-button="true"
       @hiding="showResetPwdPopup = false"
     >
-      <DxForm
-        ref="resetPwdFormRef"
-        :form-data="resetPwdForm"
-        :col-count="1"
-        label-mode="floating"
-      >
-        <DxSimpleItem data-field="NewPassword" :editor-options="{ mode: 'password' }" :validation-rules="passwordRules">
-          <DxLabel :text="$t('新密码')" />
-        </DxSimpleItem>
-        <DxButtonItem>
-          <DxButtonOptions :text="$t('提交')" type="default" :use-submit-behavior="false" @click="handleResetPassword" />
-        </DxButtonItem>
-      </DxForm>
+      <template #content>
+        <DxForm
+          ref="resetPwdFormRef"
+          :form-data="resetPwdForm"
+          :col-count="1"
+          label-mode="floating"
+        >
+          <DxSimpleItem data-field="NewPassword" :editor-options="{ mode: 'password' }" :validation-rules="passwordRules">
+            <DxLabel :text="$t('新密码')" />
+          </DxSimpleItem>
+          <DxButtonItem>
+            <DxButtonOptions :text="$t('提交')" type="default" :use-submit-behavior="false" @click="handleResetPassword" />
+          </DxButtonItem>
+        </DxForm>
+      </template>
     </DxPopup>
 
     <!-- 详情弹窗 -->
@@ -235,16 +246,48 @@
       :show-close-button="true"
       @hiding="showDetailPopup = false"
     >
-      <div v-if="detailUser" class="detail-list">
-        <div class="detail-item"><span class="detail-label">ID</span><span>{{ detailUser.Id }}</span></div>
-        <div class="detail-item"><span class="detail-label">{{ $t('用户名') }}</span><span>{{ detailUser.Username }}</span></div>
-        <div class="detail-item"><span class="detail-label">{{ $t('显示名称') }}</span><span>{{ detailUser.DisplayName }}</span></div>
-        <div class="detail-item"><span class="detail-label">{{ $t('邮箱') }}</span><span>{{ detailUser.Email }}</span></div>
-        <div class="detail-item"><span class="detail-label">{{ $t('手机') }}</span><span>{{ detailUser.Phone ?? '-' }}</span></div>
-        <div class="detail-item"><span class="detail-label">{{ $t('状态') }}</span><StatusTag :status="detailUser.Status" /></div>
-        <div class="detail-item"><span class="detail-label">{{ $t('最后登录') }}</span><span>{{ formatDateTime(detailUser.LastLoginAt) }}</span></div>
-        <div class="detail-item"><span class="detail-label">{{ $t('创建时间') }}</span><span>{{ formatDateTime(detailUser.CreatedAt) }}</span></div>
-      </div>
+      <template #content>
+        <div v-if="detailUser" class="detail-list">
+          <div class="detail-item"><span class="detail-label">ID</span><span>{{ detailUser.Id }}</span></div>
+          <div class="detail-item"><span class="detail-label">{{ $t('用户名') }}</span><span>{{ detailUser.Username }}</span></div>
+          <div class="detail-item"><span class="detail-label">{{ $t('显示名称') }}</span><span>{{ detailUser.DisplayName }}</span></div>
+          <div class="detail-item"><span class="detail-label">{{ $t('邮箱') }}</span><span>{{ detailUser.Email }}</span></div>
+          <div class="detail-item"><span class="detail-label">{{ $t('手机') }}</span><span>{{ detailUser.Phone ?? '-' }}</span></div>
+          <div class="detail-item"><span class="detail-label">{{ $t('备注') }}</span><span>{{ detailUser.Remark ?? '-' }}</span></div>
+          <div class="detail-item"><span class="detail-label">{{ $t('状态') }}</span><StatusTag :status="detailUser.Status" /></div>
+          <div class="detail-item"><span class="detail-label">{{ $t('最后登录') }}</span><span>{{ formatDateTime(detailUser.LastLoginAt) }}</span></div>
+          <div class="detail-item"><span class="detail-label">{{ $t('创建时间') }}</span><span>{{ formatDateTime(detailUser.CreatedAt) }}</span></div>
+        </div>
+      </template>
+    </DxPopup>
+
+    <!-- 分配角色弹窗 -->
+    <DxPopup
+      :visible="showRolePopup"
+      :title="$t('分配角色') + (assigningUser ? ' — ' + assigningUser.DisplayName : '')"
+      :width="500"
+      :height="'auto'"
+      :show-close-button="true"
+      @hiding="showRolePopup = false"
+    >
+      <template #content>
+        <DxDataGrid
+          :data-source="allRolesData"
+          :show-borders="true"
+          :column-auto-width="true"
+          :hover-state-enabled="true"
+          key-expr="Id"
+          :selected-row-keys="selectedRoleIds"
+          @selection-changed="onRoleSelectionChanged"
+        >
+          <DxSelection mode="multiple" :show-check-boxes-mode="'always'" />
+          <DxColumn data-field="Code" :caption="$t('角色编码')" />
+          <DxColumn data-field="Name" :caption="$t('角色名称')" />
+        </DxDataGrid>
+        <div style="text-align: right; margin-top: 12px">
+          <DxButton :text="$t('保存')" type="default" @click="handleAssignRoles" />
+        </div>
+      </template>
     </DxPopup>
 
     <OperationGuideDrawer
@@ -273,10 +316,11 @@ import FunctionDescriptionCard from '@/components/help/FunctionDescriptionCard.v
 import OperationGuideDrawer from '@/components/help/OperationGuideDrawer.vue'
 import PageHelpEntry from '@/components/help/PageHelpEntry.vue'
 import { usePermission } from '@/composables/usePermission'
-import { notifySuccess, confirmDelete, confirmAction } from '@/composables/useNotify'
+import { notifySuccess, notifyError, confirmDelete, confirmAction } from '@/composables/useNotify'
 import { formatDateTime } from '@/utils/format'
 import {
   getPlatformUsers,
+  getPlatformUser,
   createPlatformUser,
   updatePlatformUser,
   deletePlatformUser,
@@ -298,6 +342,7 @@ import {
   PLATFORM_USER_LOCK,
   PLATFORM_USER_UNLOCK,
 } from '@/constants/permissions'
+import { getAllPlatformRoles, bindRoleMembers, type PlatformRoleRepDTO } from '@/api/platformRoles'
 
 const perm = usePermission()
 const { t } = useI18n()
@@ -306,11 +351,15 @@ const showCreatePopup = ref(false)
 const showEditPopup = ref(false)
 const showResetPwdPopup = ref(false)
 const showDetailPopup = ref(false)
+const showRolePopup = ref(false)
 const filterKeyword = ref('')
 const filterStatus = ref<string | undefined>(undefined)
 const editingUserId = ref<number>(0)
 const resetPwdUserId = ref<number>(0)
 const detailUser = ref<PlatformUserRepDTO | null>(null)
+const assigningUser = ref<PlatformUserRepDTO | null>(null)
+const allRolesData = ref<PlatformRoleRepDTO[]>([])
+const selectedRoleIds = ref<number[]>([])
 const selectedIds = ref<number[]>([])
 const gridRef = ref<InstanceType<typeof DxDataGrid> | null>(null)
 const createFormRef = ref<InstanceType<typeof DxForm> | null>(null)
@@ -419,7 +468,7 @@ function onEdit(user: PlatformUserRepDTO) {
     DisplayName: user.DisplayName,
     Email: user.Email,
     Phone: user.Phone ?? '',
-    Remark: '',
+    Remark: user.Remark ?? '',
   })
   showEditPopup.value = true
 }
@@ -477,8 +526,9 @@ async function onDelete(user: PlatformUserRepDTO) {
   refreshGrid()
 }
 
-function onShowDetail(user: PlatformUserRepDTO) {
-  detailUser.value = user
+async function onShowDetail(user: PlatformUserRepDTO) {
+  const res = await getPlatformUser(user.Id)
+  detailUser.value = res.Data ?? user
   showDetailPopup.value = true
 }
 
@@ -500,6 +550,32 @@ async function onBatchDisable() {
   notifySuccess('禁用成功')
   selectedIds.value = []
   refreshGrid()
+}
+
+async function onAssignRoles(user: PlatformUserRepDTO) {
+  assigningUser.value = user
+  const rolesRes = await getAllPlatformRoles()
+  allRolesData.value = rolesRes.Data ?? []
+  selectedRoleIds.value = []
+  showRolePopup.value = true
+}
+
+function onRoleSelectionChanged(e: { selectedRowKeys: number[] }) {
+  selectedRoleIds.value = e.selectedRowKeys
+}
+
+async function handleAssignRoles() {
+  if (!assigningUser.value) return
+  try {
+    const promises = selectedRoleIds.value.map(roleId =>
+      bindRoleMembers(roleId, { UserIds: [assigningUser.value!.Id] })
+    )
+    await Promise.all(promises)
+    showRolePopup.value = false
+    notifySuccess(t('分配角色成功'))
+  } catch (e: unknown) {
+    notifyError(e instanceof Error ? e.message : t('分配角色失败'))
+  }
 }
 
 const guideSteps = computed(() => [

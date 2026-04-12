@@ -22,6 +22,8 @@
           items-expr="items"
           :select-by-click="false"
           :focus-state-enabled="false"
+          :active-state-enabled="false"
+          :hover-state-enabled="false"
           :search-enabled="false"
           no-data-text=""
           @item-click="onMenuItemClick"

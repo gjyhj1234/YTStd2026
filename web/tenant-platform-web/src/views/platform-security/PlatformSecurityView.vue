@@ -15,13 +15,47 @@
       :collapsible="true"
     />
 
-    <DxLoadPanel :visible="isLoading" :position="{ of: '.security-dashboard' }" />
-
     <div class="security-dashboard">
+      <!-- 修改密码 -->
       <div class="card security-card">
         <div class="security-card-header">
           <i class="dx-icon dx-icon-key" />
+          <h3>{{ $t('修改密码') }}</h3>
+        </div>
+        <div class="security-card-body">
+          <DxForm
+            ref="changePwdFormRef"
+            :form-data="changePwdForm"
+            :col-count="1"
+            label-mode="floating"
+          >
+            <DxSimpleItem data-field="OldPassword" :editor-options="{ mode: 'password' }" :validation-rules="oldPasswordRules">
+              <DxLabel :text="$t('当前密码')" />
+            </DxSimpleItem>
+            <DxSimpleItem data-field="NewPassword" :editor-options="{ mode: 'password' }" :validation-rules="newPasswordRules">
+              <DxLabel :text="$t('新密码')" />
+            </DxSimpleItem>
+            <DxSimpleItem data-field="ConfirmPassword" :editor-options="{ mode: 'password' }" :validation-rules="confirmPasswordRules">
+              <DxLabel :text="$t('确认新密码')" />
+            </DxSimpleItem>
+            <DxButtonItem>
+              <DxButtonOptions
+                :text="$t('修改密码')"
+                type="default"
+                :use-submit-behavior="false"
+                @click="handleChangePassword"
+              />
+            </DxButtonItem>
+          </DxForm>
+        </div>
+      </div>
+
+      <!-- 密码策略（只读展示） -->
+      <div class="card security-card">
+        <div class="security-card-header">
+          <i class="dx-icon dx-icon-info" />
           <h3>{{ $t('密码策略') }}</h3>
+          <span class="security-badge">{{ $t('系统默认配置') }}</span>
         </div>
         <div class="security-card-body">
           <div class="security-item">
@@ -51,44 +85,32 @@
         </div>
       </div>
 
+      <!-- IP 白名单（开发中） -->
       <div class="card security-card">
         <div class="security-card-header">
           <i class="dx-icon dx-icon-globe" />
           <h3>{{ $t('IP白名单') }}</h3>
+          <span class="security-badge developing">{{ $t('功能开发中') }}</span>
         </div>
         <div class="security-card-body">
-          <div class="security-item">
-            <span class="security-label">{{ $t('启用状态') }}</span>
-            <StatusTag :status="securityInfo.ipWhitelist.Enabled ? 'Active' : 'Disabled'" />
-          </div>
-          <div class="security-item">
-            <span class="security-label">{{ $t('白名单条目数') }}</span>
-            <span class="security-value">{{ securityInfo.ipWhitelist.entryCount }} {{ $t('条') }}</span>
-          </div>
-          <div class="security-item">
-            <span class="security-label">{{ $t('最近更新') }}</span>
-            <span class="security-value">{{ formatDateTime(securityInfo.ipWhitelist.lastUpdatedAt) }}</span>
+          <div class="security-placeholder">
+            <i class="dx-icon dx-icon-clock" />
+            <p>{{ $t('IP白名单功能正在开发中请稍后关注更新') }}</p>
           </div>
         </div>
       </div>
 
+      <!-- MFA（开发中） -->
       <div class="card security-card">
         <div class="security-card-header">
           <i class="dx-icon dx-icon-lock" />
           <h3>{{ $t('多因素认证MFA') }}</h3>
+          <span class="security-badge developing">{{ $t('功能开发中') }}</span>
         </div>
         <div class="security-card-body">
-          <div class="security-item">
-            <span class="security-label">{{ $t('启用状态') }}</span>
-            <StatusTag :status="securityInfo.mfa.Enabled ? 'Active' : 'Disabled'" />
-          </div>
-          <div class="security-item">
-            <span class="security-label">{{ $t('强制要求') }}</span>
-            <span class="security-value">{{ securityInfo.mfa.enforced ? $t('是') : $t('否') }}</span>
-          </div>
-          <div class="security-item">
-            <span class="security-label">{{ $t('支持方式') }}</span>
-            <span class="security-value">{{ securityInfo.mfa.supportedMethods.join('、') || $t('未配置') }}</span>
+          <div class="security-placeholder">
+            <i class="dx-icon dx-icon-clock" />
+            <p>{{ $t('多因素认证功能正在开发中请稍后关注更新') }}</p>
           </div>
         </div>
       </div>
@@ -106,41 +128,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { DxLoadPanel } from 'devextreme-vue/load-panel'
-import StatusTag from '@/components/StatusTag.vue'
+import { DxForm, DxSimpleItem, DxLabel, DxButtonItem, DxButtonOptions } from 'devextreme-vue/form'
 import FunctionDescriptionCard from '@/components/help/FunctionDescriptionCard.vue'
 import OperationGuideDrawer from '@/components/help/OperationGuideDrawer.vue'
 import PageHelpEntry from '@/components/help/PageHelpEntry.vue'
-import { formatDateTime } from '@/utils/format'
-
-interface SecurityInfo {
-  passwordPolicy: {
-    minLength: number
-    requireUppercase: boolean
-    requireLowercase: boolean
-    requireDigit: boolean
-    requireSpecialChar: boolean
-    expirationDays: number
-  }
-  ipWhitelist: {
-    Enabled: boolean
-    entryCount: number
-    lastUpdatedAt: string
-  }
-  mfa: {
-    Enabled: boolean
-    enforced: boolean
-    supportedMethods: string[]
-  }
-}
+import { notifySuccess, notifyError } from '@/composables/useNotify'
+import { changePassword } from '@/api/auth'
 
 const showGuide = ref(false)
-const isLoading = ref(false)
 const { t } = useI18n()
+const changePwdFormRef = ref<InstanceType<typeof DxForm> | null>(null)
 
-const securityInfo = reactive<SecurityInfo>({
+const changePwdForm = reactive({
+  OldPassword: '',
+  NewPassword: '',
+  ConfirmPassword: '',
+})
+
+const securityInfo = reactive({
   passwordPolicy: {
     minLength: 8,
     requireUppercase: true,
@@ -149,44 +156,57 @@ const securityInfo = reactive<SecurityInfo>({
     requireSpecialChar: false,
     expirationDays: 90,
   },
-  ipWhitelist: {
-    Enabled: false,
-    entryCount: 0,
-    lastUpdatedAt: '',
-  },
-  mfa: {
-    Enabled: false,
-    enforced: false,
-    supportedMethods: [],
-  },
 })
 
-async function loadData() {
-  isLoading.value = true
+const oldPasswordRules = computed(() => [
+  { type: 'required' as const, message: t('请输入当前密码') },
+])
+
+const newPasswordRules = computed(() => [
+  { type: 'required' as const, message: t('请输入新密码') },
+  { type: 'stringLength' as const, min: 6, max: 128, message: t('密码长度至少6位') },
+])
+
+const confirmPasswordRules = computed(() => [
+  { type: 'required' as const, message: t('请确认新密码') },
+  {
+    type: 'compare' as const,
+    comparisonTarget: () => changePwdForm.NewPassword,
+    message: t('两次输入的密码不一致'),
+  },
+])
+
+async function handleChangePassword() {
+  const formInstance = changePwdFormRef.value?.instance
+  if (formInstance) {
+    const result = formInstance.validate()
+    if (!result.isValid) return
+  }
   try {
-    // Security API will be integrated in a future phase
-  } finally {
-    isLoading.value = false
+    await changePassword({
+      OldPassword: changePwdForm.OldPassword,
+      NewPassword: changePwdForm.NewPassword,
+    })
+    notifySuccess(t('密码修改成功'))
+    Object.assign(changePwdForm, { OldPassword: '', NewPassword: '', ConfirmPassword: '' })
+  } catch (e: unknown) {
+    notifyError(e instanceof Error ? e.message : t('密码修改失败'))
   }
 }
 
 const guideSteps = computed(() => [
   t('进入安全中心查看安全策略概览'),
-  t('查看密码策略了解复杂度和过期要求'),
-  t('查看IP白名单状态了解访问控制'),
-  t('查看MFA配置了解多因素认证要求'),
+  t('在修改密码区域输入当前密码和新密码'),
+  t('查看密码策略了解复杂度要求'),
 ])
 const guideFieldNotes = computed(() => [
   t('密码策略控制密码复杂度和过期时间'),
-  t('IP白名单启用后仅允许白名单IP访问'),
-  t('MFA多因素认证提供额外安全保护'),
+  t('修改密码后需使用新密码重新登录'),
 ])
 const guideErrorNotes = computed(() => [
-  t('安全策略变更后需所有在线用户重新登录'),
-  t('启用IP白名单前请确保添加管理员IP'),
+  t('当前密码输入错误将导致修改失败'),
+  t('新密码必须符合密码策略要求'),
 ])
-
-onMounted(loadData)
 </script>
 
 <style scoped>
@@ -213,6 +233,18 @@ onMounted(loadData)
   font-size: 20px;
   color: var(--dx-color-primary, #1976d2);
 }
+.security-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--info-bg, #e3f2fd);
+  color: var(--info-text, #1565c0);
+  margin-left: auto;
+}
+.security-badge.developing {
+  background: var(--warning-bg, #fff3e0);
+  color: var(--warning-text, #e65100);
+}
 .security-card-body {
   display: flex;
   flex-direction: column;
@@ -231,5 +263,21 @@ onMounted(loadData)
 .security-value {
   color: var(--dx-color-text, #333);
   font-weight: 500;
+}
+.security-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 0;
+  color: var(--dx-color-text-secondary, #999);
+}
+.security-placeholder .dx-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+.security-placeholder p {
+  font-size: 13px;
+  text-align: center;
 }
 </style>

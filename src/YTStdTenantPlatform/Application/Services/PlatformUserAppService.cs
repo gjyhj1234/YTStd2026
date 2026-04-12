@@ -300,7 +300,8 @@ namespace YTStdTenantPlatform.Application.Services
             Id = u.Id, Username = u.Username, Email = u.Email,
             Phone = u.Phone, DisplayName = u.DisplayName,
             Status = ((PlatformUserStatus)u.Status).ToString(), MfaEnabled = u.MfaEnabled,
-            LastLoginAt = u.LastLoginAt, CreatedAt = u.CreatedAt
+            LastLoginAt = u.LastLoginAt, CreatedAt = u.CreatedAt,
+            Remark = u.Remark
         };
 
         /// <summary>过滤用户</summary>

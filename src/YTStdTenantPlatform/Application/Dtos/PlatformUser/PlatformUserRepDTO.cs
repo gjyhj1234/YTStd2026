@@ -23,6 +23,8 @@ namespace YTStdTenantPlatform.Application.Dtos
         public DateTime? LastLoginAt { get; set; }
         /// <summary>创建时间</summary>
         public DateTime CreatedAt { get; set; }
+        /// <summary>备注</summary>
+        public string? Remark { get; set; }
     }
 
     /// <summary>重置密码响应</summary>
