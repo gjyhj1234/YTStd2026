@@ -9,7 +9,7 @@
 ## 前置阅读
 
 - `.ai/rules/frontend.md`
-- `.ai/prompts/03-frontend/scaffold.md`
+- `.ai/prompts/03-frontend/04-devextreme-templates.md`
 - `.ai/context/tech-stack.md`
 - `.github/copilot-instructions.md` — 关键编码约束（第 7-12 条为前端约束）
 
@@ -17,7 +17,7 @@
 
 ## DevExpress 文档查阅（强制前置步骤）
 
-使用 DevExtreme 组件时，必须按照官方 dxdocs 工作流查阅文档（详见 `refactoring-master.md` 第零节）：
+使用 DevExtreme 组件时，必须按照官方 dxdocs 工作流查阅文档（详见 `03-frontend/04-devextreme-templates.md` 第二节）：
 
 1. **调用 `devexpress_docs_search`**（每个问题仅调用一次，使用 `technologies: ["Vue"]`）
 2. **调用 `devexpress_docs_get_content`** 获取最相关帮助主题的全文
