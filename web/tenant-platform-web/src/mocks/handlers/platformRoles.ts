@@ -3,6 +3,27 @@ import { mockPlatformRoles } from '../data/platformRoles'
 import { ok, fail, paged, getPageParams } from '../data/common'
 
 export const platformRolesHandlers = [
+  http.get('/api/platform-roles/all', () => {
+    return HttpResponse.json(ok(mockPlatformRoles))
+  }),
+
+  http.get('/api/platform-roles/check-code-exists', ({ request }) => {
+    const url = new URL(request.url)
+    const code = url.searchParams.get('Code') ?? ''
+    const exists = mockPlatformRoles.some((r) => r.Code === code)
+    return HttpResponse.json(ok(exists))
+  }),
+
+  http.get('/api/platform-roles/:id/permissions', () => {
+    // 模拟已绑定权限 IDs
+    return HttpResponse.json(ok([2, 3]))
+  }),
+
+  http.get('/api/platform-roles/:id/members', () => {
+    // 模拟已绑定成员 IDs
+    return HttpResponse.json(ok([1]))
+  }),
+
   http.get('/api/platform-roles', ({ request }) => {
     const url = new URL(request.url)
     const { page, pageSize } = getPageParams(url)
@@ -31,6 +52,10 @@ export const platformRolesHandlers = [
   http.put('/api/platform-roles/:id', async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>
     return HttpResponse.json(ok(body))
+  }),
+
+  http.delete('/api/platform-roles/:id', () => {
+    return HttpResponse.json(ok(null))
   }),
 
   http.put('/api/platform-roles/:id/enable', () => {

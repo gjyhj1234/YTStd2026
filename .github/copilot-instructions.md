@@ -132,6 +132,93 @@ if (!insResult.Success)
 
 ---
 
+## ⚠️ 前端关键编码约束（内联摘要 — 前端任务必须遵守）
+
+以下规则从 `.ai/rules/frontend.md` 和 `.ai/rules/i18n.md` 中提取，**在每次前端编码任务中必须严格执行**。之所以在此内联，是因为这些规则在多轮前端重构中反复被遗漏。
+
+### 7. 前端开发必须使用 DevExpress MCP Server（dxdocs）
+
+本仓库已配置 DevExpress MCP Server（工具名：`dxdocs`），提供 `devexpress_docs_search` 和 `devexpress_docs_get_content` 两个工具。
+
+**强制调用场景**（必须先查阅文档再编码）：
+1. 首次使用任何 DevExtreme 组件时（DxDataGrid、DxTreeView、DxForm、DxDrawer、DxPopup 等）
+2. 遇到 DevExtreme 组件行为异常时（如 label 重叠、样式错位、事件不触发）
+3. 配置 DevExtreme 组件的高级功能时（远程分页 CustomStore、表单验证 validationRules、树形选择等）
+4. 处理 DevExtreme 组件的样式定制时（CSS 变量、主题切换、DxDrawer 布局）
+
+**官方 dxdocs 工作流（必须严格遵循）：**
+
+1. **调用 `devexpress_docs_search`** 获取与问题相关的帮助主题列表（每个问题仅调用一次，避免冗余查询）
+2. **调用 `devexpress_docs_get_content`** 获取并阅读最相关的帮助主题全文
+3. **反思获取到的内容**，思考其与当前编码需求的关系
+4. **基于检索到的信息编码**，而非凭记忆或猜测
+
+**dxdocs 使用约束：**
+
+- 每个问题仅调用一次 `devexpress_docs_search`，避免冗余查询
+- **必须基于从 dxdocs 获取的信息编码**，禁止凭猜测或过时记忆
+- 如果文档中有相关代码示例，**必须参考这些代码示例**
+- 必须引用文档中提到的**具体 DevExtreme 控件和属性名称**
+- 调用时使用 `technologies: ["Vue"]` 限定 Vue 相关文档
+
+```
+// 查阅示例
+devexpress_docs_search(technologies: ["Vue"], question: "DxForm label-mode floating static browser autofill difference")
+devexpress_docs_search(technologies: ["Vue"], question: "DxTreeView item selection selectByClick focusStateEnabled CSS style control")
+devexpress_docs_search(technologies: ["Vue"], question: "DxDataGrid CustomStore remote paging load function skip take")
+```
+
+**禁止在不查阅 dxdocs 文档的情况下猜测 DevExtreme 组件的 API 和行为。**
+
+### 8. 登录页 DxForm label-mode 必须使用 static
+
+```vue
+// ✅ 正确 — 避免浏览器自动填充与 floating label 重叠
+<DxForm label-mode="static">
+
+// ❌ 错误 — 浏览器自动填充时 floating label 与值重叠（DevExtreme 已知行为）
+<DxForm label-mode="floating">
+```
+
+### 9. DxColumn caption 必须使用 $t() 绑定
+
+```vue
+// ✅ 正确
+<DxColumn data-field="Code" :caption="$t('角色编码')" />
+
+// ❌ 错误 — 硬编码 caption 不随语言切换
+<DxColumn data-field="Code" caption="角色编码" />
+```
+
+### 10. notifySuccess / confirmAction 仅传 i18n key（不双重 t()）
+
+```typescript
+// ✅ 正确 — useNotify 内部会调用 t() 翻译
+notifySuccess('创建成功')
+confirmAction('确认启用此角色')
+
+// ❌ 错误 — 双重 t() 调用
+notifySuccess(t('创建成功'))
+confirmAction(t('确认启用此角色'))
+```
+
+### 11. 每个 .vue 文件必须有 5 个对应语言文件
+
+```
+ComponentName.vue
+ComponentName.vue.zh-CN.json  ← 必须
+ComponentName.vue.en-US.json  ← 必须
+ComponentName.vue.ja-JP.json  ← 必须
+ComponentName.vue.ms-MY.json  ← 必须
+ComponentName.vue.zh-TW.json  ← 必须
+```
+
+### 12. 侧边栏 DxTreeView 必须禁止选中态样式偏移
+
+DxTreeView 用于侧边栏时，必须确保点击子菜单后不出现靠左对齐偏移。需使用 dxdocs 查阅 DxTreeView 的 `selectByClick`、`focusStateEnabled`、CSS 覆盖方案。
+
+---
+
 ## ⚠️ 强制代码审查（编译通过 ≠ 任务完成）
 
 **编译和测试通过不是最终验收标准。** Agent 在标记任务完成之前，必须执行 `.ai/system/self-review-protocol.md` 中定义的代码搜索验证，确保所有编码约束被严格遵守。

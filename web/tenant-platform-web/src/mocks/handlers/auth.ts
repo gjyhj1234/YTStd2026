@@ -11,11 +11,19 @@ export const authHandlers = [
     return HttpResponse.json(fail(10002), { status: 401 })
   }),
 
-  http.post('/api/auth/refresh', () => {
+  http.post('/api/auth/refresh-token', () => {
     return HttpResponse.json(ok(mockLoginResult))
   }),
 
   http.get('/api/auth/me', () => {
     return HttpResponse.json(ok(mockCurrentUser))
+  }),
+
+  http.post('/api/auth/change-password', async ({ request }) => {
+    const body = (await request.json()) as { OldPassword: string; NewPassword: string }
+    if (body.OldPassword === 'admin123') {
+      return HttpResponse.json(ok(null))
+    }
+    return HttpResponse.json(fail(10003))
   }),
 ]
