@@ -508,7 +508,7 @@ cd web/tenant-platform-web && npm run build
 ### 8.2 硬编码中文检测（caption 属性）
 ```bash
 # 搜索 .vue 文件中硬编码的 caption 属性（未使用 $t()）
-grep -rn 'caption="[^"]*' web/tenant-platform-web/src/ --include="*.vue" | grep -v ':caption'
+grep -rn 'caption="' web/tenant-platform-web/src/ --include="*.vue" | grep -v ':caption'
 # 结果必须为 0（所有 caption 必须使用 :caption="$t()"）
 ```
 
@@ -550,8 +550,8 @@ done
 for f in $(find web/tenant-platform-web/src/views -name "*.vue.zh-CN.json"); do
   en="${f/zh-CN/en-US}"
   if [ -f "$en" ]; then
-    diff <(python3 -c "import json,sys; print(sorted(json.load(open('$f')).keys()))" 2>/dev/null) \
-         <(python3 -c "import json,sys; print(sorted(json.load(open('$en')).keys()))" 2>/dev/null) \
+    diff <(python3 -c "import json; print(sorted(json.load(open('$f')).keys()))" 2>/dev/null) \
+         <(python3 -c "import json; print(sorted(json.load(open('$en')).keys()))" 2>/dev/null) \
     && echo "OK: $f" || echo "MISMATCH: $f vs $en"
   fi
 done

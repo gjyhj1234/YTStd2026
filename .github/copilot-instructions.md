@@ -148,9 +148,9 @@ if (!insResult.Success)
 
 ```
 // 查阅示例
-devexpress_docs_search(technologies: ["Vue"], question: "DxForm label-mode floating static difference")
-devexpress_docs_search(technologies: ["Vue"], question: "DxTreeView item selection CSS style control")
-devexpress_docs_search(technologies: ["Vue"], question: "DxDataGrid CustomStore remote paging")
+devexpress_docs_search(technologies: ["Vue"], question: "DxForm label-mode floating static browser autofill difference")
+devexpress_docs_search(technologies: ["Vue"], question: "DxTreeView item selection selectByClick focusStateEnabled CSS style control")
+devexpress_docs_search(technologies: ["Vue"], question: "DxDataGrid CustomStore remote paging load function skip take")
 ```
 
 **禁止在不查阅 dxdocs 文档的情况下猜测 DevExtreme 组件的 API 和行为。**
