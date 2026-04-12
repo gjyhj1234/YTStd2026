@@ -28,7 +28,8 @@
 │   ├── review-policy.md           # 审查策略
 │   ├── risk-control.md            # 风险控制规范
 │   ├── self-review-protocol.md    # Agent 自动化代码审查协议（强制）
-│   └── prompt-writing-guide.md    # 提示词编写指南
+│   ├── prompt-writing-guide.md    # 提示词编写指南
+│   └── readme-sync-protocol.md    # README 同步协议（每次迭代后强制执行）
 │
 ├── context/                       # 项目上下文（不可由 Agent 修改）
 │   ├── tech-stack.md              # 技术栈与框架约束
@@ -66,10 +67,15 @@
 │   │   ├── app-service.md         # 应用服务
 │   │   ├── endpoint.md            # API 端点
 │   │   └── middleware.md          # 中间件
-│   ├── 03-frontend/               # 前端提示词
-│   │   ├── scaffold.md            # 前端脚手架
-│   │   ├── page-module.md         # 页面模块
-│   │   └── component.md           # 组件
+│   ├── 03-frontend/               # 前端提示词（已重构为 8 个治理/规则层文件）
+│   │   ├── 00-governance.md       # 前端总治理
+│   │   ├── 01-task-splitting.md   # 前端任务拆分规范
+│   │   ├── 02-parallel-execution.md # 并行执行规范
+│   │   ├── 03-anti-patterns.md    # 反模式清单
+│   │   ├── 04-devextreme-templates.md # DevExtreme 模板与组件规范
+│   │   ├── 05-axios-standard.md   # axios 标准化实现规范
+│   │   ├── 06-i18n-execution.md   # 前端国际化执行规范
+│   │   └── 07-business-prompt-template.md # 极细化业务实施提示词模板
 │   ├── 04-database/               # 数据库提示词
 │   │   ├── schema-design.md       # 表结构设计
 │   │   └── seed-data.md           # 初始化数据
@@ -85,6 +91,13 @@
 │   │   └── postman-collection.md  # Postman 集合
 │   ├── 08-platform/               # 租户平台业务提示词（业务专用）
 │   │   ├── README.md              # 业务总览与任务索引
+│   │   ├── auth.md                # 认证模块概要
+│   │   ├── permission.md          # 权限模块概要
+│   │   ├── tenant.md              # 租户模块概要
+│   │   ├── config.md              # 配置模块概要
+│   │   ├── menu.md                # 菜单模块概要
+│   │   ├── dictionary.md          # 字典模块概要
+│   │   ├── audit.md               # 审计模块概要
 │   │   ├── database/              # 数据库设计
 │   │   │   ├── schema.md          # 表结构
 │   │   │   └── seed-data.md       # 初始化数据
@@ -109,14 +122,28 @@
 │   │   │   ├── notification-api.md
 │   │   │   └── storage-api.md
 │   │   ├── frontend/              # 前端页面（00xx_xxx.md 命名规范）
-│   │   │   ├── 0000_overview.md
-│   │   │   ├── 0001_scaffold.md
-│   │   │   ├── 0002_i18n.md
-│   │   │   ├── 0010_layout.md
-│   │   │   ├── 0011_login-page.md
-│   │   │   ├── 0020_dashboard-page.md
-│   │   │   ├── 00xx_*-page.md     # 每业务模块一文件
-│   │   │   └── 9900_refactoring-master.md  # 已归档
+│   │   │   ├── 0000_overview.md           # 前端总览
+│   │   │   ├── 0001_scaffold.md           # 脚手架（基于 Application Template CLI）
+│   │   │   ├── 0002_i18n.md               # 国际化接入
+│   │   │   ├── 0010_layout.md             # 主布局（基于 Application Template）
+│   │   │   ├── 0011_login-page.md         # 登录页
+│   │   │   ├── 0020_dashboard-page.md     # 仪表盘
+│   │   │   ├── 0021_platform-user-page.md # 平台用户
+│   │   │   ├── 0022_platform-role-page.md # 平台角色
+│   │   │   ├── 0023_platform-permission-page.md # 平台权限
+│   │   │   ├── 0024_tenant-page.md        # 租户管理
+│   │   │   ├── 0025_tenant-info-page.md   # 租户信息
+│   │   │   ├── 0026_tenant-resource-page.md # 租户资源
+│   │   │   ├── 0027_tenant-config-page.md # 租户配置
+│   │   │   ├── 0028_package-page.md       # 套餐管理
+│   │   │   ├── 0029_subscription-page.md  # 订阅管理
+│   │   │   ├── 0030_billing-page.md       # 计费账单
+│   │   │   ├── 0031_api-integration-page.md # API 集成
+│   │   │   ├── 0032_audit-page.md         # 审计日志
+│   │   │   ├── 0033_notification-page.md  # 通知管理
+│   │   │   ├── 0034_storage-page.md       # 文件管理
+│   │   │   ├── 0035_platform-operation-page.md # 平台运营
+│   │   │   └── 9900_refactoring-master.md # 已归档
 │   │   └── testing/               # 测试
 │   │       ├── backend-tests.md
 │   │       └── postman.md
@@ -141,11 +168,13 @@
 │           ├── frontend/          # 前端模板
 │           └── testing/           # 测试模板
 │
-├── tasks/                         # 当前任务追踪（工作区）
-│   └── .gitkeep
+├── tasks/                         # 当前任务追踪
+│   ├── task-platfrom.md           # 租户平台后端任务
+│   ├── task-platform-frontend.md  # 租户平台前端任务（旧）
+│   └── task-new-platform-frontend.md # 前端提示词体系重构任务（当前活跃）
 │
-└── workspace/                     # Agent 临时工作区
-    └── .gitkeep
+└── workspace/                     # Agent 工作区（会话总结存放处）
+    └── session-summary-*.md       # 各轮次会话总结（按日期编号）
 ```
 
 ---

@@ -30,6 +30,7 @@
 - 按 `.ai/system/execution-policy.md` 执行
 - 按 `.ai/system/session-handoff.md` 续接
 - **编码完成后必须执行** `.ai/system/self-review-protocol.md` 中定义的自动化代码审查
+- **每次迭代结束后必须执行** `.ai/system/readme-sync-protocol.md` 中定义的 README 同步检查
 
 ### 底层框架维护
 

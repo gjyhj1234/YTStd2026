@@ -260,6 +260,7 @@ grep -rn 'label-mode="floating"' web/tenant-platform-web/src/views/login/ --incl
 | 每个前端模块（子任务）完成后 | 全部审查项 F1-F5 |
 | 标记任务完成之前（后端任务） | 全部审查项 1-8 |
 | 标记任务完成之前（前端任务） | 全部审查项 F1-F5 + npm run build |
+| **每次迭代结束时** | **README 同步检查**（见 `readme-sync-protocol.md`） |
 
 ---
 
