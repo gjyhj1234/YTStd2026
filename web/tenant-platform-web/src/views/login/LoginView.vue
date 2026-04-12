@@ -6,7 +6,7 @@
         ref="formRef"
         :form-data="formData"
         :col-count="1"
-        label-mode="floating"
+        label-mode="static"
         :disabled="isLoading"
       >
         <DxSimpleItem
