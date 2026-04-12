@@ -1,5 +1,21 @@
 # 租户平台 — 前端全面工程化重构总提示词
 
+> **⚠️ 已归档 — 本文件已被新提示词体系取代**
+>
+> 本文件的内容已分别吸收进以下新文件：
+> - dxdocs 工作流 → `03-frontend/04-devextreme-templates.md`
+> - 工程化标准 → `03-frontend/00-governance.md`
+> - 反模式清单 → `03-frontend/03-anti-patterns.md`
+> - 模块清单 → `08-platform/frontend/00-platform-frontend-overview.md`
+> - axios 规范 → `03-frontend/05-axios-standard.md`
+> - i18n 规范 → `03-frontend/06-i18n-execution.md`
+> - 业务模板 → `03-frontend/07-business-prompt-template.md`
+>
+> **新 Agent 请勿以本文件为执行依据。** 仅作为历史缺陷分析的参考文档保留。
+> 新任务应从 `00-governance.md` 和 `00-platform-frontend-overview.md` 入口开始。
+
+---
+
 ## 任务背景
 
 后端已基于统一架构完整生成（阶段 A-D 全部完成，462 测试通过），前端已有初始实现（阶段 E1-E5 + F1），但当前前端代码仅为 Demo 级别，存在大量严重问题。本文档为前端系统性重构的总纲，所有子任务模块必须以此为标准执行。

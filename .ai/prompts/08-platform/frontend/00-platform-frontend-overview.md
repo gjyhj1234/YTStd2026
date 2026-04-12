@@ -50,17 +50,17 @@
 
 | 编号 | 模块 | 提示词 | 状态 |
 |:----:|------|--------|:----:|
-| F1-1 | 主布局 | `layout.md`（待重写） | ⬜ |
-| F1-2 | 登录页 | `login-page.md`（待创建） | ⬜ |
+| F1-1 | 主布局 | `layout.md`（✅ 已重写） | ⬜ |
+| F1-2 | 登录页 | `login-page.md`（✅ 已创建） | ⬜ |
 
 ### 层级 2：业务页面（可并行）
 
 | 编号 | 模块 | 提示词 | 状态 | 并行组 |
 |:----:|------|--------|:----:|:-----:|
-| F2-1 | 仪表盘 | `dashboard-page.md`（待重写） | ⬜ | - |
-| F2-2 | 平台用户管理 | `platform-user-page.md`（已重写） | ⬜ | A |
-| F2-3 | 平台角色管理 | `platform-role-page.md`（待重写） | ⬜ | A |
-| F2-4 | 平台权限管理 | `platform-permission-page.md`（待重写） | ⬜ | A |
+| F2-1 | 仪表盘 | `dashboard-page.md`（✅ 已重写） | ⬜ | - |
+| F2-2 | 平台用户管理 | `platform-user-page.md`（✅ 已重写） | ⬜ | A |
+| F2-3 | 平台角色管理 | `platform-role-page.md`（✅ 已重写） | ⬜ | A |
+| F2-4 | 平台权限管理 | `platform-permission-page.md`（✅ 已重写） | ⬜ | A |
 | F2-5 | 租户管理 | `tenant-page.md`（待重写） | ⬜ | B |
 | F2-6 | 租户信息管理 | `tenant-info-page.md`（待重写） | ⬜ | B |
 | F2-7 | 租户资源管理 | `tenant-resource-page.md`（待重写） | ⬜ | B |
