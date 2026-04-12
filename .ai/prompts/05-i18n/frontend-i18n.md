@@ -16,6 +16,7 @@
 
 - `.ai/rules/i18n.md` — 完整国际化规范（必须通读，包含目录结构、key 设计、t()/gt() 实现等）
 - `.ai/rules/frontend.md` — 前端开发规范
+- `.github/copilot-instructions.md` — 关键编码约束（第 7-12 条为前端约束）
 
 ---
 
@@ -75,6 +76,16 @@
 4. 在组件中将硬编码文本替换为 `t('中文key')`
 
 ### 第 5 步：配置 DevExtreme 组件本地化
+
+**必须先通过 dxdocs 查阅 DevExtreme 本地化文档：**
+
+```
+devexpress_docs_search(technologies: ["Vue"], question: "DevExtreme localization locale loadMessages formatMessage")
+```
+
+查阅后调用 `devexpress_docs_get_content` 获取全文，基于文档中的代码示例进行配置。
+
+示例参考（以文档为准）：
 
 ```typescript
 import { locale, loadMessages } from 'devextreme/localization';

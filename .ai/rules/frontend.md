@@ -142,6 +142,33 @@ export function getPlatformUsers(params: object): Promise<ApiResult<PagedResult<
 - 按钮使用 `DxButton`
 - 按照 DevExtreme 文档正确配置列、编辑、分页
 
+### DevExtreme 组件 — 强制使用 dxdocs MCP 工具
+
+本仓库已配置 DevExpress MCP Server（工具名：`dxdocs`），提供 `devexpress_docs_search` 和 `devexpress_docs_get_content` 两个工具。
+
+**官方 dxdocs 工作流（必须严格遵循）：**
+
+1. **调用 `devexpress_docs_search`** — 获取相关帮助主题列表（每个问题仅调用一次）
+2. **调用 `devexpress_docs_get_content`** — 获取最相关帮助主题的全文内容
+3. **反思获取到的内容** — 分析文档中的 API、属性、代码示例
+4. **基于检索到的信息编码** — 使用文档中的具体控件和属性名称
+
+**使用约束：**
+
+- 每个问题仅调用一次 `devexpress_docs_search`，避免冗余查询
+- **必须基于从 dxdocs 获取的信息编码**，禁止凭记忆或猜测
+- 如果文档中有相关代码示例，**必须参考这些代码示例**
+- 必须引用文档中提到的**具体 DevExtreme 控件和属性名称**
+- 调用时使用 `technologies: ["Vue"]` 限定 Vue 相关文档
+- 调用示例：`devexpress_docs_search(technologies: ["Vue"], question: "DxDataGrid remote paging CustomStore")`
+
+### DevExtreme 组件使用约束
+
+1. **DxForm label-mode**：登录页必须使用 `label-mode="static"`（避免浏览器自动填充与 floating label 重叠）
+2. **DxColumn caption**：所有 DxColumn 的 caption 必须使用 `:caption="$t('...')"` 绑定形式，禁止硬编码 `caption="xxx"`
+3. **DxTreeView 侧边栏**：必须通过 dxdocs 查阅选中态 CSS 定制方案，确保点击子菜单后不出现靠左对齐偏移
+4. **DxPopup 内容**：使用 `<template #content>` 插槽放置内容，不使用 default slot
+
 ---
 
 ## 权限控制规范

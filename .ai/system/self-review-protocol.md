@@ -180,6 +180,74 @@ grep -A 10 "!insResult.Success" src/{Project}/Application/Services/*.cs | grep "
 
 ---
 
+## 强制审查项（前端）
+
+### 审查项 F1：所有 DxColumn caption 使用 $t() 绑定
+
+**搜索命令：**
+
+```bash
+# 找到所有硬编码 caption（未使用绑定形式的 caption）
+grep -rn 'caption="' web/tenant-platform-web/src/ --include="*.vue" | grep -v ':caption'
+```
+
+**验证规则：**
+- 搜索结果必须为 0
+- 所有 DxColumn、DxTreeColumn 等的 caption 必须使用 `:caption="$t('...')"`
+- **违规数量为 0 时才算通过**
+
+### 审查项 F2：notifySuccess / confirmAction 不双重 t()
+
+**搜索命令：**
+
+```bash
+grep -rn "notifySuccess(t(" web/tenant-platform-web/src/ --include="*.vue"
+grep -rn "confirmAction(t(" web/tenant-platform-web/src/ --include="*.vue"
+grep -rn "confirmDelete(t(" web/tenant-platform-web/src/ --include="*.vue"
+```
+
+**验证规则：**
+- 搜索结果必须为 0
+- useNotify.ts 内部已调用 t()，调用方仅传 i18n key 字符串
+- **违规数量为 0 时才算通过**
+
+### 审查项 F3：每个 .vue 文件有 5 个对应语言文件
+
+**搜索命令：**
+
+```bash
+for f in $(find web/tenant-platform-web/src/views -name "*.vue" -not -name "PlaceholderView.vue"); do
+  for lang in zh-CN en-US ja-JP ms-MY zh-TW; do
+    [ ! -f "${f}.${lang}.json" ] && echo "MISSING: ${f}.${lang}.json"
+  done
+done
+```
+
+**验证规则：**
+- 搜索结果必须为空（无缺失文件）
+- **缺失数量为 0 时才算通过**
+
+### 审查项 F4：语言文件 key 一致性
+
+**验证方法：**
+- 对每个视图目录，比较 zh-CN 和 en-US 的 JSON key 集合
+- 所有语言文件的 key 必须完全一致
+- en-US、ja-JP、ms-MY、zh-TW 的值不能为空字符串
+
+### 审查项 F5：DxForm label-mode 检查（登录页专项）
+
+**搜索命令：**
+
+```bash
+grep -rn 'label-mode="floating"' web/tenant-platform-web/src/views/login/ --include="*.vue"
+```
+
+**验证规则：**
+- 登录页搜索结果必须为 0
+- 登录页的 DxForm 必须使用 `label-mode="static"`（避免浏览器自动填充与 floating label 重叠）
+
+---
+
 ## 执行时机
 
 | 时机 | 必须执行的审查项 |
@@ -188,7 +256,10 @@ grep -A 10 "!insResult.Success" src/{Project}/Application/Services/*.cs | grep "
 | 每个端点文件编写完成后 | 审查项 4、5、6 |
 | 每个阶段（Phase）完成后 | 全部审查项 1-8 |
 | Postman 集合更新后 | 审查项 7 |
-| 标记任务完成之前 | 全部审查项 1-8 |
+| 每个前端 .vue 文件编写完成后 | 审查项 F1、F2、F3 |
+| 每个前端模块（子任务）完成后 | 全部审查项 F1-F5 |
+| 标记任务完成之前（后端任务） | 全部审查项 1-8 |
+| 标记任务完成之前（前端任务） | 全部审查项 F1-F5 + npm run build |
 
 ---
 

@@ -9,9 +9,32 @@
 ## 前置阅读
 
 - `.ai/rules/frontend.md`
+- `.ai/rules/i18n.md`
 - `.ai/prompts/03-frontend/page-module.md`
+- `.ai/prompts/08-platform/frontend/refactoring-master.md`
 - `backend/platform-user-api.md` — 后端 API
-- `docs/TenantPlatform/API.md`
+- `.github/copilot-instructions.md`
+
+---
+
+## DevExpress 文档查阅（强制前置步骤）
+
+按照官方 dxdocs 工作流查阅相关组件文档：
+
+1. **调用 `devexpress_docs_search`**（每个问题仅调用一次，使用 `technologies: ["Vue"]`）
+2. **调用 `devexpress_docs_get_content`** 获取最相关帮助主题的全文
+3. **反思内容**，提取可用的 API、属性、代码示例
+4. **基于检索到的信息编码**，引用具体控件和属性名称
+
+**本模块必须查阅的组件：**
+
+```
+devexpress_docs_search(technologies: ["Vue"], question: "DxDataGrid CustomStore remote paging load function")
+devexpress_docs_search(technologies: ["Vue"], question: "DxForm async validation validationCallback")
+devexpress_docs_search(technologies: ["Vue"], question: "DxDataGrid selection mode multiple showCheckBoxesMode batch operations")
+```
+
+查阅后必须调用 `devexpress_docs_get_content` 获取全文，阅读其中的代码示例并在编码中参考。
 
 ---
 
@@ -72,10 +95,15 @@
 
 ---
 
-## 验收标准
+## 验收标准（可执行检查）
 
-- [ ] 列表页正常渲染
-- [ ] CRUD 操作正确
-- [ ] 权限按钮显隐正确
-- [ ] 用户名唯一性实时检查
+- [ ] 列表页使用 CustomStore 远程分页
+- [ ] `grep -rn 'caption="' PlatformUsersView.vue | grep -v ':caption'` 结果为 0
+- [ ] `grep -rn "notifySuccess(t(" PlatformUsersView.vue` 结果为 0
+- [ ] CRUD 操作正确（创建/编辑/删除/启用/禁用/重置密码）
+- [ ] 权限按钮显隐正确（v-if="perm.has()"）
+- [ ] 用户名唯一性异步验证
+- [ ] 所有操作有反馈（notifySuccess + confirmDelete/confirmAction）
+- [ ] 5 个语言文件已创建且 key 一致
+- [ ] 功能说明卡片和操作指引完整
 - [ ] `npm run build` 通过
