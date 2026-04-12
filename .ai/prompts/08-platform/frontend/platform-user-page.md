@@ -9,9 +9,23 @@
 ## 前置阅读
 
 - `.ai/rules/frontend.md`
+- `.ai/rules/i18n.md`
 - `.ai/prompts/03-frontend/page-module.md`
+- `.ai/prompts/08-platform/frontend/refactoring-master.md`
 - `backend/platform-user-api.md` — 后端 API
-- `docs/TenantPlatform/API.md`
+- `.github/copilot-instructions.md`
+
+---
+
+## DevExpress 文档查阅（强制前置步骤）
+
+使用 dxdocs MCP 工具查阅：
+
+```
+devexpress_docs_search(technologies: ["Vue"], question: "DxDataGrid CustomStore remote paging load function")
+devexpress_docs_search(technologies: ["Vue"], question: "DxForm async validation validationCallback")
+devexpress_docs_search(technologies: ["Vue"], question: "DxDataGrid selection mode multiple showCheckBoxesMode batch operations")
+```
 
 ---
 
@@ -72,10 +86,15 @@
 
 ---
 
-## 验收标准
+## 验收标准（可执行检查）
 
-- [ ] 列表页正常渲染
-- [ ] CRUD 操作正确
-- [ ] 权限按钮显隐正确
-- [ ] 用户名唯一性实时检查
+- [ ] 列表页使用 CustomStore 远程分页
+- [ ] `grep -rn 'caption="' PlatformUsersView.vue | grep -v ':caption'` 结果为 0
+- [ ] `grep -rn "notifySuccess(t(" PlatformUsersView.vue` 结果为 0
+- [ ] CRUD 操作正确（创建/编辑/删除/启用/禁用/重置密码）
+- [ ] 权限按钮显隐正确（v-if="perm.has()"）
+- [ ] 用户名唯一性异步验证
+- [ ] 所有操作有反馈（notifySuccess + confirmDelete/confirmAction）
+- [ ] 5 个语言文件已创建且 key 一致
+- [ ] 功能说明卡片和操作指引完整
 - [ ] `npm run build` 通过

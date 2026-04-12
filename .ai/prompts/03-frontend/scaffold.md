@@ -18,6 +18,20 @@
 - `.ai/rules/naming.md`
 - `.ai/rules/i18n.md`
 - `.ai/context/tech-stack.md`
+- `.github/copilot-instructions.md` — 关键编码约束（第 7-12 条为前端约束）
+
+---
+
+## DevExpress 文档查阅（强制前置步骤）
+
+在开始搭建脚手架前，必须通过 `dxdocs` MCP 工具查阅以下组件的官方文档：
+
+```
+devexpress_docs_search(technologies: ["Vue"], question: "DxDrawer opened-state-mode reveal-mode position")
+devexpress_docs_search(technologies: ["Vue"], question: "DxTreeView item template customization selectByClick")
+devexpress_docs_search(technologies: ["Vue"], question: "DxForm label-mode static floating")
+devexpress_docs_search(technologies: ["Vue"], question: "DevExtreme Vue theme CSS variables")
+```
 
 ---
 

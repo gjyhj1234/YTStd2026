@@ -141,6 +141,16 @@ export function getPlatformUsers(params: object): Promise<ApiResult<PagedResult<
 - 弹窗使用 `DxPopup`
 - 按钮使用 `DxButton`
 - 按照 DevExtreme 文档正确配置列、编辑、分页
+- **首次使用任何 DevExtreme 组件时，必须先通过 `dxdocs` MCP 工具（`devexpress_docs_search`）查阅官方文档**
+- **遇到组件行为异常时，必须先通过 `dxdocs` 查阅已知问题和最佳实践**
+- 调用示例：`devexpress_docs_search(technologies: ["Vue"], question: "DxDataGrid remote paging CustomStore")`
+
+### DevExtreme 组件使用约束
+
+1. **DxForm label-mode**：登录页必须使用 `label-mode="static"`（避免浏览器自动填充与 floating label 重叠）
+2. **DxColumn caption**：所有 DxColumn 的 caption 必须使用 `:caption="$t('...')"` 绑定形式，禁止硬编码 `caption="xxx"`
+3. **DxTreeView 侧边栏**：必须通过 dxdocs 查阅选中态 CSS 定制方案，确保点击子菜单后不出现靠左对齐偏移
+4. **DxPopup 内容**：使用 `<template #content>` 插槽放置内容，不使用 default slot
 
 ---
 
