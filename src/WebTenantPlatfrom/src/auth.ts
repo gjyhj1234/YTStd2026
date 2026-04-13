@@ -1,7 +1,5 @@
-export interface UserInfo {
-  email: string
-  avatarUrl: string
-}
+import { httpPost, httpGet } from './api/http'
+import type { CurrentUser } from './store/auth'
 
 export interface AuthResult<T = unknown> {
   isOk: boolean
@@ -9,27 +7,30 @@ export interface AuthResult<T = unknown> {
   message?: string
 }
 
-const defaultUser: UserInfo = {
-  email: 'sandra@example.com',
-  avatarUrl: 'https://js.devexpress.com/Demos/WidgetsGallery/JSDemos/images/employees/06.png'
+interface LoginRepDTO {
+  Token: string
+  UserId: number
+  Username: string
+  DisplayName: string
 }
 
-export default {
-  _user: defaultUser as UserInfo | null,
+let _user: CurrentUser | null = null
 
+export default {
   loggedIn(): boolean {
-    return !!this._user
+    return !!localStorage.getItem('auth_token')
   },
 
-  async logIn(email: string, password: string): Promise<AuthResult<UserInfo>> {
+  async logIn(username: string, password: string): Promise<AuthResult<LoginRepDTO>> {
     try {
-      // Send request
-      console.log(email, password)
-      this._user = { ...defaultUser, email }
+      const data = await httpPost<LoginRepDTO>('/auth/login', {
+        Username: username,
+        Password: password
+      }, { skipErrorHandler: true })
 
       return {
         isOk: true,
-        data: this._user
+        data
       }
     } catch {
       return {
@@ -40,15 +41,27 @@ export default {
   },
 
   async logOut(): Promise<void> {
-    this._user = null
+    _user = null
+    localStorage.removeItem('auth_token')
   },
 
-  async getUser(): Promise<AuthResult<UserInfo>> {
+  async getUser(): Promise<AuthResult<CurrentUser>> {
     try {
-      // Send request
+      if (_user) {
+        return { isOk: true, data: _user }
+      }
+
+      const token = localStorage.getItem('auth_token')
+      if (!token) {
+        return { isOk: false }
+      }
+
+      const data = await httpGet<CurrentUser>('/auth/me', undefined, { skipErrorHandler: true })
+      _user = data
+
       return {
         isOk: true,
-        data: this._user!
+        data: _user
       }
     } catch {
       return {
@@ -59,12 +72,8 @@ export default {
 
   async resetPassword(email: string): Promise<AuthResult> {
     try {
-      // Send request
-      console.log(email)
-
-      return {
-        isOk: true
-      }
+      void email
+      return { isOk: true }
     } catch {
       return {
         isOk: false,
@@ -73,14 +82,11 @@ export default {
     }
   },
 
-  async changePassword(email: string, recoveryCode: string): Promise<AuthResult> {
+  async changePassword(password: string, recoveryCode: string): Promise<AuthResult> {
     try {
-      // Send request
-      console.log(email, recoveryCode)
-
-      return {
-        isOk: true
-      }
+      void password
+      void recoveryCode
+      return { isOk: true }
     } catch {
       return {
         isOk: false,
@@ -91,12 +97,9 @@ export default {
 
   async createAccount(email: string, password: string): Promise<AuthResult> {
     try {
-      // Send request
-      console.log(email, password)
-
-      return {
-        isOk: true
-      }
+      void email
+      void password
+      return { isOk: true }
     } catch {
       return {
         isOk: false,

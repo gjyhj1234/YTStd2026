@@ -2,9 +2,6 @@ import auth from './auth'
 import { createRouter, createWebHashHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 
-import Home from './views/home-page.vue'
-import Profile from './views/profile-page.vue'
-import Tasks from './views/tasks-page.vue'
 import defaultLayout from './layouts/side-nav-outer-toolbar.vue'
 import simpleLayout from './layouts/single-card.vue'
 
@@ -14,13 +11,148 @@ function loadView(view: string) {
 
 const routes: RouteRecordRaw[] = [
   {
-    path: '/home',
-    name: 'home',
+    path: '/dashboard',
+    name: 'dashboard',
     meta: {
       requiresAuth: true,
       layout: defaultLayout
     },
-    component: Home
+    component: loadView('home-page')
+  },
+  {
+    path: '/platform-users',
+    name: 'platform-users',
+    meta: {
+      requiresAuth: true,
+      layout: defaultLayout
+    },
+    component: loadView('home-page')
+  },
+  {
+    path: '/platform-roles',
+    name: 'platform-roles',
+    meta: {
+      requiresAuth: true,
+      layout: defaultLayout
+    },
+    component: loadView('home-page')
+  },
+  {
+    path: '/platform-permissions',
+    name: 'platform-permissions',
+    meta: {
+      requiresAuth: true,
+      layout: defaultLayout
+    },
+    component: loadView('home-page')
+  },
+  {
+    path: '/tenants',
+    name: 'tenants',
+    meta: {
+      requiresAuth: true,
+      layout: defaultLayout
+    },
+    component: loadView('home-page')
+  },
+  {
+    path: '/tenant-info',
+    name: 'tenant-info',
+    meta: {
+      requiresAuth: true,
+      layout: defaultLayout
+    },
+    component: loadView('home-page')
+  },
+  {
+    path: '/tenant-resources',
+    name: 'tenant-resources',
+    meta: {
+      requiresAuth: true,
+      layout: defaultLayout
+    },
+    component: loadView('home-page')
+  },
+  {
+    path: '/tenant-config',
+    name: 'tenant-config',
+    meta: {
+      requiresAuth: true,
+      layout: defaultLayout
+    },
+    component: loadView('home-page')
+  },
+  {
+    path: '/packages',
+    name: 'packages',
+    meta: {
+      requiresAuth: true,
+      layout: defaultLayout
+    },
+    component: loadView('home-page')
+  },
+  {
+    path: '/subscriptions',
+    name: 'subscriptions',
+    meta: {
+      requiresAuth: true,
+      layout: defaultLayout
+    },
+    component: loadView('home-page')
+  },
+  {
+    path: '/billing',
+    name: 'billing',
+    meta: {
+      requiresAuth: true,
+      layout: defaultLayout
+    },
+    component: loadView('home-page')
+  },
+  {
+    path: '/platform-operations',
+    name: 'platform-operations',
+    meta: {
+      requiresAuth: true,
+      layout: defaultLayout
+    },
+    component: loadView('home-page')
+  },
+  {
+    path: '/api-integration',
+    name: 'api-integration',
+    meta: {
+      requiresAuth: true,
+      layout: defaultLayout
+    },
+    component: loadView('home-page')
+  },
+  {
+    path: '/audit-logs',
+    name: 'audit-logs',
+    meta: {
+      requiresAuth: true,
+      layout: defaultLayout
+    },
+    component: loadView('home-page')
+  },
+  {
+    path: '/notifications',
+    name: 'notifications',
+    meta: {
+      requiresAuth: true,
+      layout: defaultLayout
+    },
+    component: loadView('home-page')
+  },
+  {
+    path: '/storage',
+    name: 'storage',
+    meta: {
+      requiresAuth: true,
+      layout: defaultLayout
+    },
+    component: loadView('home-page')
   },
   {
     path: '/profile',
@@ -29,16 +161,7 @@ const routes: RouteRecordRaw[] = [
       requiresAuth: true,
       layout: defaultLayout
     },
-    component: Profile
-  },
-  {
-    path: '/tasks',
-    name: 'tasks',
-    meta: {
-      requiresAuth: true,
-      layout: defaultLayout
-    },
-    component: Tasks
+    component: loadView('profile-page')
   },
   {
     path: '/login-form',
@@ -83,15 +206,15 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/',
-    redirect: '/home'
+    redirect: '/dashboard'
   },
   {
     path: '/recovery',
-    redirect: '/home'
+    redirect: '/dashboard'
   },
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/home'
+    redirect: '/dashboard'
   }
 ]
 
@@ -102,7 +225,8 @@ const router = createRouter({
 
 router.beforeEach((to, _from, next) => {
   if (to.name === 'login-form' && auth.loggedIn()) {
-    next({ name: 'home' })
+    next({ name: 'dashboard' })
+    return
   }
 
   if (to.matched.some(record => record.meta.requiresAuth)) {

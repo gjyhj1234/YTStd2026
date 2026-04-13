@@ -4,7 +4,7 @@
       class="layout-header"
       :menu-toggle-enabled="true"
       :toggle-menu-func="toggleMenu"
-      :title="title"
+      :title="$t('租户管理平台')"
     />
     <dx-drawer
       class="layout-body"
@@ -34,93 +34,77 @@
   </div>
 </template>
 
-<script>
-import DxDrawer from "devextreme-vue/drawer";
-import DxScrollView from "devextreme-vue/scroll-view";
+<script setup lang="ts">
+import DxDrawer from 'devextreme-vue/drawer'
+import DxScrollView from 'devextreme-vue/scroll-view'
 
-import menuItems from "../app-navigation";
-import HeaderToolbar from "../components/header-toolbar.vue";
-import SideNavMenu from "../components/side-nav-menu.vue";
-import { computed, ref, watch} from 'vue';
-import { useRoute } from 'vue-router';
+import HeaderToolbar from '../components/header-toolbar.vue'
+import SideNavMenu from '../components/side-nav-menu.vue'
+import { computed, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 
-export default {
-  props: {
-    title: String,
-    isXSmall: Boolean,
-    isLarge: Boolean
-  },
-  setup(props) {
-    const route = useRoute();
+const props = defineProps<{
+  title?: string
+  isXSmall: boolean
+  isLarge: boolean
+}>()
 
-    const scrollViewRef = ref(null);
-    const menuOpened = ref(props.isLarge);
-    const menuTemporaryOpened = ref(false);
+const route = useRoute()
 
-    function toggleMenu(e) {
-      const pointerEvent = e.event;
-      pointerEvent.stopPropagation();
-      if (menuOpened.value) {
-        menuTemporaryOpened.value = false;
-      }
-      menuOpened.value = !menuOpened.value;
-    }
+const scrollViewRef = ref<InstanceType<typeof DxScrollView> | null>(null)
+const menuOpened = ref(props.isLarge)
+const menuTemporaryOpened = ref(false)
 
-    function handleSideBarClick() {
-      if (menuOpened.value === false) {
-        menuTemporaryOpened.value = true;
-      }
-      menuOpened.value = true;
-    }
-
-    const drawerOptions = computed(() => {
-      const shaderEnabled = !props.isLarge;
-
-      return {
-        menuMode: props.isLarge ? "shrink" : "overlap",
-        menuRevealMode: props.isXSmall ? "slide" : "expand",
-        minMenuSize: props.isXSmall ? 0 : 60,
-        maxMenuSize: props.isXSmall ? 250 : undefined,
-        closeOnOutsideClick: shaderEnabled,
-        shaderEnabled
-      };
-    });
-
-    watch(
-      () => props.isLarge,
-      () => {
-        if (!menuTemporaryOpened.value) {
-          menuOpened.value = props.isLarge;
-        }
-    });
-
-    watch(
-      () => route.path,
-      () => {
-        if (menuTemporaryOpened.value || !props.isLarge) {
-          menuOpened.value = false;
-          menuTemporaryOpened.value = false;
-        }
-      scrollViewRef.value.instance.scrollTo(0);
-      }
-    );
-
-    return {
-      menuOpened,
-      menuItems,
-      toggleMenu,
-      handleSideBarClick,
-      drawerOptions,
-      scrollViewRef
-    };
-  },
-  components: {
-    DxDrawer,
-    DxScrollView,
-    HeaderToolbar,
-    SideNavMenu
+function toggleMenu(e: { event: PointerEvent }) {
+  e.event.stopPropagation()
+  if (menuOpened.value) {
+    menuTemporaryOpened.value = false
   }
-};
+  menuOpened.value = !menuOpened.value
+}
+
+function handleSideBarClick() {
+  if (menuOpened.value === false) {
+    menuTemporaryOpened.value = true
+  }
+  menuOpened.value = true
+}
+
+const drawerOptions = computed(() => {
+  const shaderEnabled = !props.isLarge
+
+  return {
+    menuMode: props.isLarge ? 'shrink' : 'overlap',
+    menuRevealMode: props.isXSmall ? 'slide' : 'expand',
+    minMenuSize: props.isXSmall ? 0 : 60,
+    maxMenuSize: props.isXSmall ? 250 : undefined,
+    closeOnOutsideClick: shaderEnabled,
+    shaderEnabled
+  }
+})
+
+watch(
+  () => props.isLarge,
+  () => {
+    if (!menuTemporaryOpened.value) {
+      menuOpened.value = props.isLarge
+    }
+  }
+)
+
+watch(
+  () => route.path,
+  () => {
+    if (menuTemporaryOpened.value || !props.isLarge) {
+      menuOpened.value = false
+      menuTemporaryOpened.value = false
+    }
+    if (scrollViewRef.value) {
+      const instance = (scrollViewRef.value as unknown as { instance: { scrollTo: (pos: number) => void } }).instance
+      instance.scrollTo(0)
+    }
+  }
+)
 </script>
 
 <style lang="scss">

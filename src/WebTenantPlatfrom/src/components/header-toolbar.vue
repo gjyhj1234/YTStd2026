@@ -16,11 +16,24 @@
       </dx-item>
 
       <dx-item
-        v-if="title"
         location="before"
         css-class="header-title dx-toolbar-label"
       >
-        <div>{{ title }} </div>
+        <div>{{ $t('租户管理平台') }}</div>
+      </dx-item>
+
+      <dx-item location="after">
+        <template #default>
+          <dx-select-box
+            :items="languageOptions"
+            display-expr="label"
+            value-expr="value"
+            :value="currentLocale"
+            :width="140"
+            styling-mode="underlined"
+            @value-changed="onLanguageChanged"
+          />
+        </template>
       </dx-item>
 
       <dx-item location="after">
@@ -33,81 +46,94 @@
         menu-item-template="menuUserItem"
       >
         <template #default>
-          <user-panel :menu-items="userMenuItems" menuMode="context"/>
+          <dx-drop-down-button
+            :text="displayName"
+            icon="user"
+            styling-mode="text"
+            :items="userMenuItems"
+            display-expr="text"
+            key-expr="id"
+            :show-arrow-icon="false"
+            :drop-down-options="{ width: 180 }"
+            @item-click="onUserMenuItemClick"
+          />
         </template>
       </dx-item>
 
       <template #menuUserItem>
-        <user-panel :menu-items="userMenuItems" menuMode="list"/>
+        <dx-list
+          :items="userMenuItems"
+          display-expr="text"
+          key-expr="id"
+          :width="150"
+        />
       </template>
 
     </dx-toolbar>
   </header>
 </template>
 
-<script>
-import DxButton from "devextreme-vue/button";
-import DxToolbar, { DxItem } from "devextreme-vue/toolbar";
-import auth from "../auth";
-import { useRouter, useRoute } from 'vue-router';
-import { ref } from 'vue';
+<script setup lang="ts">
+import DxButton from 'devextreme-vue/button'
+import DxToolbar, { DxItem } from 'devextreme-vue/toolbar'
+import { DxSelectBox } from 'devextreme-vue/select-box'
+import { DxDropDownButton } from 'devextreme-vue/drop-down-button'
+import { DxList } from 'devextreme-vue/list'
+import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import { computed } from 'vue'
+import auth from '../auth'
+import { useAuthStore } from '../store/auth'
+import ThemeSwitcher from './theme-switcher.vue'
 
-import UserPanel from "./user-panel.vue";
-import ThemeSwitcher from './theme-switcher.vue';
+defineProps<{
+  menuToggleEnabled: boolean
+  title?: string
+  toggleMenuFunc?: (e: { event: PointerEvent }) => void
+}>()
 
-export default {
-  props: {
-    menuToggleEnabled: Boolean,
-    title: String,
-    toggleMenuFunc: Function,
-    logOutFunc: Function
-  },
-  setup() {
-    const router = useRouter();
-    const route = useRoute();
+const router = useRouter()
+const route = useRoute()
+const { t, locale } = useI18n()
+const authStore = useAuthStore()
 
-    const email = ref("");
-    auth.getUser().then((e) => email.value = e.data.email);
+const currentLocale = computed(() => locale.value)
 
-    const userMenuItems = [{
-      text: "Profile",
-      icon: "user",
-      onClick: onProfileClick
-    },
-      {
-        text: "Logout",
-        icon: "runner",
-        onClick: onLogoutClick
-      }];
+const displayName = computed(() => {
+  return authStore.user?.DisplayName || authStore.user?.Username || t('用户')
+})
 
-    function onLogoutClick() {
-      auth.logOut();
-      router.push({
-        path: "/login-form",
-        query: { redirect: route.path }
-      });
-    }
+const languageOptions = [
+  { value: 'zh-CN', label: '简体中文' },
+  { value: 'en-US', label: 'English' },
+  { value: 'ja-JP', label: '日本語' },
+  { value: 'ms-MY', label: 'Bahasa Melayu' },
+  { value: 'zh-TW', label: '繁體中文' }
+]
 
-    function onProfileClick() {
-      router.push({
-        path: "/profile",
-        query: { redirect: route.path }
-      });
-    }
+const userMenuItems = computed(() => [
+  { id: 'change-password', text: t('修改密码'), icon: 'key' },
+  { id: 'logout', text: t('退出登录'), icon: 'runner' }
+])
 
-    return {
-      email,
-      userMenuItems
-    };
-  },
-  components: {
-    ThemeSwitcher,
-    DxButton,
-    DxToolbar,
-    DxItem,
-    UserPanel
+function onLanguageChanged(e: { value: string }) {
+  locale.value = e.value
+  localStorage.setItem('locale', e.value)
+}
+
+function onUserMenuItemClick(e: { itemData: { id: string } }) {
+  const itemId = e.itemData.id
+  if (itemId === 'logout') {
+    auth.logOut()
+    authStore.clearAuth()
+    router.push({
+      path: '/login-form',
+      query: { redirect: route.path }
+    })
+  } else if (itemId === 'change-password') {
+    // TODO: open change password dialog
   }
-};
+}
 </script>
 
 <style lang="scss">
@@ -145,10 +171,6 @@ header {
 .dx-theme-generic {
   .header-toolbar {
     padding: 10px 0;
-  }
-
-  .user-button > .dx-button-content {
-    padding: 3px;
   }
 }
 </style>

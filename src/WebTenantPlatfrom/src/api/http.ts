@@ -28,12 +28,11 @@ function getRequestKey(config: InternalAxiosRequestConfig): string {
 // Request interceptor
 http.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // Token injection (placeholder — will be integrated with auth store in F0-4)
-    // const authStore = useAuthStore()
-    // const token = authStore.token
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`
-    // }
+    // Token injection
+    const token = localStorage.getItem('auth_token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
 
     // Duplicate prevention
     const options = (config as ExtendedConfig)._options
