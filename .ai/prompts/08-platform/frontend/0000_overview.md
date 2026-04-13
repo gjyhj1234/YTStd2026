@@ -17,7 +17,8 @@
 | 4 | `.ai/prompts/03-frontend/05-axios-standard.md` | axios 规范 |
 | 5 | `.ai/prompts/03-frontend/06-i18n-execution.md` | i18n 规范 |
 | 6 | `.ai/prompts/03-frontend/03-anti-patterns.md` | 反模式清单 |
-| 7 | 本文件 | 模块清单与执行顺序 |
+| 7 | `.ai/prompts/03-frontend/08-playwright-e2e.md` | Playwright E2E 测试规范 |
+| 8 | 本文件 | 模块清单与执行顺序 |
 
 ---
 
@@ -81,6 +82,16 @@
 | F3-1 | 全量编译验证 | 无需独立提示词 | ⬜ |
 | F3-2 | i18n 完整性验证 | 无需独立提示词 | ⬜ |
 | F3-3 | 权限完整性验证 | 无需独立提示词 | ⬜ |
+
+### E2E 测试（每个模块完成后立即执行）
+
+| 编号 | 模块 | 提示词 | 状态 |
+|:----:|------|--------|:----:|
+| E2E | Playwright E2E 测试协议 | `0040_e2e-testing-protocol.md` | ✅ |
+
+> **每个业务模块（F2-1 ~ F2-16）编码完成后，必须按 `0040_e2e-testing-protocol.md` 编写并执行 E2E 测试。**
+> 环境预检与迭代流程见 `.ai/system/e2e-testing-workflow.md`。
+> Playwright 测试规范见 `.ai/prompts/03-frontend/08-playwright-e2e.md`。
 
 ---
 

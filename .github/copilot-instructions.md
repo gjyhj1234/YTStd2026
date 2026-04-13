@@ -30,7 +30,16 @@
 - 按 `.ai/system/execution-policy.md` 执行
 - 按 `.ai/system/session-handoff.md` 续接
 - **编码完成后必须执行** `.ai/system/self-review-protocol.md` 中定义的自动化代码审查
+- **前端编码完成后必须执行** `.ai/system/e2e-testing-workflow.md` 中定义的 Playwright E2E 测试迭代
 - **每次迭代结束后必须执行** `.ai/system/readme-sync-protocol.md` 中定义的 README 同步检查
+
+### E2E 测试（前端任务必读）
+
+- `.ai/system/e2e-testing-workflow.md` — E2E 测试工作流协议（环境检查、迭代修复闭环）
+- `.ai/prompts/03-frontend/08-playwright-e2e.md` — Playwright 测试规范
+- `.ai/prompts/08-platform/frontend/0040_e2e-testing-protocol.md` — 各模块测试要点
+- **环境已预配置**：`copilot-setup-steps.yml` 已配置 PostgreSQL 服务、.NET 10、Node.js、Playwright
+- **每次前端会话启动时**：必须按 e2e-testing-workflow.md 第一节执行环境预检
 
 ### 底层框架维护
 
@@ -239,4 +248,42 @@ DxTreeView 用于侧边栏时，必须确保点击子菜单后不出现靠左对
 
 **编译和测试通过不是最终验收标准。** Agent 在标记任务完成之前，必须执行 `.ai/system/self-review-protocol.md` 中定义的代码搜索验证，确保所有编码约束被严格遵守。
 
-验收闭环：**分析 → 计划 → 实现 → 编译 → 代码搜索审查 → 修复违规 → 再次编译 → 收尾**
+验收闭环：**分析 → 计划 → 实现 → 编译 → E2E 测试迭代 → 代码搜索审查 → 修复违规 → 再次编译 → 收尾**
+
+---
+
+## ⚠️ 前端 E2E 测试（前端任务零容忍）
+
+**前端页面开发完成后，必须编写 Playwright E2E 测试并迭代通过。** 仅通过编译不代表页面可用（历史问题：编译通过但页面空白）。
+
+### 14. 每个前端模块必须有对应的 E2E 测试
+
+```
+# 前端模块与 E2E 测试文件的对应关系
+F1-2 登录页    → e2e/tests/login/login.noauth.spec.ts
+F2-1 仪表盘    → e2e/tests/dashboard/dashboard.spec.ts
+F2-2 平台用户  → e2e/tests/platform-users/platform-users.spec.ts
+... 以此类推，每个模块一个测试文件
+```
+
+### 15. 前端会话启动必须执行环境预检
+
+```bash
+# 必须按顺序检查：
+# 1. PostgreSQL 连接
+PGPASSWORD=gjwq1234 psql -h localhost -U postgres -d test1 -c "SELECT 1;"
+# 2. 后端 health check
+curl -s http://127.0.0.1:5000/api/health/
+# 3. Playwright 浏览器
+npx playwright --version
+# 4. 前端 dev server
+curl -s http://localhost:5173/
+```
+
+### 16. E2E 测试迭代（最多 5 次）
+
+```
+编码 → 写测试 → 运行测试 → 失败 → 分析原因 → 修复 → 再运行 → ... → 全部通过
+```
+
+**不允许删除测试用例来"通过"测试。必须修复前端代码或测试逻辑。**
