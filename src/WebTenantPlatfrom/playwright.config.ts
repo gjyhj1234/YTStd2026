@@ -69,6 +69,9 @@ export default defineConfig({
       name: 'auth-setup',
       testDir: './e2e/helpers',
       testMatch: /auth\.setup\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+      },
     },
     // 主测试项目（依赖 auth-setup 的登录状态）
     {

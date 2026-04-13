@@ -1,0 +1,15 @@
+{
+  "仪表盘": "Dashboard",
+  "平台运营数据概览": "Platform Operations Overview",
+  "活跃用户": "Active Users",
+  "新增用户": "New Users",
+  "API调用次数": "API Call Count",
+  "存储使用量": "Storage Usage",
+  "每日活跃用户趋势": "Daily Active Users Trend",
+  "每日API调用趋势": "Daily API Call Trend",
+  "监控指标分布": "Monitor Metrics Distribution",
+  "快捷操作": "Quick Actions",
+  "创建租户": "Create Tenant",
+  "创建用户": "Create User",
+  "查看审计日志": "View Audit Logs"
+}

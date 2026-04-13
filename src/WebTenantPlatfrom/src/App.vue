@@ -1,17 +1,22 @@
 <template>
   <div id="root">
     <div :class="cssClasses">
-      <component
-        :is="$route.meta.layout"
-        :title="title"
-        :is-x-small="screen.getScreenSizeInfo.isXSmall"
-        :is-large="screen.getScreenSizeInfo.isLarge"
-      >
+      <template v-if="$route.meta.layout">
+        <component
+          :is="$route.meta.layout"
+          :title="title"
+          :is-x-small="screen.getScreenSizeInfo.isXSmall"
+          :is-large="screen.getScreenSizeInfo.isLarge"
+        >
+          <router-view></router-view>
+          <template #footer>
+            <app-footer />
+          </template>
+        </component>
+      </template>
+      <template v-else>
         <router-view></router-view>
-        <template #footer>
-          <app-footer />
-        </template>
-      </component>
+      </template>
     </div>
   </div>
 </template>
