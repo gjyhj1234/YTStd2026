@@ -1,0 +1,15 @@
+{
+  "仪表盘": "Papan Pemuka",
+  "平台运营数据概览": "Gambaran Keseluruhan Data Operasi Platform",
+  "活跃用户": "Pengguna Aktif",
+  "新增用户": "Pengguna Baharu",
+  "API调用次数": "Bilangan Panggilan API",
+  "存储使用量": "Penggunaan Storan",
+  "每日活跃用户趋势": "Trend Pengguna Aktif Harian",
+  "每日API调用趋势": "Trend Panggilan API Harian",
+  "监控指标分布": "Taburan Metrik Pemantauan",
+  "快捷操作": "Tindakan Pantas",
+  "创建租户": "Cipta Penyewa",
+  "创建用户": "Cipta Pengguna",
+  "查看审计日志": "Lihat Log Audit"
+}

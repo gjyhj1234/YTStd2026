@@ -17,7 +17,7 @@ const routes: RouteRecordRaw[] = [
       requiresAuth: true,
       layout: defaultLayout
     },
-    component: loadView('home-page')
+    component: () => import('./views/dashboard/DashboardView.vue')
   },
   {
     path: '/platform-users',
