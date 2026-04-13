@@ -58,9 +58,14 @@ function mergeComponentMessages(messages: Record<string, Record<string, string>>
 const messages: Record<string, Record<string, string>> = { ...mainMessages }
 mergeComponentMessages(messages)
 
+const savedLocale = localStorage.getItem('locale') as SupportedLocale | null
+const defaultLocale: SupportedLocale = savedLocale && ['zh-CN', 'en-US', 'ja-JP', 'ms-MY', 'zh-TW'].includes(savedLocale)
+  ? savedLocale
+  : 'zh-CN'
+
 const i18nOptions: I18nOptions = {
   legacy: false,
-  locale: 'zh-CN',
+  locale: defaultLocale,
   fallbackLocale: 'en-US',
   messages
 }

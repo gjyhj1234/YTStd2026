@@ -975,9 +975,15 @@
 | 1 | **F0-1 脚手架搭建** | 使用 `devextreme-cli` 生成项目；JS→TS 转换；额外依赖安装 | ✅ |
 | 2 | **F0-2 axios 封装** | `api/http.ts` + `api/http.types.ts`，含请求/响应拦截器、防重复提交、错误处理 | ✅ |
 | 3 | **F0-3 i18n 基础设施** | `locales/index.ts` + 5 语言文件；component-level auto-load via import.meta.glob | ✅ |
-| 4 | **F0-4 路由与权限守卫** | Application Template 默认路由守卫已保留（待 F1-1 完善） | ⬜ |
-| 5 | **F0-5 状态管理** | Pinia stores: `store/auth.ts` + `store/app.ts` | ✅ |
-| 6 | **F0-6 通用组件** | Application Template 组件已保留（待 F1-1 完善） | ⬜ |
+| 4 | **F0-4 路由与权限守卫** | 14+ 业务路由 + beforeEach 守卫（token 检测）+ auth store 集成 + http.ts token 注入 | ✅ |
+| 5 | **F0-5 状态管理** | Pinia stores: `store/auth.ts`（含用户信息、权限过滤）+ `store/app.ts` | ✅ |
+| 6 | **F0-6 通用组件** | FunctionDescriptionCard.vue + OperationGuideDrawer.vue + 15 个组件语言文件 | ✅ |
+
+#### S5 F1 层级1：布局层
+
+| 序号 | 任务 | 完成内容 | 状态 |
+|:----:|------|---------|:----:|
+| 1 | **F1-1 主布局** | app-navigation.ts（业务菜单 + i18n + 权限过滤）、header-toolbar.vue（语言切换 DxSelectBox + 用户下拉 DxDropDownButton）、side-nav-menu.vue（DxTreeView i18n + 权限 + 反偏移 CSS）、side-nav-outer-toolbar.vue（TypeScript script setup）、auth.ts（axios 对接后端 API）、router.ts（14+ 路由） | ✅ |
 
 ---
 
@@ -996,12 +1002,13 @@
 9. 所有交叉引用已更新
 10. **提示词质量审计完成**（S4.5 完成）：修复 13 处问题（4 个 P0、7 个 P1、2 个 P2），涉及 13 个文件
 11. **S5 F0-1/F0-2/F0-3/F0-5 脚手架搭建完成**：项目已生成，JS→TS 转换完成，axios/Pinia/vue-i18n 集成完成，`npm run build` 通过
+12. **S5 F0-4/F0-6/F1-1 布局层完成**：路由守卫、权限过滤、菜单 i18n、顶栏语言切换、用户下拉、通用组件、15 个组件语言文件
 
 ### 下一轮优先处理
 
-1. **S5 F0-4**：路由与权限守卫完善（集成 auth store 到 router）
-2. **S5 F1-1**：主布局实现（`0010_layout.md`）— 定制导航菜单、顶栏、侧边栏
-3. **S5 F1-2**：登录页实现（`0011_login-page.md`）
+1. **S5 F1-2**：登录页实现（`0011_login-page.md`）
+2. **S5 F2-1**：仪表盘页面实现（`0020_dashboard-page.md`）
+3. **S5 F2-2 ~ F2-4**：平台管理页面（并行组 A）
 
 ### 不需要重复阅读的已稳定文件
 

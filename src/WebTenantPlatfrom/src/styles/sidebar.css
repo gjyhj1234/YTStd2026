@@ -1,0 +1,24 @@
+/* Sidebar styles — standalone anti-shift CSS for global scope import */
+/* Primary anti-shift styles are in side-nav-menu.vue <style> section. */
+/* This file exists as an importable standalone for use outside of the component, */
+/* e.g. when other components or layouts need the same sidebar overrides. */
+
+.dx-swatch-additional,
+.dx-swatch-additional-dark {
+  .side-navigation-menu .menu-container .dx-treeview {
+    .dx-treeview-item-content {
+      padding-left: 20px !important;
+    }
+
+    .dx-state-focused,
+    .dx-state-active,
+    .dx-state-selected,
+    .dx-state-hover {
+      font-weight: normal !important;
+    }
+
+    .dx-state-selected .dx-treeview-item-content {
+      text-shadow: 0 0 0.5px currentColor;
+    }
+  }
+}
