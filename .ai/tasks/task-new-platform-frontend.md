@@ -1000,42 +1000,43 @@
 
 ## 十四、续接说明（给下一轮 Agent）
 
-### 当前已完成
+> **⚠️ 重要变更**：从 S14 会话起，S5 阶段的任务执行已拆分为独立的子任务文件。
+> 请直接阅读 `.ai/tasks/platform-frontend/README.md` 获取子任务索引和执行指引。
+
+### 子任务体系
+
+S5 阶段的后续任务已拆分到 `.ai/tasks/platform-frontend/` 目录下，每个子任务聚焦一个功能模块：
+
+| 文件 | 用途 |
+|------|------|
+| `00-common-prereqs.md` | 通用前置阅读（每个子任务前必读） |
+| `01-F2-5-tenant-page.md` ~ `12-F2-16-platform-operation-page.md` | 各业务模块子任务 |
+| `13-e2e-catch-up.md` | E2E 测试补齐（F2-2/3/4） |
+| `14-F3-integration-verify.md` | 集成验证（全量编译+i18n+权限） |
+
+### 启动方式
+
+```markdown
+请继续前端开发。
+
+## 上下文恢复
+1. 阅读 `.ai/tasks/platform-frontend/00-common-prereqs.md`
+2. 阅读 `.ai/tasks/platform-frontend/{nn}-{子任务文件名}.md`
+3. 阅读 `.ai/workspace/session-summary-{最新日期}.md`
+
+## 本轮目标
+完成子任务 {编号} — {模块名}
+```
+
+### 当前已完成（S1-S4.5 + S5 部分）
 
 1. `.ai/prompts/03-frontend/` 下 8 个治理/规则层文件（S1 完成）
-2. `.ai/prompts/08-platform/frontend/` 下文件全部重命名为 `00xx_xxx.md` 格式
-3. 布局（`0010_layout.md`）已基于 DevExtreme Vue Application Template 完全重写
-4. 脚手架（`0001_scaffold.md`）已基于 Application Template CLI 重写
-5. 核心页面提示词已重写（S2 的 10 个文件已完成）
-6. 运营/系统管理页面提示词已重写（S3 的 7 个文件已完成：`0028`-`0034`）
-7. 国际化提示词（`0002_i18n.md`）已重写、平台运营（`0035_platform-operation-page.md`）已重写（S4 完成）
-8. 总览（`0000_overview.md`）已更新为最新状态
-9. 所有交叉引用已更新
-10. **提示词质量审计完成**（S4.5 完成）：修复 13 处问题（4 个 P0、7 个 P1、2 个 P2），涉及 13 个文件
-11. **S5 F0-1/F0-2/F0-3/F0-5 脚手架搭建完成**：项目已生成，JS→TS 转换完成，axios/Pinia/vue-i18n 集成完成，`npm run build` 通过
-12. **S5 F0-4/F0-6/F1-1 布局层完成**：路由守卫、权限过滤、菜单 i18n、顶栏语言切换、用户下拉、通用组件、15 个组件语言文件
-13. **S5 F1-2 登录页完成**：独立全屏登录页（LoginView.vue），DxForm label-mode="static"，用户名+密码登录（非邮箱），auth API 封装，types/auth.ts 类型定义，5 个语言文件（12 key），路由已指向新组件，build 通过
-14. **S5 F1-2 增强完成**：响应式布局（桌面双栏/平板居中/手机全屏）+ 滑块验证码（3次失败触发）+ 4 个新 i18n key × 5 语言
-15. **S5 F2-1 仪表盘完成**：DashboardView.vue + api/platform-operations.ts + types/platform-operations.ts + 5 语言文件（13 key），E2E 测试 dashboard.spec.ts 编写完成
-16. **E2E 测试协议更新**：0040_e2e-testing-protocol.md v1.1 新增通用测试维度（响应式+多语言）和 DevExtreme 定位陷阱附录
-17. **登录页提示词更新**：0011_login-page.md 新增响应式布局规范、滑块验证码规范、16 个 i18n key
-18. **S5 F2-2 平台用户管理完成**：PlatformUsersView.vue（CRUD+批量+高级查询+async校验），api/platform-users.ts（11 个 API），types/platform-users.ts，5 语言文件（40+ key），constants/permissions.ts，utils/notify.ts
-19. **S5 F2-3 平台角色管理完成**：PlatformRolesView.vue（CRUD+权限绑定+成员绑定+async校验），api/platform-roles.ts（12 个 API），types/platform-roles.ts，5 语言文件（35+ key）
-20. **S5 F2-4 平台权限管理完成**：PlatformPermissionsView.vue（树形展示+搜索过滤），api/platform-permissions.ts（3 个 API），types/platform-permissions.ts，5 语言文件（15+ key）
-
-### 下一轮优先处理
-
-1. **S5 F2-5 ~ F2-8**：租户管理页面（并行组 B：租户列表、租户信息、资源配额、配置开关）
-2. **S5 F2-9 ~ F2-11**：SaaS 运营页面（并行组 C：套餐、订阅、账单）
-3. **E2E 测试完善**：为 F2-2/F2-3/F2-4 编写 E2E 测试
-
-### 不需要重复阅读的已稳定文件
-
-- `03-frontend/00-governance.md` 至 `07-business-prompt-template.md`（8 个文件已稳定，S4.5 已审计修复）
-- `0000_overview.md`（S4.5 已审计更新，S5 已更新状态标记）
-- `0001_scaffold.md`、`0002_i18n.md`（S4.5 已审计更新）
-- `0010_layout.md`、`0011_login-page.md`、`0020_dashboard-page.md`（已重写）
-- `0021`-`0035` 全部业务页面提示词（已重写，S4.5 修复 0035 路径问题）
+2. `.ai/prompts/08-platform/frontend/` 下全部业务提示词（S2-S4 完成）
+3. 提示词质量审计（S4.5 完成）：修复 13 处问题
+4. S5 F0 基础设施层全部完成（F0-1 ~ F0-6）
+5. S5 F1 布局层全部完成（F1-1 主布局 + F1-2 登录页含增强）
+6. S5 F2 业务页面部分完成：F2-1 仪表盘、F2-2 用户、F2-3 角色、F2-4 权限
+7. S14 任务拆分完成：子任务体系建立，15 个文件
 
 ### 仍需保持不变的规则
 

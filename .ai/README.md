@@ -171,7 +171,24 @@
 ├── tasks/                         # 当前任务追踪
 │   ├── task-platfrom.md           # 租户平台后端任务
 │   ├── task-platform-frontend.md  # 租户平台前端任务（旧）
-│   └── task-new-platform-frontend.md # 前端提示词体系重构任务（当前活跃）
+│   ├── task-new-platform-frontend.md # 前端提示词体系重构任务（主任务）
+│   └── platform-frontend/         # 前端子任务（S5 阶段拆分）
+│       ├── README.md              # 子任务索引与执行状态
+│       ├── 00-common-prereqs.md   # 通用前置阅读（每个子任务前必读）
+│       ├── 01-F2-5-tenant-page.md # F2-5 租户管理
+│       ├── 02-F2-6-tenant-info-page.md
+│       ├── 03-F2-7-tenant-resource-page.md
+│       ├── 04-F2-8-tenant-config-page.md
+│       ├── 05-F2-9-package-page.md
+│       ├── 06-F2-10-subscription-page.md
+│       ├── 07-F2-11-billing-page.md
+│       ├── 08-F2-12-api-integration-page.md
+│       ├── 09-F2-13-audit-page.md
+│       ├── 10-F2-14-notification-page.md
+│       ├── 11-F2-15-storage-page.md
+│       ├── 12-F2-16-platform-operation-page.md
+│       ├── 13-e2e-catch-up.md     # E2E 测试补齐
+│       └── 14-F3-integration-verify.md # 集成验证
 │
 └── workspace/                     # Agent 工作区（会话总结存放处）
     └── session-summary-*.md       # 各轮次会话总结（按日期编号）
