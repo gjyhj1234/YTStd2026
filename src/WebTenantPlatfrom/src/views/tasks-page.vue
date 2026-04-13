@@ -69,6 +69,7 @@ import DxDataGrid, {
   DxPager,
   DxPaging
 } from "devextreme-vue/data-grid";
+import axios from 'axios';
 
 export default {
   setup() {
@@ -77,12 +78,10 @@ export default {
         key: 'id',
         async load() {
           try {
-            const response = await fetch(`https://js.devexpress.com/Demos/RwaService/api/Employees/AllTasks`);
-
-            const result = await response.json();
+            const response = await axios.get('https://js.devexpress.com/Demos/RwaService/api/Employees/AllTasks');
 
             return {
-              data: result,
+              data: response.data,
             };
           } catch (err) {
             throw new Error('Data Loading Error');
