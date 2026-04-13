@@ -8,7 +8,18 @@
 
 ## 适用范围
 
-所有涉及后端代码创建或修改的编码任务。
+所有涉及后端或前端代码创建或修改的编码任务。
+
+### 前端项目路径说明
+
+| 项目 | 路径 | 用途 |
+|------|------|------|
+| 旧前端（冻结） | `web/tenant-platform-web/` | 仅参考，不再开发 |
+| 新前端（活跃） | `src/WebTenantPlatfrom/` | 当前开发目标 |
+
+> 前端审查命令中 `{FRONTEND_SRC}` 占位符应替换为当前任务的实际项目路径。
+> - 旧项目维护任务：替换为 `web/tenant-platform-web/src/`
+> - 新项目开发任务：替换为 `src/WebTenantPlatfrom/src/`
 
 ---
 
@@ -187,7 +198,10 @@ grep -A 10 "!insResult.Success" src/{Project}/Application/Services/*.cs | grep "
 **搜索命令：**
 
 ```bash
-# 找到所有硬编码 caption（未使用绑定形式的 caption）
+# 新前端项目（优先检查）
+grep -rn 'caption="' src/WebTenantPlatfrom/src/ --include="*.vue" | grep -v ':caption'
+
+# 旧前端项目（维护时检查）
 grep -rn 'caption="' web/tenant-platform-web/src/ --include="*.vue" | grep -v ':caption'
 ```
 
@@ -201,6 +215,12 @@ grep -rn 'caption="' web/tenant-platform-web/src/ --include="*.vue" | grep -v ':
 **搜索命令：**
 
 ```bash
+# 新前端项目（优先检查）
+grep -rn "notifySuccess(t(" src/WebTenantPlatfrom/src/ --include="*.vue"
+grep -rn "confirmAction(t(" src/WebTenantPlatfrom/src/ --include="*.vue"
+grep -rn "confirmDelete(t(" src/WebTenantPlatfrom/src/ --include="*.vue"
+
+# 旧前端项目（维护时检查）
 grep -rn "notifySuccess(t(" web/tenant-platform-web/src/ --include="*.vue"
 grep -rn "confirmAction(t(" web/tenant-platform-web/src/ --include="*.vue"
 grep -rn "confirmDelete(t(" web/tenant-platform-web/src/ --include="*.vue"
@@ -216,7 +236,15 @@ grep -rn "confirmDelete(t(" web/tenant-platform-web/src/ --include="*.vue"
 **搜索命令：**
 
 ```bash
-for f in $(find web/tenant-platform-web/src/views -name "*.vue" -not -name "PlaceholderView.vue"); do
+# 新前端项目（优先检查）
+for f in $(find src/WebTenantPlatfrom/src/views -name "*.vue" -not -name "PlaceholderView.vue" 2>/dev/null); do
+  for lang in zh-CN en-US ja-JP ms-MY zh-TW; do
+    [ ! -f "${f}.${lang}.json" ] && echo "MISSING: ${f}.${lang}.json"
+  done
+done
+
+# 旧前端项目（维护时检查）
+for f in $(find web/tenant-platform-web/src/views -name "*.vue" -not -name "PlaceholderView.vue" 2>/dev/null); do
   for lang in zh-CN en-US ja-JP ms-MY zh-TW; do
     [ ! -f "${f}.${lang}.json" ] && echo "MISSING: ${f}.${lang}.json"
   done
@@ -233,18 +261,51 @@ done
 - 对每个视图目录，比较 zh-CN 和 en-US 的 JSON key 集合
 - 所有语言文件的 key 必须完全一致
 - en-US、ja-JP、ms-MY、zh-TW 的值不能为空字符串
+- **新前端项目优先检查 `src/WebTenantPlatfrom/src/views/`，旧项目维护时检查 `web/tenant-platform-web/src/views/`**
 
 ### 审查项 F5：DxForm label-mode 检查（登录页专项）
 
 **搜索命令：**
 
 ```bash
+# 新前端项目（优先检查）
+grep -rn 'label-mode="floating"' src/WebTenantPlatfrom/src/views/login/ --include="*.vue"
+
+# 旧前端项目（维护时检查）
 grep -rn 'label-mode="floating"' web/tenant-platform-web/src/views/login/ --include="*.vue"
 ```
 
 **验证规则：**
 - 登录页搜索结果必须为 0
 - 登录页的 DxForm 必须使用 `label-mode="static"`（避免浏览器自动填充与 floating label 重叠）
+
+### 审查项 F6：fetch 使用检查（新项目禁止 fetch）
+
+**搜索命令：**
+
+```bash
+grep -rn 'fetch(' src/WebTenantPlatfrom/src/ | grep -v 'node_modules' | grep -v 'import.meta.glob'
+```
+
+**验证规则：**
+- 新前端项目搜索结果必须为 0
+- 新项目统一使用 axios，禁止使用原生 fetch
+- **违规数量为 0 时才算通过**
+
+### 审查项 F7：乱码字符检查
+
+**搜索命令：**
+
+```bash
+grep -rn $'\xEF\xBF\xBD' src/WebTenantPlatfrom/
+grep -rn $'\xEF\xBF\xBD' .ai/prompts/03-frontend/
+grep -rn $'\xEF\xBF\xBD' .ai/prompts/08-platform/frontend/
+```
+
+**验证规则：**
+- 搜索结果必须为 0
+- 不得包含 UTF-8 替换字符（U+FFFD）或截断产生的乱码
+- **违规数量为 0 时才算通过**
 
 ---
 
@@ -257,9 +318,9 @@ grep -rn 'label-mode="floating"' web/tenant-platform-web/src/views/login/ --incl
 | 每个阶段（Phase）完成后 | 全部审查项 1-8 |
 | Postman 集合更新后 | 审查项 7 |
 | 每个前端 .vue 文件编写完成后 | 审查项 F1、F2、F3 |
-| 每个前端模块（子任务）完成后 | 全部审查项 F1-F5 |
+| 每个前端模块（子任务）完成后 | 全部审查项 F1-F7 |
 | 标记任务完成之前（后端任务） | 全部审查项 1-8 |
-| 标记任务完成之前（前端任务） | 全部审查项 F1-F5 + npm run build |
+| 标记任务完成之前（前端任务） | 全部审查项 F1-F7 + npm run build |
 | **每次迭代结束时** | **README 同步检查**（见 `readme-sync-protocol.md`） |
 
 ---
@@ -289,6 +350,19 @@ grep -rn 'label-mode="floating"' web/tenant-platform-web/src/views/login/ --incl
 - 唯一性双重校验：✅ N/N 个 Create/Save 方法合规
 ```
 
+前端任务记录格式：
+
+```
+前端自动化代码审查结果：✅ 全部通过
+- DxColumn caption 绑定（F1）：✅ 无硬编码
+- notifySuccess/confirmAction 双重 t()（F2）：✅ 无违规
+- 语言文件完整性（F3）：✅ N 个 .vue 对应 5N 个语言文件
+- 语言文件 key 一致性（F4）：✅ 全部一致
+- DxForm label-mode（F5）：✅ 登录页使用 static
+- fetch 使用（F6）：✅ 新项目无 fetch
+- 乱码检查（F7）：✅ 无乱码字符
+```
+
 ---
 
 ## 审查失败的后果
@@ -299,6 +373,8 @@ grep -rn 'label-mode="floating"' web/tenant-platform-web/src/views/login/ --incl
 
 ## 版本
 
-- 版本：1.0
+- 版本：1.1
+- 更新日期：2026-04-12
+- 更新内容：前端审查项支持新旧两个项目路径（`src/WebTenantPlatfrom` + `web/tenant-platform-web`）；新增 F6（fetch 检查）和 F7（乱码检查）审查项；新增前端审查结果输出模板
 - 创建日期：2026-04-09
 - 创建原因：历史任务中发现 B 阶段多个 AppService 缺少 `GetNextLongIdAsync`，Postman 集合存在路由不匹配，根因是 Agent 仅以编译通过作为验收标准，未执行代码搜索审查

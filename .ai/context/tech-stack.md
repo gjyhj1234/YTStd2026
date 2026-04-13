@@ -78,6 +78,9 @@ src/
 |------|------|
 | 后端构建 | `dotnet build YTStd.slnx` |
 | 后端测试 | `dotnet test YTStd.slnx` |
-| 前端安装依赖 | `cd web/tenant-platform-web && npm install` |
-| 前端构建 | `cd web/tenant-platform-web && npm run build` |
-| 前端开发 | `cd web/tenant-platform-web && npm run dev` |
+| **新前端**安装依赖 | `cd src/WebTenantPlatfrom && npm install` |
+| **新前端**构建 | `cd src/WebTenantPlatfrom && npm run build` |
+| **新前端**开发 | `cd src/WebTenantPlatfrom && npm run dev` |
+| 旧前端安装依赖 | `cd web/tenant-platform-web && npm install`（已冻结，仅供参考） |
+| 旧前端构建 | `cd web/tenant-platform-web && npm run build`（已冻结，仅供参考） |
+| 旧前端开发 | `cd web/tenant-platform-web && npm run dev`（已冻结，仅供参考） |

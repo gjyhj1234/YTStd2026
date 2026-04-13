@@ -95,15 +95,15 @@ devexpress_docs_search(technologies: ["Vue"], question: "DxTabPanel tabs items s
 
 | 序号 | 文件路径 | 用途 |
 |:----:|---------|------|
-| 1 | `src/views/platform-operations/PlatformOperationsView.vue` | 主页面（双标签页） |
-| 2 | `src/views/platform-operations/PlatformOperationsView.vue.zh-CN.json` | 中文语言 |
-| 3 | `src/views/platform-operations/PlatformOperationsView.vue.en-US.json` | 英文语言 |
-| 4 | `src/views/platform-operations/PlatformOperationsView.vue.ja-JP.json` | 日文语言 |
-| 5 | `src/views/platform-operations/PlatformOperationsView.vue.ms-MY.json` | 马来文语言 |
-| 6 | `src/views/platform-operations/PlatformOperationsView.vue.zh-TW.json` | 繁中语言 |
-| 7 | `src/api/platform-operation.ts` | API 封装 |
-| 8 | `src/types/platform-operation.ts` | 类型定义 |
-| 9 | `src/router/index.ts`（追加） | 路由注册 |
+| 1 | `src/WebTenantPlatfrom/src/views/platform-operations/PlatformOperationsView.vue` | 主页面（双标签页） |
+| 2 | `src/WebTenantPlatfrom/src/views/platform-operations/PlatformOperationsView.vue.zh-CN.json` | 中文语言 |
+| 3 | `src/WebTenantPlatfrom/src/views/platform-operations/PlatformOperationsView.vue.en-US.json` | 英文语言 |
+| 4 | `src/WebTenantPlatfrom/src/views/platform-operations/PlatformOperationsView.vue.ja-JP.json` | 日文语言 |
+| 5 | `src/WebTenantPlatfrom/src/views/platform-operations/PlatformOperationsView.vue.ms-MY.json` | 马来文语言 |
+| 6 | `src/WebTenantPlatfrom/src/views/platform-operations/PlatformOperationsView.vue.zh-TW.json` | 繁中语言 |
+| 7 | `src/WebTenantPlatfrom/src/api/platform-operation.ts` | API 封装 |
+| 8 | `src/WebTenantPlatfrom/src/types/platform-operation.ts` | 类型定义 |
+| 9 | `src/WebTenantPlatfrom/src/router/index.ts`（追加） | 路由注册 |
 
 ---
 
