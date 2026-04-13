@@ -9,7 +9,7 @@
 ## 技术栈
 
 - **后端项目**：`src/YTStdTenantPlatform/`（已完成，383 个测试全部通过）
-- **新前端项目**：`src/WebTenantPlatfrom`（基于 DevExtreme Vue Application Template 重建，S5 F0 层基础设施已完成，`npm run build` 通过）
+- **新前端项目**：`src/WebTenantPlatfrom`（基于 DevExtreme Vue Application Template 重建，S5 F0 层 + F1-1 布局层已完成，`npm run build` 通过）
 - **旧前端项目**：`web/tenant-platform-web/`（仅作参考，不得删除）
 - **底层框架**：YTStdSqlBuilder、YTStdLogger、YTStdAdo、YTStdEntity、YTStdI18n（及其 Generator）
 - **数据库**：PostgreSQL，表前缀 `sys_`
@@ -55,7 +55,7 @@
 | 错误码 | `backend/error-codes.md` | ✅ 已完成 |
 | 菜单与字典 | `backend/menu-dictionary-api.md` | ✅ 已完成 |
 | 前端脚手架 | `frontend/0001_scaffold.md` | ✅ 已实现（S5 F0-1） |
-| 前端布局 | `frontend/0010_layout.md` | ✅ 提示词已重写 |
+| 前端布局 | `frontend/0010_layout.md` | ✅ 已实现（S5 F1-1） |
 | 前端首页 | `frontend/0020_dashboard-page.md` | ✅ 提示词已重写 |
 | 前端国际化 | `frontend/0002_i18n.md` | ✅ 已实现（S5 F0-3） |
 | 后端测试 | `testing/backend-tests.md` | ✅ 已完成（383 个测试通过） |

@@ -1,6 +1,7 @@
-/* Sidebar styles — DxTreeView anti-shift CSS */
-/* These styles are now included directly in side-nav-menu.vue */
-/* This file provides additional sidebar-specific overrides */
+/* Sidebar styles — standalone anti-shift CSS for global scope import */
+/* Primary anti-shift styles are in side-nav-menu.vue <style> section. */
+/* This file exists as an importable standalone for use outside of the component, */
+/* e.g. when other components or layouts need the same sidebar overrides. */
 
 .dx-swatch-additional,
 .dx-swatch-additional-dark {
