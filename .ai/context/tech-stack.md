@@ -81,6 +81,8 @@ src/
 | **新前端**安装依赖 | `cd src/WebTenantPlatfrom && npm install` |
 | **新前端**构建 | `cd src/WebTenantPlatfrom && npm run build` |
 | **新前端**开发 | `cd src/WebTenantPlatfrom && npm run dev` |
+| **新前端** E2E 测试 | `cd src/WebTenantPlatfrom && npx playwright test` |
+| **新前端** E2E 有头模式 | `cd src/WebTenantPlatfrom && npx playwright test --headed` |
 | 旧前端安装依赖 | `cd web/tenant-platform-web && npm install`（已冻结，仅供参考） |
 | 旧前端构建 | `cd web/tenant-platform-web && npm run build`（已冻结，仅供参考） |
 | 旧前端开发 | `cd web/tenant-platform-web && npm run dev`（已冻结，仅供参考） |

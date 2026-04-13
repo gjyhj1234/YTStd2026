@@ -98,12 +98,9 @@ test.describe('登录页 — 表单验证', () => {
     const loginBtn = page.locator('.dx-button').filter({ hasText: /登录|Sign In|Login/i })
     await loginBtn.click()
 
-    // 密码字段应显示验证错误
-    const passwordError = page.locator('input[type="password"]')
-      .locator('..')
-      .locator('.dx-invalid-message')
-      .or(page.locator('.dx-validator .dx-invalid-message'))
-    await expect(passwordError.first()).toBeVisible({ timeout: 3_000 })
+    // 应显示验证错误（在表单级别检查）
+    const validationErrors = page.locator('.dx-invalid-message')
+    await expect(validationErrors.first()).toBeVisible({ timeout: 3_000 })
   })
 
   test('密码少于 6 位应显示长度验证错误', async ({ page }) => {

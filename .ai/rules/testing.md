@@ -102,7 +102,23 @@ Assert.True(dbResult.Success);
 
 - 组件测试：vitest + @vue/test-utils
 - API Mock：MSW 2.x
-- E2E 测试：暂不要求
+- E2E 测试：Playwright（详见 `.ai/prompts/03-frontend/08-playwright-e2e.md`）
+
+### E2E 测试（Playwright）
+
+| 项目 | 说明 |
+|------|------|
+| 框架 | @playwright/test ^1.52.0 |
+| 配置 | `src/WebTenantPlatfrom/playwright.config.ts` |
+| 测试目录 | `src/WebTenantPlatfrom/e2e/tests/` |
+| 工具函数 | `src/WebTenantPlatfrom/e2e/helpers/` |
+| 工作流协议 | `.ai/system/e2e-testing-workflow.md` |
+| 模块测试协议 | `.ai/prompts/08-platform/frontend/0040_e2e-testing-protocol.md` |
+
+**E2E 测试执行前提：**
+1. PostgreSQL 运行中（localhost:5432, db=test1）
+2. 后端运行中（http://127.0.0.1:5000）
+3. 前端 dev server 运行中（http://localhost:5173）或由 Playwright webServer 自动启动
 
 ---
 
@@ -113,6 +129,10 @@ Assert.True(dbResult.Success);
 | 后端全量测试 | `dotnet test YTStd.slnx` |
 | 后端指定项目 | `dotnet test tests/{Project}.Tests/` |
 | 前端测试 | `cd web/{project} && npm run test` |
+| **E2E 全量测试** | `cd src/WebTenantPlatfrom && npx playwright test` |
+| **E2E 指定模块** | `cd src/WebTenantPlatfrom && npx playwright test e2e/tests/{module}/` |
+| **E2E 无需登录** | `cd src/WebTenantPlatfrom && npx playwright test --project=no-auth` |
+| **E2E 有头模式** | `cd src/WebTenantPlatfrom && npx playwright test --headed` |
 
 ---
 
