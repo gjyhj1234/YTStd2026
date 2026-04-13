@@ -1,0 +1,26 @@
+/* Global styles for the tenant platform */
+
+/* DxTreeView sidebar anti-shift CSS */
+.dx-swatch-additional,
+.dx-swatch-additional-dark {
+  .side-navigation-menu .menu-container .dx-treeview {
+    .dx-treeview-item {
+      /* Fixed padding for child containers to prevent shift */
+      .dx-treeview-item-content {
+        padding-left: 20px;
+      }
+    }
+
+    /* Use text-shadow instead of font-weight for active state to prevent layout shift */
+    .dx-state-focused,
+    .dx-state-active,
+    .dx-state-selected,
+    .dx-state-hover {
+      .dx-treeview-item {
+        .dx-treeview-item-content {
+          text-shadow: 0 0 0 currentColor;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "name": "WebTenantPlatfrom",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "type-check": "vue-tsc --noEmit",
+    "preview": "vite preview",
+    "lint": "eslint . --fix",
+    "build-themes": "devextreme build",
+    "postinstall": "npm run build-themes"
+  },
+  "dependencies": {
+    "axios": "^1.15.0",
+    "devextreme": "25.2.5",
+    "devextreme-vue": "25.2.5",
+    "pinia": "^3.0.4",
+    "sass-embedded": "^1.85.1",
+    "vue": "^3.5.17",
+    "vue-i18n": "^11.3.2",
+    "vue-router": "^4.0.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.29.0",
+    "@tsconfig/node22": "^22.0.5",
+    "@types/node": "^25.6.0",
+    "@vitejs/plugin-vue": "^6.0.0",
+    "devextreme-cli": "1.14.2",
+    "devextreme-themebuilder": "25.2.5",
+    "eslint": "^9.29.0",
+    "eslint-plugin-vue": "~10.2.0",
+    "globals": "^16.2.0",
+    "typescript": "^6.0.2",
+    "vite": "^7.0.0",
+    "vite-plugin-vue-devtools": "^7.7.7",
+    "vue-tsc": "^3.2.6"
+  }
+}
