@@ -1,0 +1,144 @@
+name: "Copilot Setup Steps"
+
+# Automatically run the setup steps when they are changed to allow for easy validation, and
+# allow manual testing through the repository's "Actions" tab
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+
+jobs:
+  # The job MUST be called `copilot-setup-steps` or it will not be picked up by Copilot.
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    permissions:
+      contents: read
+
+    # ──────────────────────────────────────────────────────────────
+    # PostgreSQL 17 service container
+    # The backend (YTStdTenantPlatform) connects to:
+    #   Host=localhost, Port=5432, Database=test1,
+    #   Username=postgres, Password=gjwq1234
+    # ──────────────────────────────────────────────────────────────
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: gjwq1234
+          POSTGRES_DB: test1
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      # ──────────────────────────────────────────────────────────
+      # 1. Checkout repository
+      # ──────────────────────────────────────────────────────────
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      # ──────────────────────────────────────────────────────────
+      # 2. Setup .NET 10 SDK (for backend build & run)
+      # ──────────────────────────────────────────────────────────
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+          dotnet-quality: "preview"
+
+      # ──────────────────────────────────────────────────────────
+      # 3. Setup Node.js 22 (for frontend build & Playwright)
+      # ──────────────────────────────────────────────────────────
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # ──────────────────────────────────────────────────────────
+      # 4. Restore .NET dependencies & build backend
+      # ──────────────────────────────────────────────────────────
+      - name: Restore .NET dependencies
+        run: dotnet restore YTStd.slnx
+
+      - name: Build backend
+        run: dotnet build src/YTStdTenantPlatform/YTStdTenantPlatform.csproj -c Release --no-restore
+
+      # ──────────────────────────────────────────────────────────
+      # 5. Install frontend dependencies
+      # ──────────────────────────────────────────────────────────
+      - name: Install frontend dependencies
+        working-directory: src/WebTenantPlatfrom
+        run: npm install
+
+      # ──────────────────────────────────────────────────────────
+      # 6. Install Playwright (chromium only, with system deps)
+      # ──────────────────────────────────────────────────────────
+      - name: Install Playwright browsers
+        working-directory: src/WebTenantPlatfrom
+        run: npx playwright install --with-deps chromium
+
+      # ──────────────────────────────────────────────────────────
+      # 7. Verify PostgreSQL connection
+      # ──────────────────────────────────────────────────────────
+      - name: Verify PostgreSQL connection
+        run: |
+          PGPASSWORD=gjwq1234 psql -h localhost -U postgres -d test1 -c "SELECT 1 AS connection_test;"
+          echo "✅ PostgreSQL connection verified: database 'test1' is accessible"
+
+      # ──────────────────────────────────────────────────────────
+      # 8. Verify backend can start and connect to DB
+      # ──────────────────────────────────────────────────────────
+      - name: Verify backend startup
+        run: |
+          # Start backend in background
+          dotnet run --project src/YTStdTenantPlatform/YTStdTenantPlatform.csproj -c Release --no-build &
+          BACKEND_PID=$!
+
+          # Wait for backend to be ready (max 30 seconds)
+          for i in $(seq 1 30); do
+            if curl -s http://127.0.0.1:5000/api/health/ | grep -q '"Code":0'; then
+              echo "✅ Backend started successfully and health check passed"
+              kill $BACKEND_PID 2>/dev/null || true
+              wait $BACKEND_PID 2>/dev/null || true
+              exit 0
+            fi
+            sleep 1
+          done
+
+          echo "❌ Backend failed to start within 30 seconds"
+          kill $BACKEND_PID 2>/dev/null || true
+          exit 1
+
+      # ──────────────────────────────────────────────────────────
+      # 9. Print environment summary
+      # ──────────────────────────────────────────────────────────
+      - name: Print environment summary
+        run: |
+          echo "════════════════════════════════════════════════════════"
+          echo "  Copilot Agent Environment Summary"
+          echo "════════════════════════════════════════════════════════"
+          echo ""
+          echo "  .NET SDK:       $(dotnet --version)"
+          echo "  Node.js:        $(node --version)"
+          echo "  npm:            $(npm --version)"
+          echo "  PostgreSQL:     localhost:5432 (user=postgres, db=test1)"
+          echo "  Backend:        dotnet run --project src/YTStdTenantPlatform"
+          echo "  Backend URL:    http://127.0.0.1:5000"
+          echo "  Frontend:       cd src/WebTenantPlatfrom && npm run dev"
+          echo "  Frontend URL:   http://localhost:5173"
+          echo "  Playwright:     $(npx playwright --version 2>/dev/null || echo 'installed')"
+          echo ""
+          echo "  Default Admin:  admin / gjwq1234"
+          echo ""
+          echo "════════════════════════════════════════════════════════"
