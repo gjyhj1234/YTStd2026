@@ -1,0 +1,20 @@
+{
+  "平台权限管理": "Pengurusan Kebenaran Platform",
+  "查看平台权限树层级结构，权限数据由系统维护": "Lihat struktur hierarki kebenaran platform, data kebenaran diselenggara oleh sistem",
+  "请输入权限编码或名称": "Masukkan kod kebenaran atau nama",
+  "权限编码": "Kod Kebenaran",
+  "权限名称": "Nama Kebenaran",
+  "权限类型": "Jenis Kebenaran",
+  "路径": "Laluan",
+  "HTTP方法": "Kaedah HTTP",
+  "菜单权限": "Kebenaran Menu",
+  "API权限": "Kebenaran API",
+  "操作权限": "Kebenaran Operasi",
+  "数据权限": "Kebenaran Data",
+  "暂无权限数据": "Tiada data kebenaran",
+  "关键词": null,
+  "ID": null,
+  "暂无数据": null,
+  "功能说明": null,
+  "操作指南": null
+}
