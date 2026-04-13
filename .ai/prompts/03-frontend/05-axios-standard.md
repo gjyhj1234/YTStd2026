@@ -230,6 +230,8 @@ function handleBusinessError(code: number, _message: string | null): void {
   // 显示错误提示（使用 DevExtreme notify）
   import('devextreme/ui/notify').then(({ default: notify }) => {
     notify({ message: displayMessage, type: 'error', displayTime: 3000 })
+  }).catch(() => {
+    console.error('[handleBusinessError]', displayMessage)
   })
 }
 
@@ -256,6 +258,8 @@ function handleHttpError(error: AxiosError): void {
 
   import('devextreme/ui/notify').then(({ default: notify }) => {
     notify({ message, type: 'error', displayTime: 3000 })
+  }).catch(() => {
+    console.error('[handleHttpError]', message)
   })
 }
 

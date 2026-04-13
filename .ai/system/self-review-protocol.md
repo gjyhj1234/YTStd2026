@@ -297,9 +297,7 @@ grep -rn 'fetch(' src/WebTenantPlatfrom/src/ | grep -v 'node_modules' | grep -v 
 **搜索命令：**
 
 ```bash
-grep -rn $'\xEF\xBF\xBD' src/WebTenantPlatfrom/
-grep -rn $'\xEF\xBF\xBD' .ai/prompts/03-frontend/
-grep -rn $'\xEF\xBF\xBD' .ai/prompts/08-platform/frontend/
+grep -rn $'\xEF\xBF\xBD' src/WebTenantPlatfrom/ .ai/prompts/03-frontend/ .ai/prompts/08-platform/frontend/
 ```
 
 **验证规则：**
