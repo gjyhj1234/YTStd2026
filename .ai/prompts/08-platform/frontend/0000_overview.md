@@ -39,9 +39,9 @@
 
 | 编号 | 模块 | 提示词 | 状态 |
 |:----:|------|--------|:----:|
-| F0-1 | 脚手架搭建 | `0001_scaffold.md`（✅ 已重写） | ⬜ |
-| F0-2 | axios 封装 | `03-frontend/05-axios-standard.md` | ⬜ |
-| F0-3 | i18n 基础设施 | `0002_i18n.md`（✅ 已重写） / `03-frontend/06-i18n-execution.md` | ⬜ |
+| F0-1 | 脚手架搭建 | `0001_scaffold.md`（✅ 已重写） | ✅ |
+| F0-2 | axios 封装 | `03-frontend/05-axios-standard.md` | ✅ |
+| F0-3 | i18n 基础设施 | `0002_i18n.md`（✅ 已重写） / `03-frontend/06-i18n-execution.md` | ✅ |
 | F0-4 | 路由与权限守卫 | 包含在 `0010_layout.md` 中 | ⬜ |
 | F0-5 | 状态管理 | 包含在 `0010_layout.md` 中 | ⬜ |
 | F0-6 | 通用组件 | 包含在 `0010_layout.md` 中 | ⬜ |

@@ -962,11 +962,22 @@
 | 12 | **P2-路径泛指** | `done-criteria.md` | 完成标准补充新旧项目路径对照表和新项目额外要求 | ✅ |
 | 13 | **P2-归档标识弱** | `9900_refactoring-master.md` | 标题增加 ⛔ 标识，强化不可用于新任务的说明 | ✅ |
 
-### 阶段 S5：前端项目实现（基于新提示词） — ⬜ 待执行
+### 阶段 S5：前端项目实现（基于新提示词） — 🔄 进行中
 
 **目标**：基于新提示词体系，在 `src/WebTenantPlatfrom` 中实现新前端项目
 
 > 此阶段由实现类 Agent 执行，按 `0000_overview.md` 中定义的层级顺序进行。
+
+#### S5 F0 层级0：基础设施
+
+| 序号 | 任务 | 完成内容 | 状态 |
+|:----:|------|---------|:----:|
+| 1 | **F0-1 脚手架搭建** | 使用 `devextreme-cli` 生成项目；JS→TS 转换；额外依赖安装 | ✅ |
+| 2 | **F0-2 axios 封装** | `api/http.ts` + `api/http.types.ts`，含请求/响应拦截器、防重复提交、错误处理 | ✅ |
+| 3 | **F0-3 i18n 基础设施** | `locales/index.ts` + 5 语言文件；component-level auto-load via import.meta.glob | ✅ |
+| 4 | **F0-4 路由与权限守卫** | Application Template 默认路由守卫已保留（待 F1-1 完善） | ⬜ |
+| 5 | **F0-5 状态管理** | Pinia stores: `store/auth.ts` + `store/app.ts` | ✅ |
+| 6 | **F0-6 通用组件** | Application Template 组件已保留（待 F1-1 完善） | ⬜ |
 
 ---
 
@@ -984,17 +995,18 @@
 8. 总览（`0000_overview.md`）已更新为最新状态
 9. 所有交叉引用已更新
 10. **提示词质量审计完成**（S4.5 完成）：修复 13 处问题（4 个 P0、7 个 P1、2 个 P2），涉及 13 个文件
+11. **S5 F0-1/F0-2/F0-3/F0-5 脚手架搭建完成**：项目已生成，JS→TS 转换完成，axios/Pinia/vue-i18n 集成完成，`npm run build` 通过
 
 ### 下一轮优先处理
 
-1. **阶段 S5**：基于新提示词体系，在 `src/WebTenantPlatfrom` 中实现新前端项目
-   - 按 `0000_overview.md` 中定义的层级顺序执行：F0（基础设施）→ F1（布局）→ F2（业务页面）→ F3（集成验证）
-   - 首先执行 F0-1 脚手架搭建（`0001_scaffold.md`）
+1. **S5 F0-4**：路由与权限守卫完善（集成 auth store 到 router）
+2. **S5 F1-1**：主布局实现（`0010_layout.md`）— 定制导航菜单、顶栏、侧边栏
+3. **S5 F1-2**：登录页实现（`0011_login-page.md`）
 
 ### 不需要重复阅读的已稳定文件
 
 - `03-frontend/00-governance.md` 至 `07-business-prompt-template.md`（8 个文件已稳定，S4.5 已审计修复）
-- `0000_overview.md`（S4.5 已审计更新）
+- `0000_overview.md`（S4.5 已审计更新，S5 已更新状态标记）
 - `0001_scaffold.md`、`0002_i18n.md`（S4.5 已审计更新）
 - `0010_layout.md`、`0011_login-page.md`、`0020_dashboard-page.md`（已重写）
 - `0021`-`0035` 全部业务页面提示词（已重写，S4.5 修复 0035 路径问题）
