@@ -1,0 +1,20 @@
+{
+  "平台权限管理": "Platform Permission Management",
+  "查看平台权限树层级结构，权限数据由系统维护": "View platform permission tree structure, permission data is maintained by the system",
+  "请输入权限编码或名称": "Enter permission code or name",
+  "权限编码": "Permission Code",
+  "权限名称": "Permission Name",
+  "权限类型": "Permission Type",
+  "路径": "Path",
+  "HTTP方法": "HTTP Method",
+  "菜单权限": "Menu Permission",
+  "API权限": "API Permission",
+  "操作权限": "Action Permission",
+  "数据权限": "Data Permission",
+  "暂无权限数据": "No permission data",
+  "关键词": null,
+  "ID": null,
+  "暂无数据": null,
+  "功能说明": null,
+  "操作指南": null
+}

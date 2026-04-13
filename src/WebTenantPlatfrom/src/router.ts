@@ -26,7 +26,7 @@ const routes: RouteRecordRaw[] = [
       requiresAuth: true,
       layout: defaultLayout
     },
-    component: loadView('home-page')
+    component: () => import('./views/platform-users/PlatformUsersView.vue')
   },
   {
     path: '/platform-roles',
@@ -35,7 +35,7 @@ const routes: RouteRecordRaw[] = [
       requiresAuth: true,
       layout: defaultLayout
     },
-    component: loadView('home-page')
+    component: () => import('./views/platform-roles/PlatformRolesView.vue')
   },
   {
     path: '/platform-permissions',
@@ -44,7 +44,7 @@ const routes: RouteRecordRaw[] = [
       requiresAuth: true,
       layout: defaultLayout
     },
-    component: loadView('home-page')
+    component: () => import('./views/platform-permissions/PlatformPermissionsView.vue')
   },
   {
     path: '/tenants',
