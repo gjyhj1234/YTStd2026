@@ -105,32 +105,60 @@ interface LoginRepDTO {
 
 | 区域 | 组件 | 内容 |
 |------|------|------|
-| 页面背景 | 全屏背景 | 渐变色或背景图 |
-| 登录卡片 | 居中卡片容器 | 包含 Logo + 标题 + 表单 + 语言切换 |
+| 页面背景 | 全屏背景 | 渐变色 `linear-gradient(135deg, #667eea 0%, #764ba2 100%)` |
+| 语言切换 | `DxSelectBox` | 右上角固定定位，5 种语言切换 |
+| 双栏容器 | `.login-container` | 桌面端(≥1024px)双栏：左品牌区+右登录卡 |
+| 左侧品牌区 | `.login-branding` | 图标 + 标题 + 描述（白色文字，桌面端可见） |
+| 右侧登录卡片 | `.login-card` | 包含 Logo + 标题 + 表单 + 语言切换 |
 | Logo | `<img>` | 平台 Logo 图片 |
-| 标题 | `<h1>` + `$t('租户管理平台')` | 登录标题 |
-| 副标题 | `<p>` + `$t('请登录您的账号')` | 登录副标题 |
+| 标题 | `<h1 class="login-title">` + `$t('租户管理平台')` | 登录标题 |
+| 副标题 | `<p class="login-subtitle">` + `$t('请登录您的账号')` | 登录副标题 |
 | 登录表单 | `DxForm` (`label-mode="static"`) | 用户名 + 密码 |
+| 滑块验证 | `.captcha-wrapper[data-testid="slider-captcha"]` | 连续失败3次后显示 |
 | 登录按钮 | `DxButton` | 登录提交 |
-| 语言切换 | `DxSelectBox` | 5 种语言切换（放在卡片底部或右上角） |
+| 底部版权 | `.login-footer` | © 2026 YTStd |
 
-### 页面布局
+### 响应式布局（必须实现）
+
+| 视口范围 | 布局行为 |
+|---------|---------|
+| 桌面端 (≥1024px) | 双栏布局：左侧品牌区(flex:1) + 右侧登录卡(420px)，容器 860px |
+| 平板端 (768px~1024px) | 单栏布局：隐藏品牌区，登录卡居中，max-width 480px |
+| 手机端 (<600px) | 全屏布局：无圆角无阴影，卡片占满视口，隐藏底部版权 |
+
+**CSS 实现要点：**
+
+```css
+/* 平板端 */
+@media (max-width: 1024px) {
+  .login-branding { display: none; }
+  .login-container { width: auto; max-width: 480px; }
+  .login-card { width: 100%; border-radius: 12px; }
+}
+
+/* 手机端 */
+@media (max-width: 600px) {
+  .login-container { max-width: 100vw; width: 100%; border-radius: 0; box-shadow: none; min-height: 100vh; }
+  .login-card { padding: 60px 24px 24px; border-radius: 0; min-height: 100vh; }
+  .login-footer { display: none; }
+}
+```
+
+### 页面布局（桌面端）
 
 ```
 +--------------------------------------------+
-|                                            |
-|          [语言切换 - 右上角]                |
-|                                            |
-|          +--------------------+            |
-|          |      [Logo]        |            |
-|          |  租户管理平台       |            |
-|          |  请登录您的账号     |            |
-|          |                    |            |
-|          |  用户名 [________] |            |
-|          |  密码   [________] |            |
-|          |                    |            |
-|          |  [    登 录    ]   |            |
-|          +--------------------+            |
+|                          [语言切换 - 右上角] |
+| +---------------------+-------------------+|
+| |                     |                   ||
+| |   [Globe Icon]      |   租户管理平台     ||
+| |   租户管理平台       |   请登录您的账号   ||
+| |   请登录您的账号     |                   ||
+| |                     |  用户名 [________] ||
+| |  (品牌区 - 半透明)   |  密码   [________] ||
+| |                     |                   ||
+| |                     |  [    登 录    ]   ||
+| +---------------------+-------------------+|
 |                                            |
 |          © 2026 YTStd                      |
 +--------------------------------------------+
@@ -188,6 +216,61 @@ interface LoginRepDTO {
 
 - 登录中时按钮 disabled + 显示 DxLoadIndicator
 - 按钮使用 `styling-mode="contained"` 突出显示
+
+---
+
+## 滑块验证码（防暴力破解）
+
+### 触发条件
+
+连续 **3 次**登录失败后（前端计数 `failedAttempts >= 3`），在密码输入框下方显示滑块验证。
+
+### 技术实现
+
+使用 `DxEmptyItem` + `v-if="showCaptcha"` 在 DxForm 中嵌入自定义验证组件。
+
+```vue
+<DxEmptyItem v-if="showCaptcha">
+  <template #default>
+    <div class="captcha-wrapper" data-testid="slider-captcha">
+      <p class="captcha-label">{{ $t('请拖动滑块完成验证') }}</p>
+      <div class="captcha-track" data-testid="captcha-track">
+        <div class="captcha-fill" :style="{ width: captchaProgress + '%' }" />
+        <div class="captcha-thumb" data-testid="captcha-thumb"
+             @mousedown="onCaptchaMouseDown"
+             @touchstart.prevent="onCaptchaTouchStart">
+          <i class="dx-icon-chevrondoubleright"></i>
+        </div>
+        <span v-if="captchaProgress < 5" class="captcha-hint">{{ $t('向右拖动滑块') }}</span>
+        <span v-if="captchaVerified" class="captcha-success">{{ $t('验证通过') }}</span>
+      </div>
+    </div>
+  </template>
+</DxEmptyItem>
+```
+
+### 交互逻辑
+
+| 状态 | 行为 |
+|------|------|
+| 初始 | 显示"向右拖动滑块"提示文字 |
+| 拖动中 | 蓝色填充跟随滑块移动 |
+| 未到达阈值松手 | 进度归零，重新拖动 |
+| 到达 92% 阈值 | 自动吸附到 100%，显示"验证通过"，标记 `captchaVerified = true` |
+| 验证通过后 | 不可再拖动，直到下次登录失败重置 |
+
+### 提交约束
+
+```typescript
+if (showCaptcha.value && !captchaVerified.value) {
+  notify({ message: t('请先完成滑块验证'), type: 'warning', displayTime: 3000 })
+  return
+}
+```
+
+### Touch 支持
+
+必须同时支持鼠标事件（mousedown/mousemove/mouseup）和触摸事件（touchstart/touchmove/touchend），确保手机端可用。
 
 ---
 
@@ -262,6 +345,10 @@ export interface CurrentUserRepDTO {
 | 账户已禁用 | 账户已禁用 | Account is disabled | アカウントが無効です | Akaun telah dinyahaktifkan | 帳號已停用 |
 | 账户已锁定 | 账户已锁定 | Account is locked | アカウントがロックされています | Akaun telah dikunci | 帳號已鎖定 |
 | 登录中 | 登录中 | Signing in... | ログイン中... | Sedang log masuk... | 登入中 |
+| 请拖动滑块完成验证 | 请拖动滑块完成验证 | Drag the slider to verify | スライダーをドラッグして認証 | Seret gelangsar untuk pengesahan | 請拖動滑塊完成驗證 |
+| 向右拖动滑块 | 向右拖动滑块 | Slide right to verify | 右にスライド | Gelangsar ke kanan | 向右拖動滑塊 |
+| 验证通过 | 验证通过 | Verified | 認証済み | Disahkan | 驗證通過 |
+| 请先完成滑块验证 | 请先完成滑块验证 | Please complete slider verification first | 先にスライダー認証を完了してください | Sila lengkapkan pengesahan gelangsar terlebih dahulu | 請先完成滑塊驗證 |
 
 ### common key（在组件级文件中值为 `null`）
 

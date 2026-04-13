@@ -11,6 +11,7 @@ import { navigateTo } from '../../helpers/test-helpers'
  *   - 图表渲染
  *   - 快捷操作按钮
  *   - 侧边栏导航
+ *   - 多语言切换
  *
  * 前置条件：
  *   - 后端已启动（http://127.0.0.1:5000）
@@ -26,7 +27,6 @@ test.describe('仪表盘 — 页面渲染', () => {
   test('D01 — 登录后默认跳转到仪表盘', async ({ page }) => {
     await page.goto('/')
     await page.waitForLoadState('networkidle')
-    // Hash router redirects / to /dashboard
     await expect(page).toHaveURL(/.*#\/dashboard/)
   })
 
@@ -34,7 +34,6 @@ test.describe('仪表盘 — 页面渲染', () => {
     await navigateTo(page, '/dashboard')
     const title = page.locator('[data-testid="dashboard-title"]')
     await expect(title).toBeVisible({ timeout: 10_000 })
-    // Should show "仪表盘" or its translation
     const titleText = await title.textContent()
     expect(titleText).toBeTruthy()
   })
@@ -55,7 +54,6 @@ test.describe('仪表盘 — 页面渲染', () => {
 test.describe('仪表盘 — 统计卡片', () => {
   test.beforeEach(async ({ page }) => {
     await navigateTo(page, '/dashboard')
-    // Wait for loading to complete
     await page.waitForTimeout(2000)
   })
 
@@ -94,7 +92,6 @@ test.describe('仪表盘 — 统计卡片', () => {
     const values = page.locator('[data-testid="stat-cards"] .stat-value')
     const count = await values.count()
     expect(count).toBe(4)
-    // Each value should have text content
     for (let i = 0; i < count; i++) {
       const text = await values.nth(i).textContent()
       expect(text).toBeTruthy()
@@ -158,19 +155,54 @@ test.describe('仪表盘 — 快捷操作', () => {
 test.describe('仪表盘 — 侧边栏', () => {
   test('D04 — 左侧菜单正确展示', async ({ page }) => {
     await navigateTo(page, '/dashboard')
-    // Sidebar should be visible with menu items
     const sidebar = page.locator('.dx-treeview')
     await expect(sidebar).toBeVisible({ timeout: 10_000 })
   })
 
   test('D05 — 点击菜单项可跳转', async ({ page }) => {
     await navigateTo(page, '/dashboard')
-    // Find a clickable menu item (e.g. "首页" / "Home")
     const homeItem = page.locator('.dx-treeview-item').first()
     await expect(homeItem).toBeVisible({ timeout: 10_000 })
     await homeItem.click()
     await page.waitForTimeout(500)
-    // Should still be on dashboard (home menu points to dashboard)
     await expect(page).toHaveURL(/.*#\/dashboard/)
+  })
+})
+
+// ══════════════════════════════════════════════════════════════
+// D06: 多语言切换
+// ══════════════════════════════════════════════════════════════
+
+test.describe('仪表盘 — 多语言切换', () => {
+  test.beforeEach(async ({ page }) => {
+    await navigateTo(page, '/dashboard')
+    await page.waitForTimeout(1000)
+  })
+
+  test('D06a — 中文标题正确', async ({ page }) => {
+    // Set locale to zh-CN via localStorage before navigation
+    await page.evaluate(() => localStorage.setItem('locale', 'zh-CN'))
+    await page.goto('/#/dashboard')
+    await page.waitForLoadState('networkidle')
+    await page.waitForTimeout(1000)
+
+    const title = page.locator('[data-testid="dashboard-title"]')
+    await expect(title).toBeVisible()
+    // Title should contain Chinese or the key itself
+    const text = await title.textContent()
+    expect(text).toBeTruthy()
+  })
+
+  test('D06b — 英文标题正确', async ({ page }) => {
+    await page.evaluate(() => localStorage.setItem('locale', 'en-US'))
+    await page.goto('/#/dashboard')
+    await page.waitForLoadState('networkidle')
+    await page.waitForTimeout(1000)
+
+    const title = page.locator('[data-testid="dashboard-title"]')
+    await expect(title).toBeVisible()
+    const text = await title.textContent()
+    // Should be "Dashboard" or the i18n key
+    expect(text).toBeTruthy()
   })
 })

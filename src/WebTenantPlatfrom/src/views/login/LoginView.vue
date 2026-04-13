@@ -13,69 +13,109 @@
       />
     </div>
 
-    <!-- 登录卡片 -->
-    <div class="login-card">
-      <div class="login-header">
-        <h1 class="login-title">{{ $t('租户管理平台') }}</h1>
-        <p class="login-subtitle">{{ $t('请登录您的账号') }}</p>
+    <div class="login-container">
+      <!-- 左侧品牌区域（桌面端可见） -->
+      <div class="login-branding">
+        <div class="branding-content">
+          <i class="dx-icon-globe branding-icon"></i>
+          <h2 class="branding-title">{{ $t('租户管理平台') }}</h2>
+          <p class="branding-desc">{{ $t('请登录您的账号') }}</p>
+        </div>
       </div>
 
-      <form @submit.prevent="onSubmit">
-        <DxForm
-          ref="formRef"
-          :form-data="formData"
-          :disabled="logging"
-          label-mode="static"
-          :show-colon-after-label="false"
-        >
-          <DxSimpleItem
-            data-field="Username"
-            editor-type="dxTextBox"
-            :label="{ text: $t('用户名') }"
-            :editor-options="usernameEditorOptions"
+      <!-- 右侧登录卡片 -->
+      <div class="login-card">
+        <div class="login-header">
+          <h1 class="login-title">{{ $t('租户管理平台') }}</h1>
+          <p class="login-subtitle">{{ $t('请登录您的账号') }}</p>
+        </div>
+
+        <form @submit.prevent="onSubmit">
+          <DxForm
+            ref="formRef"
+            :form-data="formData"
+            :disabled="logging"
+            label-mode="static"
+            :show-colon-after-label="false"
           >
-            <DxRequiredRule :message="$t('请输入用户名')" />
-          </DxSimpleItem>
+            <DxSimpleItem
+              data-field="Username"
+              editor-type="dxTextBox"
+              :label="{ text: $t('用户名') }"
+              :editor-options="usernameEditorOptions"
+            >
+              <DxRequiredRule :message="$t('请输入用户名')" />
+            </DxSimpleItem>
 
-          <DxSimpleItem
-            data-field="Password"
-            editor-type="dxTextBox"
-            :label="{ text: $t('密码') }"
-            :editor-options="passwordEditorOptions"
-          >
-            <DxRequiredRule :message="$t('请输入密码')" />
-            <DxStringLengthRule
-              :min="6"
-              :message="$t('密码长度至少 6 个字符')"
-            />
-          </DxSimpleItem>
+            <DxSimpleItem
+              data-field="Password"
+              editor-type="dxTextBox"
+              :label="{ text: $t('密码') }"
+              :editor-options="passwordEditorOptions"
+            >
+              <DxRequiredRule :message="$t('请输入密码')" />
+              <DxStringLengthRule
+                :min="6"
+                :message="$t('密码长度至少 6 个字符')"
+              />
+            </DxSimpleItem>
 
-          <DxButtonItem>
-            <DxButtonOptions
-              width="100%"
-              type="default"
-              styling-mode="contained"
-              template="loginBtnTemplate"
-              :use-submit-behavior="true"
-            />
-          </DxButtonItem>
+            <!-- 滑动验证 - 多次失败后显示 -->
+            <DxEmptyItem v-if="showCaptcha">
+              <template #default>
+                <div class="captcha-wrapper" data-testid="slider-captcha">
+                  <p class="captcha-label">{{ $t('请拖动滑块完成验证') }}</p>
+                  <div
+                    class="captcha-track"
+                    data-testid="captcha-track"
+                  >
+                    <div
+                      class="captcha-fill"
+                      :style="{ width: captchaProgress + '%' }"
+                    />
+                    <div
+                      class="captcha-thumb"
+                      :style="{ left: captchaProgress + '%' }"
+                      data-testid="captcha-thumb"
+                      @mousedown="onCaptchaMouseDown"
+                      @touchstart.prevent="onCaptchaTouchStart"
+                    >
+                      <i class="dx-icon-chevrondoubleright"></i>
+                    </div>
+                    <span v-if="captchaProgress < 5" class="captcha-hint">{{ $t('向右拖动滑块') }}</span>
+                    <span v-if="captchaVerified" class="captcha-success">{{ $t('验证通过') }}</span>
+                  </div>
+                </div>
+              </template>
+            </DxEmptyItem>
 
-          <template #loginBtnTemplate>
-            <div>
-              <span class="dx-button-text">
-                <DxLoadIndicator
-                  v-if="logging"
-                  width="24px"
-                  height="24px"
-                  :visible="true"
-                />
-                <span v-if="logging">{{ $t('登录中') }}</span>
-                <span v-if="!logging">{{ $t('登录') }}</span>
-              </span>
-            </div>
-          </template>
-        </DxForm>
-      </form>
+            <DxButtonItem>
+              <DxButtonOptions
+                width="100%"
+                type="default"
+                styling-mode="contained"
+                template="loginBtnTemplate"
+                :use-submit-behavior="true"
+              />
+            </DxButtonItem>
+
+            <template #loginBtnTemplate>
+              <div>
+                <span class="dx-button-text">
+                  <DxLoadIndicator
+                    v-if="logging"
+                    width="24px"
+                    height="24px"
+                    :visible="true"
+                  />
+                  <span v-if="logging">{{ $t('登录中') }}</span>
+                  <span v-if="!logging">{{ $t('登录') }}</span>
+                </span>
+              </div>
+            </template>
+          </DxForm>
+        </form>
+      </div>
     </div>
 
     <!-- 底部版权 -->
@@ -86,11 +126,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import DxForm, {
   DxSimpleItem,
+  DxEmptyItem,
   DxRequiredRule,
   DxStringLengthRule,
   DxButtonItem,
@@ -104,6 +145,9 @@ import { loginApi } from '../../api/auth'
 import { useAuthStore } from '../../store/auth'
 import type { LoginReqDTO } from '../../types/auth'
 
+const CAPTCHA_THRESHOLD = 3 // 连续失败次数阈值
+const CAPTCHA_COMPLETE_PCT = 92 // 滑块到达此百分比视为完成
+
 const router = useRouter()
 const route = useRoute()
 const { t, locale } = useI18n()
@@ -115,6 +159,89 @@ const logging = ref(false)
 const formData = reactive<LoginReqDTO>({
   Username: '',
   Password: ''
+})
+
+// 滑块验证状态
+const failedAttempts = ref(0)
+const showCaptcha = computed(() => failedAttempts.value >= CAPTCHA_THRESHOLD)
+const captchaProgress = ref(0)
+const captchaVerified = ref(false)
+let captchaDragging = false
+let captchaStartX = 0
+let captchaTrackWidth = 0
+
+function onCaptchaMouseDown(e: MouseEvent) {
+  if (captchaVerified.value) return
+  captchaDragging = true
+  captchaStartX = e.clientX - (captchaProgress.value / 100) * captchaTrackWidth
+  const track = (e.target as HTMLElement).closest('.captcha-track') as HTMLElement | null
+  if (track) captchaTrackWidth = track.clientWidth
+  document.addEventListener('mousemove', onCaptchaMouseMove)
+  document.addEventListener('mouseup', onCaptchaMouseUp)
+}
+
+function onCaptchaTouchStart(e: TouchEvent) {
+  if (captchaVerified.value) return
+  captchaDragging = true
+  const touch = e.touches[0]
+  const track = (e.target as HTMLElement).closest('.captcha-track') as HTMLElement | null
+  if (track) captchaTrackWidth = track.clientWidth
+  captchaStartX = touch.clientX - (captchaProgress.value / 100) * captchaTrackWidth
+  document.addEventListener('touchmove', onCaptchaTouchMove, { passive: false })
+  document.addEventListener('touchend', onCaptchaTouchEnd)
+}
+
+function onCaptchaMouseMove(e: MouseEvent) {
+  if (!captchaDragging) return
+  updateCaptchaProgress(e.clientX)
+}
+
+function onCaptchaTouchMove(e: TouchEvent) {
+  if (!captchaDragging) return
+  e.preventDefault()
+  updateCaptchaProgress(e.touches[0].clientX)
+}
+
+function updateCaptchaProgress(clientX: number) {
+  if (captchaTrackWidth <= 0) return
+  const offset = clientX - captchaStartX
+  let pct = (offset / captchaTrackWidth) * 100
+  if (pct < 0) pct = 0
+  if (pct > 100) pct = 100
+  captchaProgress.value = pct
+  if (pct >= CAPTCHA_COMPLETE_PCT) {
+    captchaProgress.value = 100
+    captchaVerified.value = true
+    captchaDragging = false
+    removeCaptchaListeners()
+  }
+}
+
+function onCaptchaMouseUp() {
+  if (!captchaVerified.value) {
+    captchaProgress.value = 0
+  }
+  captchaDragging = false
+  removeCaptchaListeners()
+}
+
+function onCaptchaTouchEnd() {
+  if (!captchaVerified.value) {
+    captchaProgress.value = 0
+  }
+  captchaDragging = false
+  removeCaptchaListeners()
+}
+
+function removeCaptchaListeners() {
+  document.removeEventListener('mousemove', onCaptchaMouseMove)
+  document.removeEventListener('mouseup', onCaptchaMouseUp)
+  document.removeEventListener('touchmove', onCaptchaTouchMove)
+  document.removeEventListener('touchend', onCaptchaTouchEnd)
+}
+
+onBeforeUnmount(() => {
+  removeCaptchaListeners()
 })
 
 const usernameEditorOptions = computed(() => ({
@@ -152,6 +279,12 @@ async function onSubmit() {
   const validationResult = formInstance.validate()
   if (!validationResult.isValid) return
 
+  // 如果需要验证码但尚未通过
+  if (showCaptcha.value && !captchaVerified.value) {
+    notify({ message: t('请先完成滑块验证'), type: 'warning', displayTime: 3000 })
+    return
+  }
+
   logging.value = true
 
   try {
@@ -159,6 +292,11 @@ async function onSubmit() {
       Username: formData.Username,
       Password: formData.Password
     })
+
+    // 重置失败计数
+    failedAttempts.value = 0
+    captchaProgress.value = 0
+    captchaVerified.value = false
 
     // 存储 Token 和用户信息
     authStore.setToken(data.Token)
@@ -181,13 +319,18 @@ async function onSubmit() {
     router.push(redirect || '/dashboard')
   } catch (error: unknown) {
     logging.value = false
+    failedAttempts.value++
+
+    // 失败后重置验证码状态（需要重新验证）
+    if (captchaVerified.value) {
+      captchaVerified.value = false
+      captchaProgress.value = 0
+    }
 
     // Import BusinessError type for instanceof check
     const { BusinessError } = await import('../../api/http')
 
     if (error instanceof BusinessError) {
-      // Backend returned ApiResult with Code != 0
-      // BusinessError.message contains the backend Message field (error code string)
       const msg = error.message || ''
       if (msg.indexOf('AuthCredentialsRequired') !== -1) {
         notify({ message: t('请输入用户名'), type: 'error', displayTime: 3000 })
@@ -201,7 +344,6 @@ async function onSubmit() {
         notify({ message: t('用户名或密码错误'), type: 'error', displayTime: 3000 })
       }
     } else {
-      // HTTP-level error (AxiosError) — map status code to message
       const axiosErr = error as { response?: { status?: number } }
       const status = axiosErr.response?.status
       if (status === 401) {

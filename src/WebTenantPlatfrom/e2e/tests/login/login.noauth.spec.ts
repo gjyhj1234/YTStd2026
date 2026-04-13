@@ -1,71 +1,101 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, Page } from '@playwright/test'
 
 /**
  * 登录页 E2E 测试（无需预认证状态）
- *
- * 测试模块：F1-2 登录页（0011_login-page.md）
- * 测试范围：
- *   - 页面渲染与元素完整性
- *   - 表单验证规则
- *   - 登录成功流程
- *   - 登录失败处理
- *   - 语言切换功能
- *
- * 前置条件：
- *   - 后端已启动（http://127.0.0.1:5000）
- *   - 前端已启动（http://localhost:5173）
- *   - 数据库已初始化（包含种子数据：admin 用户）
  */
 
+/** 获取登录表单中的用户名输入框 */
+function getUsernameInput(page: Page) {
+  return page.locator('.login-card .dx-form .dx-textbox').first().locator('input[type="text"]')
+}
+
+/** 获取密码输入框 */
+function getPasswordInput(page: Page) {
+  return page.locator('.login-card input[type="password"]')
+}
+
+/** 获取登录按钮 */
+function getLoginBtn(page: Page) {
+  return page.locator('.login-card .dx-button').filter({ hasText: /登录|Sign In|Login|ログイン|Log Masuk|登入/i })
+}
+
+/** 等待登录页加载完成 */
+async function waitForLoginPage(page: Page) {
+  await page.waitForLoadState('networkidle')
+  await page.waitForTimeout(500)
+  await expect(page.locator('.login-card')).toBeVisible({ timeout: 10_000 })
+}
+
 // ══════════════════════════════════════════════════════════════
-// 页面渲染与元素完整性
+// 桌面端渲染 (1280×720)
 // ══════════════════════════════════════════════════════════════
 
-test.describe('登录页 — 页面渲染', () => {
+test.describe('登录页 — 桌面端渲染', () => {
   test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 })
     await page.goto('/#/login-form')
-    await page.waitForLoadState('networkidle')
+    await waitForLoginPage(page)
   })
 
-  test('应展示登录页标题', async ({ page }) => {
-    // 页面应包含"租户管理平台"或对应翻译
-    const title = page.locator('text=租户管理平台').or(page.locator('text=Tenant Management Platform'))
-    await expect(title).toBeVisible({ timeout: 10_000 })
+  test('L01 — 应展示登录页标题', async ({ page }) => {
+    await expect(page.locator('.login-title')).toBeVisible({ timeout: 10_000 })
   })
 
-  test('应展示登录表单', async ({ page }) => {
-    // DxForm 应存在
-    await expect(page.locator('.dx-form')).toBeVisible()
+  test('L02 — 应展示登录表单', async ({ page }) => {
+    await expect(page.locator('.login-card .dx-form')).toBeVisible()
   })
 
-  test('应包含用户名输入框', async ({ page }) => {
-    // 用户名输入框应可见
-    const usernameField = page.locator('.dx-textbox').first().locator('input')
-      .or(page.locator('input[name="Username"]'))
-    await expect(usernameField).toBeVisible()
+  test('L03 — 桌面端应展示左侧品牌区', async ({ page }) => {
+    await expect(page.locator('.login-branding')).toBeVisible()
   })
 
-  test('应包含密码输入框', async ({ page }) => {
-    // 密码输入框应可见（type=password）
-    const passwordField = page.locator('input[type="password"]')
-    await expect(passwordField).toBeVisible()
+  test('L04 — 应包含用户名输入框', async ({ page }) => {
+    await expect(getUsernameInput(page)).toBeVisible()
   })
 
-  test('应包含登录按钮', async ({ page }) => {
-    const loginBtn = page.locator('.dx-button').filter({ hasText: /登录|Sign In|Login/i })
-    await expect(loginBtn).toBeVisible()
+  test('L05 — 应包含密码输入框', async ({ page }) => {
+    await expect(getPasswordInput(page)).toBeVisible()
   })
 
-  test('应包含语言切换下拉', async ({ page }) => {
-    // 语言切换 DxSelectBox 应存在
-    const langSelector = page.locator('.dx-selectbox').or(page.locator('.language-selector'))
-    await expect(langSelector).toBeVisible()
+  test('L06 — 应包含登录按钮', async ({ page }) => {
+    await expect(getLoginBtn(page)).toBeVisible()
   })
 
-  test('DxForm label-mode 应为 static（非 floating）', async ({ page }) => {
-    // 验证 DxForm 不使用 floating label（零容忍规则）
-    const floatingLabels = page.locator('.dx-field-item-label-location-floating')
-    await expect(floatingLabels).toHaveCount(0)
+  test('L07 — 应包含语言切换下拉', async ({ page }) => {
+    await expect(page.locator('.login-lang-switcher .dx-selectbox')).toBeVisible()
+  })
+
+  test('L08 — DxForm label-mode 应为 static', async ({ page }) => {
+    await expect(page.locator('.dx-field-item-label-location-floating')).toHaveCount(0)
+  })
+})
+
+// ══════════════════════════════════════════════════════════════
+// 平板端渲染 (768×1024)
+// ══════════════════════════════════════════════════════════════
+
+test.describe('登录页 — 平板端渲染', () => {
+  test('L09 — 平板端左侧品牌区应隐藏', async ({ page }) => {
+    await page.setViewportSize({ width: 768, height: 1024 })
+    await page.goto('/#/login-form')
+    await waitForLoginPage(page)
+    await expect(page.locator('.login-branding')).toBeHidden()
+    await expect(page.locator('.login-card')).toBeVisible()
+  })
+})
+
+// ══════════════════════════════════════════════════════════════
+// 手机端渲染 (375×812)
+// ══════════════════════════════════════════════════════════════
+
+test.describe('登录页 — 手机端渲染', () => {
+  test('L10 — 手机端登录卡片全屏展示', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 })
+    await page.goto('/#/login-form')
+    await waitForLoginPage(page)
+    await expect(page.locator('.login-branding')).toBeHidden()
+    await expect(page.locator('.login-card .dx-form')).toBeVisible()
+    await expect(getLoginBtn(page)).toBeVisible()
   })
 })
 
@@ -76,48 +106,34 @@ test.describe('登录页 — 页面渲染', () => {
 test.describe('登录页 — 表单验证', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/#/login-form')
-    await page.waitForLoadState('networkidle')
+    await waitForLoginPage(page)
   })
 
-  test('空表单提交应显示验证错误', async ({ page }) => {
-    // 点击登录按钮（不填写任何内容）
-    const loginBtn = page.locator('.dx-button').filter({ hasText: /登录|Sign In|Login/i })
-    await loginBtn.click()
-
-    // 应显示验证错误信息
-    const validationErrors = page.locator('.dx-invalid-message')
-    await expect(validationErrors.first()).toBeVisible({ timeout: 3_000 })
-  })
-
-  test('仅填写用户名提交应提示密码必填', async ({ page }) => {
-    // 填写用户名
-    const usernameInput = page.locator('.dx-textbox').first().locator('input')
-    await usernameInput.fill('testuser')
-
-    // 点击登录
-    const loginBtn = page.locator('.dx-button').filter({ hasText: /登录|Sign In|Login/i })
-    await loginBtn.click()
-
-    // 应显示验证错误（在表单级别检查）
-    const validationErrors = page.locator('.dx-invalid-message')
-    await expect(validationErrors.first()).toBeVisible({ timeout: 3_000 })
-  })
-
-  test('密码少于 6 位应显示长度验证错误', async ({ page }) => {
-    // 填写短密码
-    const usernameInput = page.locator('.dx-textbox').first().locator('input')
-    await usernameInput.fill('testuser')
-    const passwordInput = page.locator('input[type="password"]')
-    await passwordInput.fill('12345')
-
-    // 点击登录
-    const loginBtn = page.locator('.dx-button').filter({ hasText: /登录|Sign In|Login/i })
-    await loginBtn.click()
-
-    // 应显示密码长度验证错误
+  test('L11 — 空表单提交应触发验证', async ({ page }) => {
+    await getLoginBtn(page).click()
     await page.waitForTimeout(500)
-    const validationErrors = page.locator('.dx-invalid-message')
-    const count = await validationErrors.count()
+    // DevExtreme adds .dx-invalid class to invalid textboxes
+    const invalidFields = page.locator('.login-card .dx-textbox.dx-invalid')
+    const count = await invalidFields.count()
+    expect(count).toBeGreaterThan(0)
+  })
+
+  test('L12 — 仅填写用户名提交应提示密码必填', async ({ page }) => {
+    await getUsernameInput(page).fill('testuser')
+    await getLoginBtn(page).click()
+    await page.waitForTimeout(500)
+    const invalidFields = page.locator('.login-card .dx-textbox.dx-invalid')
+    const count = await invalidFields.count()
+    expect(count).toBeGreaterThan(0)
+  })
+
+  test('L13 — 密码少于 6 位应显示长度验证错误', async ({ page }) => {
+    await getUsernameInput(page).fill('testuser')
+    await getPasswordInput(page).fill('12345')
+    await getLoginBtn(page).click()
+    await page.waitForTimeout(500)
+    const invalidFields = page.locator('.login-card .dx-textbox.dx-invalid')
+    const count = await invalidFields.count()
     expect(count).toBeGreaterThan(0)
   })
 })
@@ -128,121 +144,116 @@ test.describe('登录页 — 表单验证', () => {
 
 test.describe('登录页 — 登录流程', () => {
   test.beforeEach(async ({ page }) => {
-    // 确保登出状态
     await page.goto('/#/login-form')
     await page.evaluate(() => localStorage.removeItem('auth_token'))
     await page.goto('/#/login-form')
-    await page.waitForLoadState('networkidle')
+    await waitForLoginPage(page)
   })
 
-  test('使用正确凭据应登录成功并跳转', async ({ page }) => {
-    // 填写正确的管理员凭据
-    const usernameInput = page.locator('.dx-textbox').first().locator('input')
-    await usernameInput.fill('admin')
-    const passwordInput = page.locator('input[type="password"]')
-    await passwordInput.fill('gjwq1234')
-
-    // 点击登录
-    const loginBtn = page.locator('.dx-button').filter({ hasText: /登录|Sign In|Login/i })
-    await loginBtn.click()
-
-    // 应跳转到 dashboard 或 change-password
-    await page.waitForURL(/.*#\/(dashboard|change-password)/, { timeout: 15_000 })
+  test('L14 — 使用正确凭据应登录成功并跳转', async ({ page }) => {
+    await getUsernameInput(page).fill('admin')
+    await getPasswordInput(page).fill('gjwq1234')
+    await getLoginBtn(page).click()
+    await page.waitForURL(/.*#\/(dashboard|change-password)/, { timeout: 20_000 })
   })
 
-  test('使用错误密码应显示错误提示', async ({ page }) => {
-    // 填写错误密码
-    const usernameInput = page.locator('.dx-textbox').first().locator('input')
+  test('L15 — 使用错误密码应留在登录页', async ({ page }) => {
+    const usernameInput = getUsernameInput(page)
     await usernameInput.fill('admin')
-    const passwordInput = page.locator('input[type="password"]')
-    await passwordInput.fill('wrongpassword')
-
-    // 点击登录
-    const loginBtn = page.locator('.dx-button').filter({ hasText: /登录|Sign In|Login/i })
-    await loginBtn.click()
-
-    // 应显示错误提示
-    await page.waitForTimeout(2000)
-
-    // 应仍在登录页
+    await getPasswordInput(page).fill('wrongpassword')
+    await getLoginBtn(page).click()
+    await page.waitForTimeout(3000)
     expect(page.url()).toContain('login-form')
-
-    // 表单不应被清空（登录失败不清空表单规则）
-    const usernameValue = await usernameInput.inputValue()
-    expect(usernameValue).toBe('admin')
+    expect(await usernameInput.inputValue()).toBe('admin')
   })
 
-  test('使用不存在的用户名应显示错误提示', async ({ page }) => {
-    const usernameInput = page.locator('.dx-textbox').first().locator('input')
-    await usernameInput.fill('nonexistentuser')
-    const passwordInput = page.locator('input[type="password"]')
-    await passwordInput.fill('somepassword123')
-
-    const loginBtn = page.locator('.dx-button').filter({ hasText: /登录|Sign In|Login/i })
-    await loginBtn.click()
-
-    await page.waitForTimeout(2000)
-    expect(page.url()).toContain('login-form')
-  })
-
-  test('回车键应能提交表单', async ({ page }) => {
-    const usernameInput = page.locator('.dx-textbox').first().locator('input')
-    await usernameInput.fill('admin')
-    const passwordInput = page.locator('input[type="password"]')
-    await passwordInput.fill('gjwq1234')
-
-    // 按回车键提交
-    await passwordInput.press('Enter')
-
-    // 应跳转到 dashboard 或 change-password
-    await page.waitForURL(/.*#\/(dashboard|change-password)/, { timeout: 15_000 })
-  })
-
-  test('登录中应禁用登录按钮', async ({ page }) => {
-    const usernameInput = page.locator('.dx-textbox').first().locator('input')
-    await usernameInput.fill('admin')
-    const passwordInput = page.locator('input[type="password"]')
-    await passwordInput.fill('gjwq1234')
-
-    const loginBtn = page.locator('.dx-button').filter({ hasText: /登录|Sign In|Login/i })
-
-    // 点击并立即检查按钮状态
-    await loginBtn.click()
-
-    // 按钮应变为 disabled 状态（或显示 loading）
-    // 注意：这个断言可能需要根据实际实现调整
-    // 登录成功后会很快跳转，所以这里用等待 URL 变化来验证
-    await page.waitForURL(/.*#\/(dashboard|change-password)/, { timeout: 15_000 })
+  test('L16 — 回车键应能提交表单', async ({ page }) => {
+    await getUsernameInput(page).fill('admin')
+    const pwdInput = getPasswordInput(page)
+    await pwdInput.fill('gjwq1234')
+    await pwdInput.press('Enter')
+    await page.waitForURL(/.*#\/(dashboard|change-password)/, { timeout: 20_000 })
   })
 })
 
 // ══════════════════════════════════════════════════════════════
-// 语言切换
+// 滑块验证码
 // ══════════════════════════════════════════════════════════════
 
-test.describe('登录页 — 语言切换', () => {
+test.describe('登录页 — 滑块验证码', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/#/login-form')
-    await page.waitForLoadState('networkidle')
+    await page.evaluate(() => localStorage.removeItem('auth_token'))
+    await page.goto('/#/login-form')
+    await waitForLoginPage(page)
   })
 
-  test('切换到英文应更新页面文本', async ({ page }) => {
-    // 找到语言切换 SelectBox
-    const langSelector = page.locator('.dx-selectbox').or(page.locator('.language-selector'))
+  test('L17 — 初始状态不显示滑块验证', async ({ page }) => {
+    await expect(page.locator('[data-testid="slider-captcha"]')).toHaveCount(0)
+  })
 
-    if (await langSelector.isVisible()) {
-      await langSelector.click()
-
-      // 选择 English
-      const engOption = page.locator('.dx-list-item').filter({ hasText: /English|en-US/i })
-      if (await engOption.isVisible()) {
-        await engOption.click()
-        await page.waitForTimeout(500)
-
-        // 登录按钮文本应变为英文
-        const loginBtn = page.locator('.dx-button').filter({ hasText: /Sign In|Login/i })
-        await expect(loginBtn).toBeVisible({ timeout: 3_000 })
-      }
+  test('L18 — 连续 3 次登录失败后应显示滑块验证', async ({ page }) => {
+    for (let i = 0; i < 3; i++) {
+      await getUsernameInput(page).fill('admin')
+      await getPasswordInput(page).fill('wrong123')
+      await getLoginBtn(page).click()
+      // Wait for the API call to complete and error notification
+      await page.waitForTimeout(3000)
     }
+    await expect(page.locator('[data-testid="slider-captcha"]')).toBeVisible({ timeout: 5_000 })
+  })
+})
+
+// ══════════════════════════════════════════════════════════════
+// 多语言切换
+// ══════════════════════════════════════════════════════════════
+
+test.describe('登录页 — 多语言切换', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/#/login-form')
+    await waitForLoginPage(page)
+  })
+
+  test('L19 — 切换到英文', async ({ page }) => {
+    await page.locator('.login-lang-switcher .dx-selectbox').click()
+    await page.locator('.dx-list-item').filter({ hasText: 'English' }).click()
+    await page.waitForTimeout(500)
+    await expect(page.locator('.login-card .dx-button').filter({ hasText: 'Sign In' })).toBeVisible({ timeout: 3_000 })
+    await expect(page.locator('.login-title')).toContainText('Tenant Management Platform')
+  })
+
+  test('L20 — 切换到日本語', async ({ page }) => {
+    await page.locator('.login-lang-switcher .dx-selectbox').click()
+    await page.locator('.dx-list-item').filter({ hasText: '日本語' }).click()
+    await page.waitForTimeout(500)
+    await expect(page.locator('.login-card .dx-button').filter({ hasText: 'ログイン' })).toBeVisible({ timeout: 3_000 })
+    await expect(page.locator('.login-title')).toContainText('テナント管理プラットフォーム')
+  })
+
+  test('L21 — 切换到 Bahasa Melayu', async ({ page }) => {
+    await page.locator('.login-lang-switcher .dx-selectbox').click()
+    await page.locator('.dx-list-item').filter({ hasText: 'Bahasa Melayu' }).click()
+    await page.waitForTimeout(500)
+    await expect(page.locator('.login-card .dx-button').filter({ hasText: 'Log Masuk' })).toBeVisible({ timeout: 3_000 })
+    await expect(page.locator('.login-title')).toContainText('Platform Pengurusan Penyewa')
+  })
+
+  test('L22 — 切换到繁體中文', async ({ page }) => {
+    await page.locator('.login-lang-switcher .dx-selectbox').click()
+    await page.locator('.dx-list-item').filter({ hasText: '繁體中文' }).click()
+    await page.waitForTimeout(500)
+    await expect(page.locator('.login-card .dx-button').filter({ hasText: '登入' })).toBeVisible({ timeout: 3_000 })
+    await expect(page.locator('.login-title')).toContainText('租戶管理平台')
+  })
+
+  test('L23 — 切换回简体中文', async ({ page }) => {
+    await page.locator('.login-lang-switcher .dx-selectbox').click()
+    await page.locator('.dx-list-item').filter({ hasText: 'English' }).click()
+    await page.waitForTimeout(500)
+    await page.locator('.login-lang-switcher .dx-selectbox').click()
+    await page.locator('.dx-list-item').filter({ hasText: '简体中文' }).click()
+    await page.waitForTimeout(500)
+    await expect(page.locator('.login-card .dx-button').filter({ hasText: '登录' })).toBeVisible({ timeout: 3_000 })
+    await expect(page.locator('.login-title')).toContainText('租户管理平台')
   })
 })

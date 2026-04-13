@@ -10,5 +10,9 @@
   "用户名或密码错误": "Nama pengguna atau kata laluan tidak sah",
   "账户已禁用": "Akaun telah dinyahaktifkan",
   "账户已锁定": "Akaun telah dikunci",
-  "登录中": "Sedang log masuk..."
+  "登录中": "Sedang log masuk...",
+  "请拖动滑块完成验证": "Sila seret peluncur untuk pengesahan",
+  "向右拖动滑块": "Seret ke kanan",
+  "验证通过": "Disahkan",
+  "请先完成滑块验证": "Sila lengkapkan pengesahan peluncur dahulu"
 }

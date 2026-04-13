@@ -47,26 +47,109 @@ cd src/WebTenantPlatfrom && npx playwright test e2e/tests/{模块名}/
 
 ---
 
+## 二.5、通用测试维度（每个模块都必须覆盖）
+
+Agent 在编写每个模块的 E2E 测试时，除了该模块特有的功能测试外，**必须额外覆盖以下通用测试维度**：
+
+### 维度 1：响应式布局验证（桌面/平板/手机）
+
+每个页面必须在 3 种视口尺寸下验证可用性：
+
+| 视口 | 分辨率 | 验证要点 |
+|------|:------:|---------|
+| 桌面端 | 1280×720 | 完整布局展示、侧边栏可见、所有功能可操作 |
+| 平板端 | 768×1024 | 布局自适应、核心功能可操作、无溢出 |
+| 手机端 | 375×812 | 全屏布局、表单可填写、按钮可点击、无截断 |
+
+**测试模板：**
+
+```typescript
+test.describe('页面名 — 桌面端', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 })
+    // ... navigate
+  })
+  // 桌面端特有验证
+})
+
+test.describe('页面名 — 平板端', () => {
+  test('平板端页面可用', async ({ page }) => {
+    await page.setViewportSize({ width: 768, height: 1024 })
+    // 验证核心元素可见、可操作
+  })
+})
+
+test.describe('页面名 — 手机端', () => {
+  test('手机端页面可用', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 })
+    // 验证核心元素可见、可操作
+  })
+})
+```
+
+### 维度 2：多语言切换验证（5 种语言）
+
+每个页面必须验证切换语言后，**前端 UI 文本**（页面标题、按钮文字、表单标签等）正确翻译。
+
+**注意：** 数据库值（如用户名、租户名等后端返回数据）不需要验证翻译。仅验证 `$t()` 绑定的前端文本。
+
+| 语言 | locale | 验证要点 |
+|------|--------|---------|
+| 简体中文 | zh-CN | 默认语言，页面标题、按钮文字为中文 |
+| English | en-US | 页面标题、按钮文字为英文 |
+| 日本語 | ja-JP | 页面标题、按钮文字为日文 |
+| Bahasa Melayu | ms-MY | 页面标题、按钮文字为马来文 |
+| 繁體中文 | zh-TW | 页面标题、按钮文字为繁体中文 |
+
+**测试模板：**
+
+```typescript
+test.describe('页面名 — 多语言切换', () => {
+  for (const lang of [
+    { locale: 'en-US', title: 'Dashboard', btn: 'Sign In' },
+    { locale: 'ja-JP', title: 'ダッシュボード', btn: 'ログイン' },
+    { locale: 'ms-MY', title: 'Papan Pemuka', btn: 'Log Masuk' },
+    { locale: 'zh-TW', title: '儀表盤', btn: '登入' },
+  ]) {
+    test(`切换到 ${lang.locale}`, async ({ page }) => {
+      // 通过语言切换器或 localStorage 切换语言
+      // 验证页面标题和关键按钮文本已翻译
+    })
+  }
+})
+```
+
+---
+
 ## 三、各模块测试要点
 
 ### F1-2 登录页（`tests/login/login.noauth.spec.ts`）
 
-**已实现 ✅** — 示例测试文件已创建。
+**已实现 ✅** — 响应式 + 验证码 + 多语言全覆盖。
 
 **测试要点：**
 
 | 编号 | 测试场景 | 验证点 |
 |:----:|---------|--------|
-| L01 | 页面渲染 | 标题"租户管理平台"可见 |
-| L02 | 表单元素 | 用户名、密码输入框、登录按钮可见 |
-| L03 | label-mode | DxForm 使用 static（无 floating label 元素） |
-| L04 | 语言切换 | 语言下拉可见，切换后文本更新 |
-| L05 | 空表单验证 | 不填写直接提交显示验证错误 |
-| L06 | 密码长度验证 | 密码少于 6 位显示长度错误 |
-| L07 | 正确凭据登录 | admin/gjwq1234 登录成功跳转 dashboard 或 change-password |
-| L08 | 错误凭据登录 | 错误密码停留在登录页，不清空表单 |
-| L09 | 回车键提交 | 密码框按回车触发登录 |
-| L10 | 登录中状态 | 点击登录后按钮 disabled |
+| L01 | 页面标题 | 标题".login-title"可见 |
+| L02 | 表单元素 | DxForm、用户名、密码输入框、登录按钮可见 |
+| L03 | 桌面端品牌区 | 桌面端(1280×720)左侧品牌区`.login-branding`可见 |
+| L04 | 用户名输入框 | 使用 `.login-card .dx-form .dx-textbox input[type="text"]` 定位 |
+| L05 | 密码输入框 | `.login-card input[type="password"]` 可见 |
+| L06 | 登录按钮 | `.login-card .dx-button` 过滤多语言文本 |
+| L07 | 语言切换 | `.login-lang-switcher .dx-selectbox` 可见 |
+| L08 | label-mode | DxForm 使用 static（无 `.dx-field-item-label-location-floating`） |
+| L09 | 平板端响应 | 768×1024 下品牌区隐藏，登录卡片居中 |
+| L10 | 手机端响应 | 375×812 下全屏展示，表单和按钮可见 |
+| L11 | 空表单验证 | 提交后 `.dx-textbox.dx-invalid` 出现（注意：不是检查 `.dx-invalid-message` 可见性） |
+| L12 | 密码必填 | 仅填用户名提交，密码框出现 `.dx-invalid` |
+| L13 | 密码长度 | 密码少于 6 位提交后出现验证错误 |
+| L14 | 正确凭据 | admin/gjwq1234 登录成功跳转 dashboard 或 change-password |
+| L15 | 错误凭据 | 错误密码留在登录页，不清空表单 |
+| L16 | 回车键提交 | 密码框按回车触发登录 |
+| L17 | 验证码初始 | 初始状态不显示滑块验证 `[data-testid="slider-captcha"]` |
+| L18 | 验证码触发 | 连续 3 次登录失败后显示滑块验证 |
+| L19-L23 | 多语言 | 分别切换到 en-US / ja-JP / ms-MY / zh-TW / zh-CN，验证标题和按钮文本 |
 
 **前置条件：** 无（不需要预登录）
 **数据库要求：** 需要种子数据中的 admin 用户
@@ -75,15 +158,25 @@ cd src/WebTenantPlatfrom && npx playwright test e2e/tests/{模块名}/
 
 ### F2-1 仪表盘（`tests/dashboard/dashboard.spec.ts`）
 
+**已实现 ✅** — 页面渲染 + 统计卡片 + 图表 + 快捷操作 + 侧边栏 + 多语言全覆盖。
+
 **测试要点：**
 
 | 编号 | 测试场景 | 验证点 |
 |:----:|---------|--------|
-| D01 | 页面渲染 | 登录后默认跳转到仪表盘 |
-| D02 | 欢迎信息 | 页面显示欢迎文本或用户信息 |
-| D03 | 统计卡片 | 统计摘要卡片正确展示（如有） |
-| D04 | 侧边栏 | 左侧菜单正确展示，菜单项可点击 |
-| D05 | 导航功能 | 点击菜单项跳转到对应页面 |
+| D01 | 默认跳转 | 登录后默认跳转到 `/#/dashboard` |
+| D02 | 页面标题 | `[data-testid="dashboard-title"]` 可见且有文本 |
+| D02b | 页面副标题 | `[data-testid="dashboard-subtitle"]` 可见且有文本 |
+| D03a | 统计卡片数 | `[data-testid="stat-cards"] .stat-card` 有 4 个 |
+| D03b-e | 各卡片可见 | active-users / new-users / api-calls / storage 4 个卡片 |
+| D03f | 卡片图标 | 每个卡片有 `.stat-icon i` 图标 |
+| D03g | 卡片数值 | 每个卡片有 `.stat-value` 且有文本内容 |
+| D03h-j | 图表容器 | chart-active-users / chart-api-calls / chart-metrics 3 个图表容器可见 |
+| D03k-l | 快捷操作 | `[data-testid="quick-actions"]` 可见，有 `.section-title` |
+| D04 | 侧边栏 | `.dx-treeview` 可见 |
+| D05 | 菜单跳转 | 点击菜单项可跳转 |
+| D06a | 中文标题 | locale=zh-CN 时标题正确 |
+| D06b | 英文标题 | locale=en-US 时标题正确 |
 
 **前置条件：** 已登录
 **数据库要求：** 种子数据即可
@@ -316,6 +409,126 @@ cd src/WebTenantPlatfrom && npx playwright test e2e/tests/{模块名}/
 
 ## 版本
 
-- 版本：1.0
+- 版本：1.1
+- 更新日期：2026-04-13
+- 更新内容：v1.1 新增通用测试维度（响应式+多语言）、DevExtreme 定位陷阱、调试经验总结
 - 创建日期：2026-04-13
 - 创建原因：为每个前端模块定义 E2E 测试的验收标准，实现自动化的功能验证闭环
+
+---
+
+## 附录 A：DevExtreme 组件 Playwright 定位陷阱与经验总结
+
+> **目的**：记录历次 E2E 测试迭代中发现的 DevExtreme 组件定位问题与正确解决方案，避免后续 Agent 重复踩坑。
+> **每次 Agent 调试 E2E 测试时，必须先阅读本节，在遇到定位问题时优先查阅此处的解决方案。**
+
+### A.1 DxTextBox 定位：避开 DxSelectBox 的隐藏 input
+
+**问题描述**：使用 `.dx-textbox` 定位时，DxSelectBox 也是 DxTextBox 的子类，会产生多个匹配。特别是 DxSelectBox 内部有一个 `<input type="hidden">` 存储选中值，导致 `locator('.dx-textbox').first().locator('input')` 解析为多个元素（hidden input + 可见 input）。
+
+**❌ 错误定位（会 resolve 到多个元素）**：
+
+```typescript
+// DxSelectBox 的 hidden input 也会被匹配
+page.locator('.dx-textbox').first().locator('input')
+```
+
+**✅ 正确定位**：
+
+```typescript
+// 方案 1：限定容器 + 指定 input type
+page.locator('.login-card .dx-form .dx-textbox').first().locator('input[type="text"]')
+
+// 方案 2：用密码框的 type 天然唯一
+page.locator('.login-card input[type="password"]')
+
+// 方案 3：用 data-field 属性定位（DxForm SimpleItem）
+page.locator('[data-field="Username"] input')
+```
+
+### A.2 DxForm 验证错误检测：使用 `.dx-invalid` 而非 `.dx-invalid-message`
+
+**问题描述**：DevExtreme 的验证错误消息 (`.dx-invalid-message`) 是通过 overlay 机制渲染的，默认为 `visibility: hidden`，只有在 hover/focus 时才显示。因此 Playwright 的 `toBeVisible()` 对 `.dx-invalid-message` 经常返回 false。
+
+**❌ 错误断言**：
+
+```typescript
+// overlay 默认 hidden，即使表单验证失败也会断言失败
+const errors = page.locator('.dx-invalid-message')
+await expect(errors.first()).toBeVisible()
+```
+
+**✅ 正确断言**：
+
+```typescript
+// 检查 .dx-textbox 是否带有 .dx-invalid 类（不依赖 overlay 可见性）
+const invalidFields = page.locator('.login-card .dx-textbox.dx-invalid')
+const count = await invalidFields.count()
+expect(count).toBeGreaterThan(0)
+```
+
+### A.3 DxButton 定位：多语言按钮必须使用正则匹配
+
+**问题描述**：登录按钮文本随语言切换变化（登录/Sign In/ログイン/Log Masuk/登入），用硬编码文本匹配在非中文环境下会失败。
+
+**✅ 正确定位**：
+
+```typescript
+// 用正则匹配所有语言的按钮文本
+page.locator('.login-card .dx-button')
+  .filter({ hasText: /登录|Sign In|Login|ログイン|Log Masuk|登入/i })
+```
+
+### A.4 后端启动：必须使用 `--no-launch-profile` 和明确端口
+
+**问题描述**：`dotnet run --project src/YTStdTenantPlatform` 默认使用 launchSettings.json 中的端口配置，可能不是 5000。E2E 测试和 Vite proxy 都依赖 `http://127.0.0.1:5000`。
+
+**✅ 正确启动命令**：
+
+```bash
+ASPNETCORE_URLS="http://0.0.0.0:5000" dotnet run --project src/YTStdTenantPlatform -c Release --no-launch-profile &
+# 等待 health check 通过
+for i in $(seq 1 30); do
+  curl -s http://127.0.0.1:5000/api/health/ | grep -q '"Code":0' && break
+  sleep 2
+done
+```
+
+### A.5 auth.setup.ts：检查 loginResponse.ok() 前确认后端连通
+
+**问题描述**：如果后端在长时间测试运行过程中崩溃或重启，auth.setup.ts 的 `request.post('/api/auth/login')` 会因连接拒绝而失败，导致所有依赖 auth-setup 的测试全部跳过。
+
+**建议**：auth.setup.ts 应在登录前先做一次 health check，确认后端可达。
+
+### A.6 DxSelectBox 语言切换：使用 `.dx-list-item` 过滤文本
+
+**问题描述**：DxSelectBox 的下拉列表在 DOM 中使用 `.dx-list-item` 渲染（不在 DxSelectBox 容器内，而是在 body 层的 overlay 中）。
+
+**✅ 正确操作**：
+
+```typescript
+// 1. 点击 DxSelectBox 打开下拉
+await page.locator('.login-lang-switcher .dx-selectbox').click()
+// 2. 在全局 overlay 中按文本过滤选项
+await page.locator('.dx-list-item').filter({ hasText: 'English' }).click()
+// 3. 等待语言切换生效
+await page.waitForTimeout(500)
+```
+
+### A.7 waitForTimeout 使用建议
+
+| 场景 | 推荐等待时间 | 说明 |
+|------|:----------:|------|
+| 语言切换后 | 500ms | vue-i18n 响应式更新需要时间 |
+| 登录 API 调用后 | 2000-3000ms | 网络请求 + 路由跳转 |
+| 页面导航后 | 1000ms | Vue 组件渲染 + API 数据加载 |
+| DxForm 验证后 | 500ms | 验证结果渲染到 DOM |
+
+### A.8 后端长时间运行可能崩溃
+
+**问题描述**：在 CI 环境中，后端使用 `nohup dotnet run ... &` 后台运行。如果 E2E 测试运行时间超过后端进程存活时间（或被 OOM killer 终止），后续测试全部失败。
+
+**建议**：
+1. 测试开始前始终执行环境预检
+2. 长时间运行的测试套件中间检查后端是否存活
+3. 如发现后端崩溃，先重启后端再继续测试

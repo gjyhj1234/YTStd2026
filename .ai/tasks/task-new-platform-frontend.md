@@ -984,6 +984,14 @@
 | 序号 | 任务 | 完成内容 | 状态 |
 |:----:|------|---------|:----:|
 | 1 | **F1-1 主布局** | app-navigation.ts（业务菜单 + i18n + 权限过滤）、header-toolbar.vue（语言切换 DxSelectBox + 用户下拉 DxDropDownButton）、side-nav-menu.vue（DxTreeView i18n + 权限 + 反偏移 CSS）、side-nav-outer-toolbar.vue（TypeScript script setup）、auth.ts（axios 对接后端 API）、router.ts（14+ 路由） | ✅ |
+| 2 | **F1-2 登录页** | LoginView.vue（DxForm label-mode="static"，用户名+密码登录），types/auth.ts，api/auth.ts，5 语言文件（12 key），styles/login.css | ✅ |
+| 3 | **F1-2 增强：响应式布局+滑块验证码** | 桌面端双栏布局（品牌区+登录卡）、平板端隐藏品牌区居中卡片、手机端全屏适配；连续3次登录失败后显示滑块验证码（mouse+touch双事件支持）；新增 4 个 i18n key × 5 语言 | ✅ |
+
+#### S5 F2 层级2：业务页面
+
+| 序号 | 任务 | 完成内容 | 状态 |
+|:----:|------|---------|:----:|
+| 1 | **F2-1 仪表盘** | DashboardView.vue（统计卡片×4 + DxChart 折线图/柱状图 + DxPieChart 饼图 + 快捷操作按钮×3）、api/platform-operations.ts、types/platform-operations.ts、5 语言文件（13 key）；E2E 测试 dashboard.spec.ts（渲染+统计卡片+图表+快捷操作+侧边栏+多语言） | ✅ |
 
 ---
 
@@ -1004,12 +1012,16 @@
 11. **S5 F0-1/F0-2/F0-3/F0-5 脚手架搭建完成**：项目已生成，JS→TS 转换完成，axios/Pinia/vue-i18n 集成完成，`npm run build` 通过
 12. **S5 F0-4/F0-6/F1-1 布局层完成**：路由守卫、权限过滤、菜单 i18n、顶栏语言切换、用户下拉、通用组件、15 个组件语言文件
 13. **S5 F1-2 登录页完成**：独立全屏登录页（LoginView.vue），DxForm label-mode="static"，用户名+密码登录（非邮箱），auth API 封装，types/auth.ts 类型定义，5 个语言文件（12 key），路由已指向新组件，build 通过
+14. **S5 F1-2 增强完成**：响应式布局（桌面双栏/平板居中/手机全屏）+ 滑块验证码（3次失败触发）+ 4 个新 i18n key × 5 语言
+15. **S5 F2-1 仪表盘完成**：DashboardView.vue + api/platform-operations.ts + types/platform-operations.ts + 5 语言文件（13 key），E2E 测试 dashboard.spec.ts 编写完成
+16. **E2E 测试协议更新**：0040_e2e-testing-protocol.md v1.1 新增通用测试维度（响应式+多语言）和 DevExtreme 定位陷阱附录
+17. **登录页提示词更新**：0011_login-page.md 新增响应式布局规范、滑块验证码规范、16 个 i18n key
 
 ### 下一轮优先处理
 
-1. **S5 F2-1**：仪表盘页面实现（`0020_dashboard-page.md`）
-2. **S5 F2-2 ~ F2-4**：平台管理页面（并行组 A）
-3. **S5 F2-5 ~ F2-8**：租户管理页面（并行组 B）
+1. **S5 F2-2 ~ F2-4**：平台管理页面（并行组 A：用户、角色、权限）
+2. **S5 F2-5 ~ F2-8**：租户管理页面（并行组 B）
+3. **E2E 测试完善**：登录页 + 仪表盘 E2E 测试在 CI 中运行验证
 
 ### 不需要重复阅读的已稳定文件
 
