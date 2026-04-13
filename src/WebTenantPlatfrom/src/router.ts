@@ -168,10 +168,9 @@ const routes: RouteRecordRaw[] = [
     name: 'login-form',
     meta: {
       requiresAuth: false,
-      layout: simpleLayout,
       title: 'Sign In'
     },
-    component: loadView('login-form')
+    component: () => import('./views/login/LoginView.vue')
   },
   {
     path: '/reset-password',

@@ -1,0 +1,14 @@
+{
+  "租户管理平台": "Tenant Management Platform",
+  "请登录您的账号": "Please sign in to your account",
+  "用户名": "Username",
+  "密码": "Password",
+  "请输入用户名": "Enter username",
+  "请输入密码": "Enter password",
+  "登录": "Sign In",
+  "密码长度至少 6 个字符": "Password must be at least 6 characters",
+  "用户名或密码错误": "Invalid username or password",
+  "账户已禁用": "Account is disabled",
+  "账户已锁定": "Account is locked",
+  "登录中": "Signing in..."
+}

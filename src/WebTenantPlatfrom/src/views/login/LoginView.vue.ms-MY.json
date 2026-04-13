@@ -1,0 +1,14 @@
+{
+  "租户管理平台": "Platform Pengurusan Penyewa",
+  "请登录您的账号": "Sila log masuk ke akaun anda",
+  "用户名": "Nama Pengguna",
+  "密码": "Kata Laluan",
+  "请输入用户名": "Masukkan nama pengguna",
+  "请输入密码": "Masukkan kata laluan",
+  "登录": "Log Masuk",
+  "密码长度至少 6 个字符": "Kata laluan mestilah sekurang-kurangnya 6 aksara",
+  "用户名或密码错误": "Nama pengguna atau kata laluan tidak sah",
+  "账户已禁用": "Akaun telah dinyahaktifkan",
+  "账户已锁定": "Akaun telah dikunci",
+  "登录中": "Sedang log masuk..."
+}
