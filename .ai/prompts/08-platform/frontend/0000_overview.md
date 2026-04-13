@@ -58,7 +58,7 @@
 
 | 编号 | 模块 | 提示词 | 状态 | 并行组 |
 |:----:|------|--------|:----:|:-----:|
-| F2-1 | 仪表盘 | `0020_dashboard-page.md`（✅ 已重写） | ⬜ | - |
+| F2-1 | 仪表盘 | `0020_dashboard-page.md`（✅ 已重写） | ✅ | - |
 | F2-2 | 平台用户管理 | `0021_platform-user-page.md`（✅ 已重写） | ⬜ | A |
 | F2-3 | 平台角色管理 | `0022_platform-role-page.md`（✅ 已重写） | ⬜ | A |
 | F2-4 | 平台权限管理 | `0023_platform-permission-page.md`（✅ 已重写） | ⬜ | A |
