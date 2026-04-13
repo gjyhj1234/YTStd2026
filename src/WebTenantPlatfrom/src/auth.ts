@@ -1,17 +1,11 @@
 import { httpPost, httpGet } from './api/http'
 import type { CurrentUser } from './store/auth'
+import type { LoginRepDTO } from './types/auth'
 
 export interface AuthResult<T = unknown> {
   isOk: boolean
   data?: T
   message?: string
-}
-
-interface LoginRepDTO {
-  Token: string
-  UserId: number
-  Username: string
-  DisplayName: string
 }
 
 let _user: CurrentUser | null = null
