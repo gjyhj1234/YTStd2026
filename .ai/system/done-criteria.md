@@ -94,14 +94,29 @@
 
 ## 前端页面任务完成标准
 
-- 页面位于 `web/{project}/src/views/{module}/`
+### 适用项目路径
+
+| 项目 | 页面路径 | API 路径 | 类型路径 | 状态 |
+|------|---------|---------|---------|------|
+| 新前端 | `src/WebTenantPlatfrom/src/views/{module}/` | `src/WebTenantPlatfrom/src/api/{module}.ts` | `src/WebTenantPlatfrom/src/types/{module}.ts` | 活跃 |
+| 旧前端 | `web/tenant-platform-web/src/views/{module}/` | `web/tenant-platform-web/src/api/{module}.ts` | `web/tenant-platform-web/src/types/{module}.ts` | 冻结 |
+
+### 通用完成标准
+
 - 使用 DevExtreme Vue 组件（DxDataGrid、DxForm、DxPopup 等）
 - 包含功能说明卡片（FunctionDescriptionCard）
 - 包含操作指引（OperationGuideDrawer）
 - 权限控制正确（按钮级权限显隐）
-- API 调用使用 `src/api/{module}.ts` 封装
-- 类型定义位于 `src/types/{module}.ts`
+- API 调用使用模块化封装（`api/{module}.ts`）
+- 类型定义位于 `types/{module}.ts`
 - 路由已注册且有权限守卫
+
+### 新前端项目额外要求
+
+- HTTP 使用 axios（禁止 fetch）
+- 国际化使用 vue-i18n（5 种语言文件齐备）
+- 每个 `.vue` 文件有 5 个对应的 `.vue.{locale}.json` 语言文件
+- 通过 `self-review-protocol.md` 中 F1-F7 全部审查项
 
 ---
 
@@ -117,11 +132,15 @@
 
 ## 前端国际化任务完成标准
 
-- 语言资源文件位于 `src/locales/`
-- 所有用户可见文本使用 `t()` 函数（key 为中文）
-- 支持至少中文（zh-CN）和英文（en-US）
+- 语言资源文件位于项目 `src/locales/` 目录下
+- 所有用户可见文本使用 `t()` / `$t()` 函数（key 为中文）
+- **新前端要求**：必须支持 5 种语言（zh-CN、en-US、ja-JP、ms-MY、zh-TW）
+- **旧前端要求**：至少支持中文（zh-CN）和英文（en-US）
 - DevExtreme 组件本地化正确
 - 日期、数字、货币格式化随 locale 切换
+- 每个 `.vue` 文件有对应的语言文件（新前端为 5 个，旧前端为 2+ 个）
+- notifySuccess/confirmAction 不双重 t()（仅传 i18n key）
+- 组件特有 key 在组件级语言文件中（非主语言文件）
 
 ---
 
