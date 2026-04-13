@@ -182,40 +182,37 @@ async function onSubmit() {
   } catch (error: unknown) {
     logging.value = false
 
-    // 从 BusinessError 或 AxiosError 中提取错误码
-    const bizError = error as { code?: number; response?: { status?: number } }
+    // Import BusinessError type for instanceof check
+    const { BusinessError } = await import('../../api/http')
 
-    if (bizError.code) {
-      // BusinessError — 后端返回的业务错误码
-      const errorCodeMap: Record<string, string> = {
-        AuthCredentialsRequired: '请输入用户名',
-        AuthInvalidCredentials: '用户名或密码错误',
-        AuthAccountDisabled: '账户已禁用',
-        AuthAccountLocked: '账户已锁定'
-      }
-
-      // 后端 Code 为数字，Message 为错误码字符串
-      const errMsg = (error as { message?: string }).message || ''
-      let matched = false
-      for (const [key, i18nKey] of Object.entries(errorCodeMap)) {
-        if (errMsg.includes(key)) {
-          notify({ message: t(i18nKey), type: 'error', displayTime: 3000 })
-          matched = true
-          break
-        }
-      }
-
-      if (!matched) {
+    if (error instanceof BusinessError) {
+      // Backend returned ApiResult with Code != 0
+      // BusinessError.message contains the backend Message field (error code string)
+      const msg = error.message || ''
+      if (msg.indexOf('AuthCredentialsRequired') !== -1) {
+        notify({ message: t('请输入用户名'), type: 'error', displayTime: 3000 })
+      } else if (msg.indexOf('AuthInvalidCredentials') !== -1) {
+        notify({ message: t('用户名或密码错误'), type: 'error', displayTime: 3000 })
+      } else if (msg.indexOf('AuthAccountDisabled') !== -1) {
+        notify({ message: t('账户已禁用'), type: 'error', displayTime: 3000 })
+      } else if (msg.indexOf('AuthAccountLocked') !== -1) {
+        notify({ message: t('账户已锁定'), type: 'error', displayTime: 3000 })
+      } else {
         notify({ message: t('用户名或密码错误'), type: 'error', displayTime: 3000 })
       }
-    } else if (bizError.response?.status === 401) {
-      notify({ message: t('用户名或密码错误'), type: 'error', displayTime: 3000 })
-    } else if (bizError.response?.status === 403) {
-      notify({ message: t('账户已禁用'), type: 'error', displayTime: 3000 })
-    } else if (bizError.response?.status === 423) {
-      notify({ message: t('账户已锁定'), type: 'error', displayTime: 3000 })
     } else {
-      notify({ message: t('用户名或密码错误'), type: 'error', displayTime: 3000 })
+      // HTTP-level error (AxiosError) — map status code to message
+      const axiosErr = error as { response?: { status?: number } }
+      const status = axiosErr.response?.status
+      if (status === 401) {
+        notify({ message: t('用户名或密码错误'), type: 'error', displayTime: 3000 })
+      } else if (status === 403) {
+        notify({ message: t('账户已禁用'), type: 'error', displayTime: 3000 })
+      } else if (status === 423) {
+        notify({ message: t('账户已锁定'), type: 'error', displayTime: 3000 })
+      } else {
+        notify({ message: t('用户名或密码错误'), type: 'error', displayTime: 3000 })
+      }
     }
   }
 }
