@@ -30,7 +30,7 @@ export async function confirmAction(messageKey: string, params?: Record<string, 
 /** Show delete confirmation dialog */
 export async function confirmDelete(name: string): Promise<boolean> {
   const { t } = i18n.global
-  const message = t('确认删除 {name}', { name }).replace('{name}', name)
+  const message = t('确认删除 {name}', { name })
   const result = await confirm(message, t('确定'))
   return result
 }

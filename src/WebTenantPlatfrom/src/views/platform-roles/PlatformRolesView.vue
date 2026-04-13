@@ -406,10 +406,10 @@ const dataSource = new CustomStore({
     const pageSize = loadOptions.take || 20
     try {
       const result = await getPlatformRolesApi({
-        page,
-        pageSize,
-        keyword: searchKeyword.value || undefined,
-        status: searchStatus.value
+        Page: page,
+        PageSize: pageSize,
+        Keyword: searchKeyword.value || undefined,
+        Status: searchStatus.value
       })
       return {
         data: result.Items || [],

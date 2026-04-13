@@ -4,17 +4,17 @@ import type { PlatformRoleRepDTO, CreatePlatformRoleReqDTO, UpdatePlatformRoleRe
 
 /** Get role list (paged) */
 export function getPlatformRolesApi(params: {
-  page: number
-  pageSize: number
-  keyword?: string
-  status?: string | null
+  Page: number
+  PageSize: number
+  Keyword?: string
+  Status?: string | null
 }): Promise<PagedResult<PlatformRoleRepDTO>> {
   const query: Record<string, unknown> = {
-    page: params.page,
-    pageSize: params.pageSize
+    Page: params.Page,
+    PageSize: params.PageSize
   }
-  if (params.keyword) query.keyword = params.keyword
-  if (params.status !== null && params.status !== undefined) query.status = params.status
+  if (params.Keyword) query.Keyword = params.Keyword
+  if (params.Status !== null && params.Status !== undefined) query.Status = params.Status
   return httpGet<PagedResult<PlatformRoleRepDTO>>('/platform-roles', query)
 }
 

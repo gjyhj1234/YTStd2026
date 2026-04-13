@@ -992,6 +992,9 @@
 | 序号 | 任务 | 完成内容 | 状态 |
 |:----:|------|---------|:----:|
 | 1 | **F2-1 仪表盘** | DashboardView.vue（统计卡片×4 + DxChart 折线图/柱状图 + DxPieChart 饼图 + 快捷操作按钮×3）、api/platform-operations.ts、types/platform-operations.ts、5 语言文件（13 key）；E2E 测试 dashboard.spec.ts（渲染+统计卡片+图表+快捷操作+侧边栏+多语言） | ✅ |
+| 2 | **F2-2 平台用户管理** | PlatformUsersView.vue（DxDataGrid+CustomStore 远程分页、CRUD 弹窗、高级查询、批量启用/禁用、DxForm async 用户名唯一性校验、DxTagBox 角色选择、DxDateRangeBox 日期范围）、api/platform-users.ts（11 个 API）、types/platform-users.ts、5 语言文件（40+ key）、constants/permissions.ts、utils/notify.ts | ✅ |
+| 3 | **F2-3 平台角色管理** | PlatformRolesView.vue（DxDataGrid+CustomStore 远程分页、CRUD 弹窗、DxTreeList 权限绑定弹窗、DxDataGrid 成员绑定弹窗、DxForm async 编码唯一性校验）、api/platform-roles.ts（12 个 API）、types/platform-roles.ts、5 语言文件（35+ key） | ✅ |
+| 4 | **F2-4 平台权限管理** | PlatformPermissionsView.vue（DxTreeList 树形展示、关键词搜索过滤、权限类型/HTTP方法颜色标签）、api/platform-permissions.ts（3 个 API）、types/platform-permissions.ts、5 语言文件（15+ key） | ✅ |
 
 ---
 
@@ -1016,12 +1019,15 @@
 15. **S5 F2-1 仪表盘完成**：DashboardView.vue + api/platform-operations.ts + types/platform-operations.ts + 5 语言文件（13 key），E2E 测试 dashboard.spec.ts 编写完成
 16. **E2E 测试协议更新**：0040_e2e-testing-protocol.md v1.1 新增通用测试维度（响应式+多语言）和 DevExtreme 定位陷阱附录
 17. **登录页提示词更新**：0011_login-page.md 新增响应式布局规范、滑块验证码规范、16 个 i18n key
+18. **S5 F2-2 平台用户管理完成**：PlatformUsersView.vue（CRUD+批量+高级查询+async校验），api/platform-users.ts（11 个 API），types/platform-users.ts，5 语言文件（40+ key），constants/permissions.ts，utils/notify.ts
+19. **S5 F2-3 平台角色管理完成**：PlatformRolesView.vue（CRUD+权限绑定+成员绑定+async校验），api/platform-roles.ts（12 个 API），types/platform-roles.ts，5 语言文件（35+ key）
+20. **S5 F2-4 平台权限管理完成**：PlatformPermissionsView.vue（树形展示+搜索过滤），api/platform-permissions.ts（3 个 API），types/platform-permissions.ts，5 语言文件（15+ key）
 
 ### 下一轮优先处理
 
-1. **S5 F2-2 ~ F2-4**：平台管理页面（并行组 A：用户、角色、权限）
-2. **S5 F2-5 ~ F2-8**：租户管理页面（并行组 B）
-3. **E2E 测试完善**：登录页 + 仪表盘 E2E 测试在 CI 中运行验证
+1. **S5 F2-5 ~ F2-8**：租户管理页面（并行组 B：租户列表、租户信息、资源配额、配置开关）
+2. **S5 F2-9 ~ F2-11**：SaaS 运营页面（并行组 C：套餐、订阅、账单）
+3. **E2E 测试完善**：为 F2-2/F2-3/F2-4 编写 E2E 测试
 
 ### 不需要重复阅读的已稳定文件
 
