@@ -8,11 +8,33 @@
 
 ## 适用范围
 
-`web/` 下所有前端项目。
+本规范适用于以下前端项目：
+
+| 项目 | 路径 | 状态 | HTTP 方案 | 国际化 |
+|------|------|------|----------|--------|
+| 新前端（活跃开发） | `src/WebTenantPlatfrom` | 活跃 | **axios** | vue-i18n（import.meta.glob） |
+| 旧前端（已冻结） | `web/tenant-platform-web` | 冻结 | fetch | 自定义 t()/gt() |
+
+> **注意**：新前端项目路径 `WebTenantPlatfrom` 为项目约定拼写，不得修正。
 
 ---
 
 ## 技术约束
+
+### 新前端项目（`src/WebTenantPlatfrom`）
+
+- 框架：Vue 3 + Composition API
+- 语言：TypeScript 严格模式
+- 构建：Vite
+- UI：DevExtreme Vue（`devextreme-vue` 25.2+）
+- 路由：vue-router@4
+- 状态管理：Pinia
+- HTTP：**axios**（禁止使用原生 fetch）
+- 国际化：vue-i18n + import.meta.glob 自动加载
+- Application Template：DevExtreme Vue Application Template
+- UI Templates：DevExtreme Vue UI Templates
+
+### 旧前端项目（`web/tenant-platform-web`，已冻结）
 
 - 框架：Vue 3 + Composition API
 - 语言：TypeScript 严格模式

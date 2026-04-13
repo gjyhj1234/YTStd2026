@@ -228,8 +228,11 @@ function handleBusinessError(code: number, _message: string | null): void {
   const displayMessage = translated !== errorKey ? translated : (_message || t('未知错误'))
 
   // 显示错误提示（使用 DevExtreme notify）
-  const { notify } = await import('devextreme/ui/notify')
-  notify({ message: displayMessage, type: 'error', displayTime: 3000 })
+  import('devextreme/ui/notify').then(({ default: notify }) => {
+    notify({ message: displayMessage, type: 'error', displayTime: 3000 })
+  }).catch(() => {
+    console.error('[handleBusinessError]', displayMessage)
+  })
 }
 
 /** HTTP 错误处理 */
@@ -237,27 +240,27 @@ function handleHttpError(error: AxiosError): void {
   const { t } = i18n.global
   const status = error.response?.status
 
+  let message: string
   switch (status) {
     case 401:
       // Token 过期或未认证 → 跳转登录
       handleUnauthorized()
-      break
+      return
     case 403:
-      // 无权限
-      notify({ message: t('无访问权限'), type: 'error', displayTime: 3000 })
+      message = t('无访问权限')
       break
     case 500:
-      // 服务器错误
-      notify({ message: t('服务器错误，请稍后重试'), type: 'error', displayTime: 3000 })
+      message = t('服务器错误，请稍后重试')
       break
     default:
-      if (!error.response) {
-        // 网络异常
-        notify({ message: t('网络连接异常，请检查网络'), type: 'error', displayTime: 3000 })
-      } else {
-        notify({ message: t('请求失败'), type: 'error', displayTime: 3000 })
-      }
+      message = !error.response ? t('网络连接异常，请检查网络') : t('请求失败')
   }
+
+  import('devextreme/ui/notify').then(({ default: notify }) => {
+    notify({ message, type: 'error', displayTime: 3000 })
+  }).catch(() => {
+    console.error('[handleHttpError]', message)
+  })
 }
 
 /** 401 处理 */

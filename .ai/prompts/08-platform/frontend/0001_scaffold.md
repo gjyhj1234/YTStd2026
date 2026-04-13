@@ -93,6 +93,8 @@ npm install -D sass
 
 ## 目标项目结构（Application Template + 扩展）
 
+> 以下也是本任务"必须产出的文件"清单。标注"Application Template"的文件由 CLI 生成，标注"扩展"的文件需手动创建。
+
 ```
 src/WebTenantPlatfrom/
 ├── src/
@@ -125,6 +127,32 @@ src/WebTenantPlatfrom/
 ├── tsconfig.json
 └── vite.config.ts
 ```
+
+### 必须产出的文件（checklist）
+
+| 序号 | 文件路径 | 来源 | 用途 |
+|:----:|---------|------|------|
+| 1 | `src/WebTenantPlatfrom/package.json` | CLI 生成 | 依赖管理 |
+| 2 | `src/WebTenantPlatfrom/tsconfig.json` | CLI 生成 | TypeScript 配置 |
+| 3 | `src/WebTenantPlatfrom/vite.config.ts` | CLI 生成 | Vite 构建配置 |
+| 4 | `src/WebTenantPlatfrom/src/main.ts` | CLI 生成 / 手动 | 应用入口 |
+| 5 | `src/WebTenantPlatfrom/src/App.vue` | CLI 生成 | 根组件 |
+| 6 | `src/WebTenantPlatfrom/src/app-info.ts` | CLI 生成 | 应用元信息 |
+| 7 | `src/WebTenantPlatfrom/src/app-navigation.ts` | CLI 生成 | 导航菜单配置 |
+| 8 | `src/WebTenantPlatfrom/src/auth.ts` | CLI 生成 | 认证模块 |
+| 9 | `src/WebTenantPlatfrom/src/router.ts` | CLI 生成 | 路由配置 |
+| 10 | `src/WebTenantPlatfrom/src/theme-service.ts` | CLI 生成 | 主题服务 |
+| 11 | `src/WebTenantPlatfrom/src/layouts/side-nav-outer-toolbar.vue` | CLI 生成 | 主布局 |
+| 12 | `src/WebTenantPlatfrom/src/layouts/single-card.vue` | CLI 生成 | 登录卡片布局 |
+| 13 | `src/WebTenantPlatfrom/src/components/header-toolbar.vue` | CLI 生成 | 顶栏组件 |
+| 14 | `src/WebTenantPlatfrom/src/components/side-navigation-menu.vue` | CLI 生成 | 侧边栏菜单 |
+| 15 | `src/WebTenantPlatfrom/src/themes/metadata.base.json` | CLI 生成 | 基础主题 |
+| 16 | `src/WebTenantPlatfrom/src/variables.scss` | CLI 生成 | CSS 变量 |
+| 17 | `src/WebTenantPlatfrom/src/api/` | 手动创建目录 | axios 封装（F0-2 填充） |
+| 18 | `src/WebTenantPlatfrom/src/locales/` | 手动创建目录 | i18n 资源（F0-3 填充） |
+| 19 | `src/WebTenantPlatfrom/src/store/` | 手动创建目录 | Pinia 状态管理 |
+| 20 | `src/WebTenantPlatfrom/src/types/` | 手动创建目录 | TypeScript 类型 |
+| 21 | `src/WebTenantPlatfrom/src/styles/` | 手动创建目录 | 全局样式 |
 
 ---
 

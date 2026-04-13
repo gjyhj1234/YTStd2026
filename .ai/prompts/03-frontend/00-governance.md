@@ -187,13 +187,28 @@ grep -rn $'\xEF\xBF\xBD' .ai/prompts/08-platform/frontend/
 └── 07-business-prompt-template.md ← 极细化业务实施提示词模板
 
 .ai/prompts/08-platform/frontend/
-├── 00-platform-frontend-overview.md  ← 平台前端总览（模块清单、执行顺序）
-├── login-page.md                     ← 登录页（极细化样板）
-├── platform-user-page.md            ← 平台用户管理页面（极细化样板）
-├── platform-role-page.md            ← 平台角色管理页面
-├── platform-permission-page.md      ← 平台权限管理页面
-├── ... (其他业务模块页面)
-└── refactoring-master.md            ← 重构主控文档（保留参考，后续替换）
+├── 0000_overview.md              ← 平台前端总览（模块清单、执行顺序、后端 API 索引）
+├── 0001_scaffold.md              ← F0-1 脚手架搭建
+├── 0002_i18n.md                  ← F0-3 i18n 基础设施
+├── 0010_layout.md                ← F1-1 主布局
+├── 0011_login-page.md            ← F1-2 登录页
+├── 0020_dashboard-page.md        ← F2-1 仪表盘
+├── 0021_platform-user-page.md    ← F2-2 平台用户管理
+├── 0022_platform-role-page.md    ← F2-3 平台角色管理
+├── 0023_platform-permission-page.md ← F2-4 平台权限管理
+├── 0024_tenant-page.md           ← F2-5 租户管理
+├── 0025_tenant-info-page.md      ← F2-6 租户信息管理
+├── 0026_tenant-resource-page.md  ← F2-7 租户资源管理
+├── 0027_tenant-config-page.md    ← F2-8 租户配置管理
+├── 0028_package-page.md          ← F2-9 套餐管理
+├── 0029_subscription-page.md     ← F2-10 订阅管理
+├── 0030_billing-page.md          ← F2-11 账单管理
+├── 0031_api-integration-page.md  ← F2-12 API 集成
+├── 0032_audit-page.md            ← F2-13 审计日志
+├── 0033_notification-page.md     ← F2-14 通知管理
+├── 0034_storage-page.md          ← F2-15 文件管理
+├── 0035_platform-operation-page.md ← F2-16 平台运营
+└── 9900_refactoring-master.md    ← 已归档（历史参考，不用于新任务）
 ```
 
 ---
@@ -244,5 +259,5 @@ Code Review 自检（第四节检查命令）
 | axios 实现规范 | `03-frontend/05-axios-standard.md` |
 | i18n 实现细节 | `03-frontend/06-i18n-execution.md` |
 | 业务提示词写法模板 | `03-frontend/07-business-prompt-template.md` |
-| 平台前端模块清单 | `08-platform/frontend/00-platform-frontend-overview.md` |
-| 各模块业务提示词 | `08-platform/frontend/{module}-page.md` |
+| 平台前端模块清单 | `08-platform/frontend/0000_overview.md` |
+| 各模块业务提示词 | `08-platform/frontend/00{xx}_{module}-page.md` |

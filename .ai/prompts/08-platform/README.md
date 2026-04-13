@@ -9,7 +9,7 @@
 ## 技术栈
 
 - **后端项目**：`src/YTStdTenantPlatform/`（已完成，383 个测试全部通过）
-- **新前端项目**：`src/WebTenantPlatfrom`（基于 DevExtreme Vue Application Template 重建，提示词重写中）
+- **新前端项目**：`src/WebTenantPlatfrom`（基于 DevExtreme Vue Application Template 重建，提示词已完成质量审计 S4.5，待实现 S5）
 - **旧前端项目**：`web/tenant-platform-web/`（仅作参考，不得删除）
 - **底层框架**：YTStdSqlBuilder、YTStdLogger、YTStdAdo、YTStdEntity、YTStdI18n（及其 Generator）
 - **数据库**：PostgreSQL，表前缀 `sys_`
