@@ -39,12 +39,12 @@
 
 | 编号 | 模块 | 提示词 | 状态 |
 |:----:|------|--------|:----:|
-| F0-1 | 脚手架搭建 | `0001_scaffold.md`（待重写） | ⬜ |
+| F0-1 | 脚手架搭建 | `0001_scaffold.md`（✅ 已重写） | ⬜ |
 | F0-2 | axios 封装 | `03-frontend/05-axios-standard.md` | ⬜ |
 | F0-3 | i18n 基础设施 | `0002_i18n.md`（✅ 已重写） / `03-frontend/06-i18n-execution.md` | ⬜ |
-| F0-4 | 路由与权限守卫 | 待创建 | ⬜ |
-| F0-5 | 状态管理 | 待创建 | ⬜ |
-| F0-6 | 通用组件 | 待创建 | ⬜ |
+| F0-4 | 路由与权限守卫 | 包含在 `0010_layout.md` 中 | ⬜ |
+| F0-5 | 状态管理 | 包含在 `0010_layout.md` 中 | ⬜ |
+| F0-6 | 通用组件 | 包含在 `0010_layout.md` 中 | ⬜ |
 
 ### 层级 1：布局（串行）
 
@@ -115,6 +115,7 @@
 
 | 模块 | 后端 API 提示词 |
 |------|----------------|
+| 认证 | `.ai/prompts/08-platform/backend/auth-api.md` |
 | 平台用户 | `.ai/prompts/08-platform/backend/platform-user-api.md` |
 | 平台角色 | `.ai/prompts/08-platform/backend/platform-role-api.md` |
 | 平台权限 | `.ai/prompts/08-platform/backend/platform-permission-api.md` |
@@ -122,7 +123,16 @@
 | 租户信息 | `.ai/prompts/08-platform/backend/tenant-info-api.md` |
 | 租户资源 | `.ai/prompts/08-platform/backend/tenant-resource-api.md` |
 | 租户配置 | `.ai/prompts/08-platform/backend/tenant-config-api.md` |
+| 套餐管理 | `.ai/prompts/08-platform/backend/package-api.md` |
+| 订阅管理 | `.ai/prompts/08-platform/backend/subscription-api.md` |
+| 账单管理 | `.ai/prompts/08-platform/backend/billing-api.md` |
+| API 集成 | `.ai/prompts/08-platform/backend/api-integration-api.md` |
+| 审计日志 | `.ai/prompts/08-platform/backend/audit-api.md` |
+| 通知管理 | `.ai/prompts/08-platform/backend/notification-api.md` |
+| 文件管理 | `.ai/prompts/08-platform/backend/storage-api.md` |
 | 平台运营 | `.ai/prompts/08-platform/backend/platform-operation-api.md` |
+| 菜单与字典 | `.ai/prompts/08-platform/backend/menu-dictionary-api.md` |
+| 错误码 | `.ai/prompts/08-platform/backend/error-codes.md` |
 
 ---
 
