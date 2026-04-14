@@ -177,30 +177,7 @@ namespace YTStdTenantPlatform.Bootstrap
                 var now = DateTime.UtcNow;
                 var remoteIp = context.Connection.RemoteIpAddress?.ToString();
                 var userAgent = context.Request.Headers.UserAgent.ToString();
-                var (queryResult, users) = await PlatformUserCRUD.GetListAsync(0, 0);
-                if (!queryResult.Success || users == null)
-                {
-                    Logger.Error(0, 0, "[RouteRegistration] 查询平台用户失败: " + queryResult.ErrorMessage);
-                    await TenantPlatformJsonResponseWriter.WriteAsync(context,
-                        ApiResult<LoginRepDTO>.Fail(ErrorCodes.SystemBusy), 500);
-                    return;
-                }
-
-                PlatformUser? matchedUser = null;
-                for (int i = 0; i < users.Count; i++)
-                {
-                    var candidate = users[i];
-                    if (candidate.DeletedAt != null) continue;
-                    if (string.Equals(candidate.Username, username, StringComparison.OrdinalIgnoreCase))
-                    {
-                        matchedUser = candidate;
-                        break;
-                    }
-                }
-
-                var policy = PlatformCacheWarmer.ConfigSnapshot?.DefaultPasswordPolicy;
-                var lockThreshold = policy?.LoginFailLockThreshold ?? 5;
-                var lockDurationMinutes = policy?.LockDurationMinutes ?? 30;
+                PlatformUser? matchedUser =   await PlatformUserCRUD.uq_sys_user_username(0, 0,username);
 
                 if (matchedUser == null)
                 {
@@ -209,6 +186,9 @@ namespace YTStdTenantPlatform.Bootstrap
                         ApiResult<LoginRepDTO>.Fail(ErrorCodes.AuthInvalidCredentials), 401);
                     return;
                 }
+                var policy = PlatformCacheWarmer.ConfigSnapshot?.DefaultPasswordPolicy;
+                var lockThreshold = policy?.LoginFailLockThreshold ?? 5;
+                var lockDurationMinutes = policy?.LockDurationMinutes ?? 30;
 
                 if (matchedUser.Status == (int)PlatformUserStatus.Disabled)
                 {

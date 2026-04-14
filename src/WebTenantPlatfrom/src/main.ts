@@ -8,10 +8,14 @@ import { createPinia } from 'pinia'
 import router from './router'
 import { i18n } from './locales'
 import themes from 'devextreme/ui/themes'
-
+import config from "devextreme/core/config";
+import { licenseKey } from './devextreme-license';
 import App from './App.vue'
 import appInfo from './app-info'
-
+config({
+    forceIsoDateParsing: true,
+    licenseKey
+})
 themes.initialized(() => {
   const app = createApp(App)
   const pinia = createPinia()
