@@ -287,3 +287,8 @@
     display: none;
   }
 }
+
+/* ── 抑制 DevExtreme 试用许可证覆盖层的指针事件 ── */
+dx-license {
+  pointer-events: none !important;
+}

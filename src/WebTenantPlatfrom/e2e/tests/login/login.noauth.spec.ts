@@ -57,14 +57,14 @@ function expectCentered(viewportWidth: number, elementWidth: number, elementLeft
   expect(centeredOffset).toBeLessThanOrEqual(CENTERING_TOLERANCE_PX)
 }
 
-/** 点击语言切换下拉（使用 force 避免 dx-license 覆盖层拦截） */
+/** 点击语言切换下拉 */
 async function clickLangSwitcher(page: Page) {
-  await page.locator('.login-lang-switcher .dx-selectbox').click({ force: true })
+  await page.locator('.login-lang-switcher .dx-selectbox').click()
 }
 
-/** 选择下拉选项（使用 force 避免 dx-license 覆盖层拦截） */
+/** 选择下拉选项 */
 async function selectLangOption(page: Page, text: string) {
-  await page.locator('.dx-list-item').filter({ hasText: text }).click({ force: true })
+  await page.locator('.dx-list-item').filter({ hasText: text }).click()
 }
 
 // ══════════════════════════════════════════════════════════════
