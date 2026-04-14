@@ -129,8 +129,8 @@
       <DxColumn :caption="$t('操作')" :width="420" :allow-sorting="false" cell-template="actionCell" />
 
       <template #statusCell="{ data: cellData }">
-        <span :class="cellData.data.Status === 1 ? 'status-enabled' : 'status-disabled'">
-          {{ cellData.data.Status === 1 ? $t('已启用') : $t('已禁用') }}
+        <span :class="cellData.data.Status === 'Active' ? 'status-enabled' : 'status-disabled'">
+          {{ cellData.data.Status === 'Active' ? $t('已启用') : $t('已禁用') }}
         </span>
       </template>
 
@@ -155,14 +155,14 @@
             @click="openEditDialog(cellData.data)"
           />
           <DxButton
-            v-if="authStore.hasPermission(PLATFORM_USER_ENABLE) && cellData.data.Status === 2"
+            v-if="authStore.hasPermission(PLATFORM_USER_ENABLE) && cellData.data.Status === 'Disabled'"
             :text="$t('启用')"
             icon="check"
             styling-mode="text"
             @click="onEnable(cellData.data)"
           />
           <DxButton
-            v-if="authStore.hasPermission(PLATFORM_USER_DISABLE) && cellData.data.Status === 1"
+            v-if="authStore.hasPermission(PLATFORM_USER_DISABLE) && cellData.data.Status === 'Active'"
             :text="$t('禁用')"
             icon="close"
             styling-mode="text"
@@ -292,14 +292,8 @@
           </div>
           <div class="detail-row">
             <span class="detail-label">{{ $t('状态') }}</span>
-            <span :class="detailData.Status === 1 ? 'status-enabled' : 'status-disabled'">
-              {{ detailData.Status === 1 ? $t('已启用') : $t('已禁用') }}
-            </span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">{{ $t('角色') }}</span>
-            <span class="detail-value">
-              {{ detailData.Roles && detailData.Roles.length > 0 ? detailData.Roles.map(r => r.Name).join(', ') : '-' }}
+            <span :class="detailData.Status === 'Active' ? 'status-enabled' : 'status-disabled'">
+              {{ detailData.Status === 'Active' ? $t('已启用') : $t('已禁用') }}
             </span>
           </div>
           <div class="detail-row">
@@ -307,8 +301,12 @@
             <span class="detail-value">{{ formatDateTime(detailData.CreatedAt) }}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">{{ $t('更新时间') }}</span>
-            <span class="detail-value">{{ formatDateTime(detailData.UpdatedAt) }}</span>
+            <span class="detail-label">{{ $t('最后登录') }}</span>
+            <span class="detail-value">{{ detailData.LastLoginAt ? formatDateTime(detailData.LastLoginAt) : '-' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">{{ $t('备注') }}</span>
+            <span class="detail-value">{{ detailData.Remark || '-' }}</span>
           </div>
         </div>
       </template>
@@ -395,7 +393,7 @@ const showDescription = ref(true)
 const showGuide = ref(false)
 const showAdvanced = ref(false)
 const searchKeyword = ref('')
-const searchStatus = ref<number | null>(null)
+const searchStatus = ref<string | null>(null)
 const searchRoleId = ref<number | null>(null)
 const searchDateStart = ref<Date | null>(null)
 const searchDateEnd = ref<Date | null>(null)
@@ -405,8 +403,8 @@ const allRoles = ref<PlatformRoleRepDTO[]>([])
 
 const statusOptions = [
   { value: null, label: t('全部') },
-  { value: 1, label: t('已启用') },
-  { value: 2, label: t('已禁用') }
+  { value: 'Active', label: t('已启用') },
+  { value: 'Disabled', label: t('已禁用') }
 ]
 
 // CustomStore for remote paging
@@ -489,7 +487,7 @@ async function openEditDialog(row: PlatformUserRepDTO): Promise<void> {
       DisplayName: detail.DisplayName,
       Email: detail.Email || '',
       Phone: detail.Phone || '',
-      RoleIds: detail.Roles ? detail.Roles.map(r => r.Id) : []
+      RoleIds: []
     }
     formDialogVisible.value = true
   } catch {

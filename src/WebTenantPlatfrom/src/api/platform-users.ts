@@ -7,7 +7,7 @@ export function getPlatformUsersApi(params: {
   Page: number
   PageSize: number
   Keyword?: string
-  Status?: number | null
+  Status?: string | null
   RoleId?: number | null
   CreatedAtStart?: string | null
   CreatedAtEnd?: string | null

@@ -37,6 +37,8 @@
   "批量启用": "Batch Enable",
   "批量禁用": "Batch Disable",
   "确认删除 {name}": "Confirm delete {name}",
+  "最后登录": "Last Login",
+  "备注": "Remark",
   "查询": null,
   "重置": null,
   "新增": null,
