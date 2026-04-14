@@ -99,18 +99,19 @@ test.describe('平台用户管理 — 页面渲染', () => {
     const advancedSection = page.locator('.advanced-search')
     await expect(advancedSection).toBeHidden()
 
-    // Click advanced button
+    // Click advanced button — text toggles between 高级查询 and 收起
     const advBtn = page.locator('.search-bar .dx-button').filter({ hasText: /高级查询|Advanced|詳細|Carian|進階/i }).first()
     await expect(advBtn).toBeVisible()
     await advBtn.click()
-    await page.waitForTimeout(300)
+    await page.waitForTimeout(500)
 
     // Advanced section should be visible
     await expect(advancedSection).toBeVisible()
 
-    // Click again to collapse
-    await advBtn.click()
-    await page.waitForTimeout(300)
+    // Click collapse button (text has changed to 收起/Collapse)
+    const collapseBtn = page.locator('.search-bar .dx-button').filter({ hasText: /收起|Collapse|閉じる|Tutup|收起/i }).first()
+    await collapseBtn.click()
+    await page.waitForTimeout(500)
     await expect(advancedSection).toBeHidden()
   })
 
@@ -426,13 +427,15 @@ test.describe('平台用户管理 — 多语言切换', () => {
     { locale: 'zh-TW', title: '平台使用者管理' },
   ]) {
     test(`切换到 ${lang.locale}`, async ({ page }) => {
-      // Navigate first to establish page context, then set locale and reload
+      // Navigate first to establish page context
       await page.goto('/#/platform-users')
       await page.waitForLoadState('networkidle')
+      // Set locale in localStorage
       await page.evaluate((l: string) => localStorage.setItem('locale', l), lang.locale)
-      await page.goto('/#/platform-users')
+      // Reload to re-initialize Vue i18n with new locale (goto same hash doesn't reinitialize)
+      await page.reload()
       await page.waitForLoadState('networkidle')
-      await page.waitForTimeout(1500)
+      await page.waitForTimeout(2000)
 
       const title = page.locator('.page-title')
       await expect(title).toBeVisible()
