@@ -60,64 +60,55 @@
               />
             </DxSimpleItem>
 
-            <!-- 滑动验证 - 多次失败后显示 -->
-            <DxEmptyItem>
-              <template #default>
-                <div
-                  v-show="showCaptcha"
-                  class="captcha-wrapper"
-                  data-testid="slider-captcha"
-                >
-                  <p class="captcha-label">{{ $t('请拖动滑块完成验证') }}</p>
-                  <div
-                    class="captcha-track"
-                    data-testid="captcha-track"
-                  >
-                    <div
-                      class="captcha-fill"
-                      :style="{ width: captchaProgress + '%' }"
-                    />
-                    <div
-                      class="captcha-thumb"
-                      :style="{ left: captchaProgress + '%' }"
-                      data-testid="captcha-thumb"
-                      @mousedown="onCaptchaMouseDown"
-                      @touchstart.prevent="onCaptchaTouchStart"
-                    >
-                      <i class="dx-icon-chevrondoubleright"></i>
-                    </div>
-                    <span v-if="captchaProgress < 5" class="captcha-hint">{{ $t('向右拖动滑块') }}</span>
-                    <span v-if="captchaVerified" class="captcha-success">{{ $t('验证通过') }}</span>
-                  </div>
-                </div>
-              </template>
-            </DxEmptyItem>
-
-            <DxButtonItem>
-              <DxButtonOptions
-                width="100%"
-                type="default"
-                styling-mode="contained"
-                template="loginBtnTemplate"
-                :use-submit-behavior="true"
-              />
-            </DxButtonItem>
-
-            <template #loginBtnTemplate>
-              <div>
-                <span class="dx-button-text">
-                  <DxLoadIndicator
-                    v-if="logging"
-                    width="24px"
-                    height="24px"
-                    :visible="true"
-                  />
-                  <span v-if="logging">{{ $t('登录中') }}</span>
-                  <span v-if="!logging">{{ $t('登录') }}</span>
-                </span>
-              </div>
-            </template>
           </DxForm>
+
+          <!-- 滑动验证 - 多次失败后显示 -->
+          <div
+            v-if="showCaptcha"
+            class="captcha-wrapper"
+            data-testid="slider-captcha"
+          >
+            <p class="captcha-label">{{ $t('请拖动滑块完成验证') }}</p>
+            <div
+              class="captcha-track"
+              data-testid="captcha-track"
+            >
+              <div
+                class="captcha-fill"
+                :style="{ width: captchaProgress + '%' }"
+              />
+              <div
+                class="captcha-thumb"
+                :style="{ left: captchaProgress + '%' }"
+                data-testid="captcha-thumb"
+                @mousedown="onCaptchaMouseDown"
+                @touchstart.prevent="onCaptchaTouchStart"
+              >
+                <i class="dx-icon-chevrondoubleright"></i>
+              </div>
+              <span v-if="captchaProgress < 5" class="captcha-hint">{{ $t('向右拖动滑块') }}</span>
+              <span v-if="captchaVerified" class="captcha-success">{{ $t('验证通过') }}</span>
+            </div>
+          </div>
+
+          <div class="login-submit-wrapper">
+            <DxButton
+              class="login-submit"
+              width="100%"
+              type="default"
+              styling-mode="contained"
+              :disabled="logging"
+              :text="logging ? $t('登录中') : $t('登录')"
+              @click="onSubmit"
+            />
+            <DxLoadIndicator
+              v-if="logging"
+              class="login-submit-indicator"
+              width="20px"
+              height="20px"
+              :visible="true"
+            />
+          </div>
         </form>
       </div>
     </div>
@@ -135,12 +126,10 @@ import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import DxForm, {
   DxSimpleItem,
-  DxEmptyItem,
   DxRequiredRule,
-  DxStringLengthRule,
-  DxButtonItem,
-  DxButtonOptions
+  DxStringLengthRule
 } from 'devextreme-vue/form'
+import DxButton from 'devextreme-vue/button'
 import { DxSelectBox } from 'devextreme-vue/select-box'
 import DxLoadIndicator from 'devextreme-vue/load-indicator'
 import notify from 'devextreme/ui/notify'

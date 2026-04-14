@@ -103,9 +103,18 @@
   font-size: 13px;
 }
 
-/* DxForm 内部按钮区域上边距 */
-.login-card .dx-form .dx-button-item {
+/* 登录按钮区域上边距 */
+.login-submit-wrapper {
+  position: relative;
   margin-top: 16px;
+}
+
+.login-submit-indicator {
+  position: absolute;
+  top: 50%;
+  left: calc(50% - 48px);
+  transform: translateY(-50%);
+  pointer-events: none;
 }
 
 /* DxLoadIndicator 与文字对齐 */
