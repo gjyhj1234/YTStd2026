@@ -36,6 +36,18 @@ namespace YTStdTenantPlatform.Application.Services
                 filtered.Add(r);
             }
 
+            // Sorting
+            if (!string.IsNullOrEmpty(request.SortField))
+            {
+                bool desc = string.Equals(request.SortOrder, "desc", StringComparison.OrdinalIgnoreCase);
+                if (string.Equals(request.SortField, "Code", StringComparison.OrdinalIgnoreCase))
+                    filtered.Sort((a, b) => desc ? string.Compare(b.Code, a.Code, StringComparison.OrdinalIgnoreCase) : string.Compare(a.Code, b.Code, StringComparison.OrdinalIgnoreCase));
+                else if (string.Equals(request.SortField, "Name", StringComparison.OrdinalIgnoreCase))
+                    filtered.Sort((a, b) => desc ? string.Compare(b.Name, a.Name, StringComparison.OrdinalIgnoreCase) : string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
+                else if (string.Equals(request.SortField, "CreatedAt", StringComparison.OrdinalIgnoreCase))
+                    filtered.Sort((a, b) => desc ? b.CreatedAt.CompareTo(a.CreatedAt) : a.CreatedAt.CompareTo(b.CreatedAt));
+            }
+
             var offset = request.Offset;
             var size = request.NormalizedPageSize;
             var items = new List<PlatformRoleRepDTO>();
@@ -238,6 +250,17 @@ namespace YTStdTenantPlatform.Application.Services
 
             if (string.Equals(target.Code, "super-admin", StringComparison.OrdinalIgnoreCase))
                 return ApiResult.Fail(ErrorCodes.RoleCannotDeleteSuperAdmin);
+
+            // Check if role has associated users
+            var (rmResult, rmData) = await PlatformRoleMemberCRUD.GetListAsync(tenantId, operatorId);
+            if (rmResult.Success && rmData != null)
+            {
+                foreach (var rm in rmData)
+                {
+                    if (rm.RoleId == id)
+                        return ApiResult.Fail(ErrorCodes.RoleHasAssociatedUsers);
+                }
+            }
 
             var delResult = await PlatformRoleCRUD.DeleteAsync(tenantId, operatorId, target.Id);
             if (!delResult.Success) return ApiResult.Fail(ErrorCodes.RoleDeleteFailed);

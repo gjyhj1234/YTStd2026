@@ -66,6 +66,12 @@ namespace YTStdTenantPlatform.Application.Dtos
         /// <summary>创建时间结束</summary>
         public DateTime? CreatedAtEnd { get; set; }
 
+        /// <summary>排序字段（如 Code, Name, CreatedAt）</summary>
+        public string? SortField { get; set; }
+
+        /// <summary>排序方向（asc / desc）</summary>
+        public string? SortOrder { get; set; }
+
         /// <summary>规范化页码（最小为 1）</summary>
         public int NormalizedPage => Page < 1 ? 1 : Page;
 

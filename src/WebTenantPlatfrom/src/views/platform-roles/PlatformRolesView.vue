@@ -9,33 +9,74 @@
       shading-color="rgba(0,0,0,0.2)"
     />
 
-    <h2 class="page-title">{{ $t('平台角色管理') }}</h2>
-    <p class="page-subtitle">{{ $t('管理平台级角色，包括创建、编辑、启用/禁用、权限分配和成员管理') }}</p>
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-header-text">
+        <h2 class="page-title">{{ $t('平台角色管理') }}</h2>
+        <p class="page-subtitle">{{ $t('管理平台级角色，包括创建、编辑、启用/禁用、权限分配和成员管理') }}</p>
+      </div>
+      <div class="page-header-actions">
+        <FunctionDescriptionCard v-model:visible="showDescription">
+          <h4>{{ $t('功能用途') }}</h4>
+          <p>{{ $t('平台角色管理用于管理系统级角色定义。支持创建、编辑、删除角色，以及启用/禁用状态切换、权限分配和成员管理操作。') }}</p>
+          <h4>{{ $t('字段说明') }}</h4>
+          <ul>
+            <li><strong>{{ $t('角色编码') }}</strong>：{{ $t('角色唯一标识，创建后不可修改，仅允许字母、数字、下划线和连字符') }}</li>
+            <li><strong>{{ $t('角色名称') }}</strong>：{{ $t('角色显示名称，用于界面展示') }}</li>
+            <li><strong>{{ $t('描述') }}</strong>：{{ $t('角色用途说明') }}</li>
+            <li><strong>{{ $t('状态') }}</strong>：{{ $t('已启用/已禁用，禁用后角色权限不生效') }}</li>
+          </ul>
+          <h4>{{ $t('使用场景') }}</h4>
+          <ul>
+            <li>{{ $t('创建新角色并分配对应权限') }}</li>
+            <li>{{ $t('为角色添加或移除成员用户') }}</li>
+            <li>{{ $t('启用或禁用角色以控制权限生效范围') }}</li>
+          </ul>
+        </FunctionDescriptionCard>
+        <OperationGuideDrawer v-model:visible="showGuide">
+          <ol class="guide-steps">
+            <li>{{ $t('step_search_role') }}</li>
+            <li>{{ $t('step_create_role') }}</li>
+            <li>{{ $t('step_edit_role') }}</li>
+            <li>{{ $t('step_status_role') }}</li>
+            <li>{{ $t('step_assign_perm') }}</li>
+            <li>{{ $t('step_assign_member') }}</li>
+            <li>{{ $t('step_delete_role') }}</li>
+          </ol>
+        </OperationGuideDrawer>
+      </div>
+    </div>
 
-    <FunctionDescriptionCard v-model:visible="showDescription">
-      <p>{{ $t('管理平台级角色，包括创建、编辑、启用/禁用、权限分配和成员管理') }}</p>
-    </FunctionDescriptionCard>
-
-    <!-- Search Bar -->
-    <div class="search-bar">
-      <DxTextBox
-        v-model:value="searchKeyword"
-        :placeholder="$t('请输入角色编码或名称')"
-        :show-clear-button="true"
-        width="280"
-        @enter-key="onSearch"
-      />
-      <DxSelectBox
-        v-model:value="searchStatus"
-        :items="statusOptions"
-        display-expr="label"
-        value-expr="value"
-        :placeholder="$t('请选择状态')"
-        width="160"
-        :show-clear-button="true"
-      />
-      <DxButton :text="$t('查询')" icon="search" type="default" @click="onSearch" />
-      <DxButton :text="$t('重置')" icon="refresh" styling-mode="outlined" @click="onReset" />
+    <!-- Search Area -->
+    <div class="search-area">
+      <div class="search-row">
+        <div class="search-field">
+          <label class="search-label">{{ $t('关键词') }}</label>
+          <DxTextBox
+            v-model:value="searchKeyword"
+            :placeholder="$t('请输入角色编码或名称')"
+            :show-clear-button="true"
+            width="220"
+            @enter-key="onSearch"
+          />
+        </div>
+        <div class="search-field">
+          <label class="search-label">{{ $t('状态') }}</label>
+          <DxSelectBox
+            v-model:value="searchStatus"
+            :items="statusOptionsComputed"
+            display-expr="label"
+            value-expr="value"
+            :placeholder="$t('请选择状态')"
+            width="150"
+            :show-clear-button="true"
+          />
+        </div>
+        <div class="search-actions">
+          <DxButton :text="$t('查询')" icon="search" type="default" @click="onSearch" />
+          <DxButton :text="$t('重置')" icon="refresh" styling-mode="outlined" @click="onReset" />
+        </div>
+      </div>
     </div>
 
     <!-- Toolbar -->
@@ -62,6 +103,10 @@
       :column-auto-width="true"
       :remote-operations="true"
       :no-data-text="$t('暂无数据')"
+      :focused-row-enabled="true"
+      :focused-row-key="focusedRowKey"
+      :auto-navigate-to-focused-row="true"
+      key-expr="Id"
     >
       <DxPaging :page-size="20" />
       <DxPager
@@ -77,11 +122,11 @@
       <DxColumn data-field="Description" :caption="$t('描述')" :allow-sorting="false" />
       <DxColumn data-field="Status" :caption="$t('状态')" :width="100" :allow-sorting="false" cell-template="statusCell" />
       <DxColumn data-field="CreatedAt" :caption="$t('创建时间')" :width="180" :allow-sorting="true" cell-template="dateCell" />
-      <DxColumn :caption="$t('操作')" :width="480" :allow-sorting="false" cell-template="actionCell" />
+      <DxColumn :caption="$t('操作')" :width="200" :allow-sorting="false" cell-template="actionCell" />
 
       <template #statusCell="{ data: cellData }">
-        <span :class="cellData.data.Status === 'active' ? 'status-enabled' : 'status-disabled'">
-          {{ cellData.data.Status === 'active' ? $t('已启用') : $t('已禁用') }}
+        <span :class="cellData.data.Status === 'Active' ? 'status-enabled' : 'status-disabled'">
+          {{ cellData.data.Status === 'Active' ? $t('已启用') : $t('已禁用') }}
         </span>
       </template>
 
@@ -105,41 +150,15 @@
             styling-mode="text"
             @click="openEditDialog(cellData.data)"
           />
-          <DxButton
-            v-if="authStore.hasPermission(PLATFORM_ROLE_ENABLE) && cellData.data.Status === 'disabled'"
-            :text="$t('启用')"
-            icon="check"
+          <DxDropDownButton
+            :text="$t('更多')"
+            icon="overflow"
             styling-mode="text"
-            @click="onEnable(cellData.data)"
-          />
-          <DxButton
-            v-if="authStore.hasPermission(PLATFORM_ROLE_DISABLE) && cellData.data.Status === 'active'"
-            :text="$t('禁用')"
-            icon="close"
-            styling-mode="text"
-            @click="onDisable(cellData.data)"
-          />
-          <DxButton
-            v-if="authStore.hasPermission(PLATFORM_ROLE_ASSIGN_PERMISSION)"
-            :text="$t('分配权限')"
-            icon="hierarchy"
-            styling-mode="text"
-            @click="openPermissionDialog(cellData.data)"
-          />
-          <DxButton
-            v-if="authStore.hasPermission(PLATFORM_ROLE_ASSIGN_MEMBER)"
-            :text="$t('分配成员')"
-            icon="group"
-            styling-mode="text"
-            @click="openMemberDialog(cellData.data)"
-          />
-          <DxButton
-            v-if="authStore.hasPermission(PLATFORM_ROLE_DELETE)"
-            :text="$t('删除')"
-            icon="trash"
-            styling-mode="text"
-            type="danger"
-            @click="onDelete(cellData.data)"
+            :items="getMoreActions(cellData.data)"
+            display-expr="text"
+            key-expr="id"
+            :drop-down-options="{ width: 160 }"
+            @item-click="onMoreActionClick($event, cellData.data)"
           />
         </div>
       </template>
@@ -224,8 +243,8 @@
           </div>
           <div class="detail-row">
             <span class="detail-label">{{ $t('状态') }}</span>
-            <span :class="detailData.Status === 'active' ? 'status-enabled' : 'status-disabled'">
-              {{ detailData.Status === 'active' ? $t('已启用') : $t('已禁用') }}
+            <span :class="detailData.Status === 'Active' ? 'status-enabled' : 'status-disabled'">
+              {{ detailData.Status === 'Active' ? $t('已启用') : $t('已禁用') }}
             </span>
           </div>
           <div class="detail-row">
@@ -246,24 +265,57 @@
       @hiding="permDialogVisible = false"
     >
       <template #content>
-        <DxTreeList
-          :data-source="permTreeData"
-          key-expr="Id"
-          parent-id-expr="ParentId"
-          :auto-expand-all="true"
-          :show-borders="true"
-          :column-auto-width="true"
-          :selected-row-keys="selectedPermKeys"
-          @selection-changed="onPermSelectionChanged"
-        >
-          <DxTreeListSelection mode="multiple" :recursive="true" />
-          <DxTreeListColumn data-field="Name" :caption="$t('权限名称')" />
-          <DxTreeListColumn data-field="Code" :caption="$t('权限编码')" />
-          <DxTreeListColumn data-field="PermissionType" :caption="$t('权限类型')" :width="120" />
-        </DxTreeList>
-        <div class="dialog-buttons">
-          <DxButton :text="$t('取消')" styling-mode="outlined" @click="permDialogVisible = false" />
-          <DxButton :text="$t('确定')" type="default" :disabled="savingPerm" @click="onSavePermissions" />
+        <div class="perm-dialog-content">
+          <!-- Quick Templates -->
+          <div class="perm-templates">
+            <span class="perm-templates-label">{{ $t('快捷模板') }}：</span>
+            <DxButton
+              v-for="tpl in permTemplates"
+              :key="tpl.id"
+              :text="tpl.label"
+              styling-mode="outlined"
+              @click="applyPermTemplate(tpl.id)"
+            />
+          </div>
+          <!-- Search & Count -->
+          <div class="perm-toolbar">
+            <DxTextBox
+              v-model:value="permSearchText"
+              :placeholder="$t('搜索权限')"
+              :show-clear-button="true"
+              width="240"
+              mode="search"
+            />
+            <span
+              class="perm-count"
+              :class="{ 'perm-count-clickable': true }"
+              @click="togglePermFilter"
+            >
+              {{ $t('已选择 {selected}/{total} 项', { selected: selectedPermKeys.length, total: totalPermCount }) }}
+            </span>
+          </div>
+          <!-- Permission Tree (DxTreeView) -->
+          <div class="perm-tree-wrapper">
+            <DxTreeView
+              ref="permTreeRef"
+              :data-source="permTreeItems"
+              :show-check-boxes-mode="'normal'"
+              :selection-mode="'multiple'"
+              :select-nodes-recursive="true"
+              :search-enabled="false"
+              :search-value="permSearchText"
+              :search-expr="'Name'"
+              key-expr="Id"
+              parent-id-expr="ParentId"
+              display-expr="Name"
+              data-structure="plain"
+              @selection-changed="onPermTreeSelectionChanged"
+            />
+          </div>
+          <div class="dialog-buttons">
+            <DxButton :text="$t('取消')" styling-mode="outlined" @click="permDialogVisible = false" />
+            <DxButton :text="$t('保存')" type="default" :disabled="savingPerm" @click="onSavePermissions" />
+          </div>
         </div>
       </template>
     </DxPopup>
@@ -292,26 +344,15 @@
         </DxDataGrid>
         <div class="dialog-buttons">
           <DxButton :text="$t('取消')" styling-mode="outlined" @click="memberDialogVisible = false" />
-          <DxButton :text="$t('确定')" type="default" :disabled="savingMember" @click="onSaveMembers" />
+          <DxButton :text="$t('保存')" type="default" :disabled="savingMember" @click="onSaveMembers" />
         </div>
       </template>
     </DxPopup>
-
-    <OperationGuideDrawer v-model:visible="showGuide">
-      <template #content>
-        <div class="platform-roles-page">
-          <!-- main content above -->
-        </div>
-      </template>
-      <ol>
-        <li>{{ $t('管理平台级角色，包括创建、编辑、启用/禁用、权限分配和成员管理') }}</li>
-      </ol>
-    </OperationGuideDrawer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CustomStore from 'devextreme/data/custom_store'
 import type { LoadOptions } from 'devextreme/data'
@@ -321,14 +362,11 @@ import {
   DxPaging,
   DxPager
 } from 'devextreme-vue/data-grid'
-import {
-  DxTreeList,
-  DxColumn as DxTreeListColumn,
-  DxSelection as DxTreeListSelection
-} from 'devextreme-vue/tree-list'
+import { DxTreeView } from 'devextreme-vue/tree-view'
 import { DxTextBox } from 'devextreme-vue/text-box'
 import { DxSelectBox } from 'devextreme-vue/select-box'
 import { DxButton } from 'devextreme-vue/button'
+import { DxDropDownButton } from 'devextreme-vue/drop-down-button'
 import { DxToolbar, DxItem as DxToolbarItem } from 'devextreme-vue/toolbar'
 import { DxPopup } from 'devextreme-vue/popup'
 import {
@@ -384,19 +422,21 @@ const { t } = useI18n()
 const authStore = useAuthStore()
 
 const pageLoading = ref(false)
-const showDescription = ref(true)
+const showDescription = ref(false)
 const showGuide = ref(false)
 const searchKeyword = ref('')
 const searchStatus = ref<string | null>(null)
 const gridRef = ref()
+const focusedRowKey = ref<number | null>(null)
 
-const statusOptions = [
+// Status options using computed for i18n reactivity
+const statusOptionsComputed = computed(() => [
   { value: null, label: t('全部') },
-  { value: 'active', label: t('已启用') },
-  { value: 'disabled', label: t('已禁用') }
-]
+  { value: 'Active', label: t('已启用') },
+  { value: 'Disabled', label: t('已禁用') }
+])
 
-// CustomStore for remote paging
+// CustomStore for remote paging + sorting
 const dataSource = new CustomStore({
   key: 'Id',
   load: async (loadOptions: LoadOptions) => {
@@ -404,12 +444,26 @@ const dataSource = new CustomStore({
       ? Math.floor(loadOptions.skip / loadOptions.take) + 1
       : 1
     const pageSize = loadOptions.take || 20
+
+    // Extract sort params from loadOptions
+    let sortField: string | undefined
+    let sortOrder: string | undefined
+    if (loadOptions.sort && Array.isArray(loadOptions.sort) && loadOptions.sort.length > 0) {
+      const firstSort = loadOptions.sort[0] as { selector?: string; desc?: boolean }
+      if (firstSort.selector) {
+        sortField = firstSort.selector
+        sortOrder = firstSort.desc ? 'desc' : 'asc'
+      }
+    }
+
     try {
       const result = await getPlatformRolesApi({
         Page: page,
         PageSize: pageSize,
         Keyword: searchKeyword.value || undefined,
-        Status: searchStatus.value
+        Status: searchStatus.value,
+        SortField: sortField,
+        SortOrder: sortOrder
       })
       return {
         data: result.Items || [],
@@ -431,6 +485,36 @@ function onReset(): void {
   searchKeyword.value = ''
   searchStatus.value = null
   onSearch()
+}
+
+// More actions dropdown for row operations (overflow pattern)
+function getMoreActions(row: PlatformRoleRepDTO): Array<{ id: string; text: string; icon: string }> {
+  const actions: Array<{ id: string; text: string; icon: string }> = []
+  if (authStore.hasPermission(PLATFORM_ROLE_ENABLE) && row.Status === 'Disabled') {
+    actions.push({ id: 'enable', text: t('启用'), icon: 'check' })
+  }
+  if (authStore.hasPermission(PLATFORM_ROLE_DISABLE) && row.Status === 'Active') {
+    actions.push({ id: 'disable', text: t('禁用'), icon: 'close' })
+  }
+  if (authStore.hasPermission(PLATFORM_ROLE_ASSIGN_PERMISSION)) {
+    actions.push({ id: 'assign-perm', text: t('分配权限'), icon: 'hierarchy' })
+  }
+  if (authStore.hasPermission(PLATFORM_ROLE_ASSIGN_MEMBER)) {
+    actions.push({ id: 'assign-member', text: t('分配成员'), icon: 'group' })
+  }
+  if (authStore.hasPermission(PLATFORM_ROLE_DELETE)) {
+    actions.push({ id: 'delete', text: t('删除'), icon: 'trash' })
+  }
+  return actions
+}
+
+function onMoreActionClick(e: { itemData: { id: string } }, row: PlatformRoleRepDTO): void {
+  const actionId = e.itemData.id
+  if (actionId === 'enable') onEnable(row)
+  else if (actionId === 'disable') onDisable(row)
+  else if (actionId === 'assign-perm') openPermissionDialog(row)
+  else if (actionId === 'assign-member') openMemberDialog(row)
+  else if (actionId === 'delete') onDelete(row)
 }
 
 // Form dialog
@@ -499,13 +583,15 @@ async function onSubmitForm(): Promise<void> {
         Description: formData.value.Description || undefined
       })
       notifySuccess('更新成功')
+      focusedRowKey.value = editingId.value
     } else {
-      await createPlatformRoleApi({
+      const newId = await createPlatformRoleApi({
         Code: formData.value.Code,
         Name: formData.value.Name,
         Description: formData.value.Description || undefined
       })
       notifySuccess('创建成功')
+      if (newId) focusedRowKey.value = newId
     }
     closeFormDialog()
     onSearch()
@@ -522,8 +608,11 @@ const detailData = ref<PlatformRoleRepDTO | null>(null)
 
 async function openDetail(row: PlatformRoleRepDTO): Promise<void> {
   try {
-    detailData.value = await getPlatformRoleApi(row.Id)
-    detailDialogVisible.value = true
+    const detail = await getPlatformRoleApi(row.Id)
+    if (detail) {
+      detailData.value = detail
+      detailDialogVisible.value = true
+    }
   } catch {
     // error handled by interceptor
   }
@@ -566,12 +655,23 @@ async function onDelete(row: PlatformRoleRepDTO): Promise<void> {
   }
 }
 
-// Permission binding
+// Permission binding (DxTreeView with templates, search, count)
 const permDialogVisible = ref(false)
-const permTreeData = ref<FlatPermission[]>([])
+const permTreeRef = ref()
+const permTreeItems = ref<FlatPermission[]>([])
+const allPermItems = ref<FlatPermission[]>([])
 const selectedPermKeys = ref<number[]>([])
+const totalPermCount = ref(0)
 const savingPerm = ref(false)
+const permSearchText = ref('')
+const showOnlySelected = ref(false)
 let permRoleId: number | null = null
+
+// Permission templates
+const permTemplates = computed(() => [
+  { id: 'admin', label: t('系统管理员') },
+  { id: 'viewer', label: t('只读用户') }
+])
 
 function flattenPermTree(nodes: PlatformPermissionRepDTO[], result: FlatPermission[] = []): FlatPermission[] {
   for (const node of nodes) {
@@ -593,21 +693,87 @@ function flattenPermTree(nodes: PlatformPermissionRepDTO[], result: FlatPermissi
 
 async function openPermissionDialog(row: PlatformRoleRepDTO): Promise<void> {
   permRoleId = row.Id
+  permSearchText.value = ''
+  showOnlySelected.value = false
   try {
     const [tree, existingIds] = await Promise.all([
       getPermissionTreeApi(),
       getRolePermissionsApi(row.Id)
     ])
-    permTreeData.value = flattenPermTree(tree || [])
+    const flat = flattenPermTree(tree || [])
+    allPermItems.value = flat
+    permTreeItems.value = flat
+    totalPermCount.value = flat.length
     selectedPermKeys.value = existingIds || []
     permDialogVisible.value = true
+    // After dialog opens, set selected keys on tree
+    setTimeout(() => {
+      if (permTreeRef.value?.instance) {
+        // Unselect all first
+        permTreeRef.value.instance.unselectAll()
+        // Select existing keys
+        const ids = existingIds || []
+        for (let i = 0; i < ids.length; i++) {
+          permTreeRef.value.instance.selectItem(ids[i])
+        }
+      }
+    }, 200)
   } catch {
     // error handled by interceptor
   }
 }
 
-function onPermSelectionChanged(e: { selectedRowKeys: number[] }): void {
-  selectedPermKeys.value = e.selectedRowKeys
+function applyPermTemplate(templateId: string): void {
+  if (!permTreeRef.value?.instance) return
+  const tree = permTreeRef.value.instance
+  if (templateId === 'admin') {
+    // Select all
+    tree.selectAll()
+    selectedPermKeys.value = allPermItems.value.map(p => p.Id)
+  } else if (templateId === 'viewer') {
+    // Select only view/list permissions
+    tree.unselectAll()
+    const viewKeys: number[] = []
+    for (const p of allPermItems.value) {
+      const code = p.Code.toLowerCase()
+      if (code.indexOf('view') >= 0 || code.indexOf('list') >= 0 || code.indexOf('detail') >= 0) {
+        viewKeys.push(p.Id)
+      }
+    }
+    for (let i = 0; i < viewKeys.length; i++) {
+      tree.selectItem(viewKeys[i])
+    }
+    selectedPermKeys.value = viewKeys
+  }
+}
+
+function togglePermFilter(): void {
+  showOnlySelected.value = !showOnlySelected.value
+  if (showOnlySelected.value) {
+    const selected = new Set(selectedPermKeys.value)
+    // Also include parent nodes for selected items
+    const parents = new Set<number>()
+    for (const item of allPermItems.value) {
+      if (selected.has(item.Id) && item.ParentId !== null) {
+        parents.add(item.ParentId)
+      }
+    }
+    permTreeItems.value = allPermItems.value.filter(p => selected.has(p.Id) || parents.has(p.Id))
+  } else {
+    permTreeItems.value = allPermItems.value
+  }
+}
+
+function onPermTreeSelectionChanged(): void {
+  if (!permTreeRef.value?.instance) return
+  const nodes = permTreeRef.value.instance.getSelectedNodes()
+  const keys: number[] = []
+  for (let i = 0; i < nodes.length; i++) {
+    if (nodes[i].itemData && nodes[i].itemData.Id) {
+      keys.push(nodes[i].itemData.Id)
+    }
+  }
+  selectedPermKeys.value = keys
 }
 
 async function onSavePermissions(): Promise<void> {
@@ -684,15 +850,28 @@ function formatDateTime(value: string): string {
   const sec = String(d.getSeconds()).padStart(2, '0')
   return `${y}-${m}-${day} ${h}:${min}:${sec}`
 }
-
-onMounted(() => {
-  // Grid auto-loads via CustomStore
-})
 </script>
 
 <style scoped>
 .platform-roles-page {
   padding: 20px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.page-header-text {
+  flex: 1;
+}
+
+.page-header-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
 }
 
 .page-title {
@@ -703,16 +882,40 @@ onMounted(() => {
 }
 
 .page-subtitle {
-  margin: 0 0 16px 0;
+  margin: 0;
   font-size: 14px;
   color: #999;
 }
 
-.search-bar {
-  display: flex;
-  gap: 12px;
+.search-area {
+  background: #fafafa;
+  border-radius: 4px;
+  padding: 16px;
   margin-bottom: 16px;
-  align-items: center;
+}
+
+.search-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.search-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.search-label {
+  font-size: 12px;
+  color: #666;
+}
+
+.search-actions {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
 }
 
 .grid-toolbar {
@@ -722,7 +925,7 @@ onMounted(() => {
 .action-buttons {
   display: flex;
   gap: 4px;
-  flex-wrap: wrap;
+  align-items: center;
 }
 
 .status-enabled {
@@ -769,5 +972,57 @@ onMounted(() => {
 .detail-value {
   flex: 1;
   color: #333;
+}
+
+.perm-dialog-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.perm-templates {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.perm-templates-label {
+  font-size: 13px;
+  color: #666;
+}
+
+.perm-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.perm-count {
+  font-size: 13px;
+  color: #1890ff;
+  white-space: nowrap;
+}
+
+.perm-count-clickable {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.perm-tree-wrapper {
+  flex: 1;
+  overflow: auto;
+  border: 1px solid #e8e8e8;
+  border-radius: 4px;
+  padding: 8px;
+  min-height: 300px;
+  max-height: 380px;
+}
+
+.guide-steps {
+  padding-left: 20px;
+  line-height: 2;
 }
 </style>
