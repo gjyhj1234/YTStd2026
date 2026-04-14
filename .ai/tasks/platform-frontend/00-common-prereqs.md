@@ -35,6 +35,7 @@
 |:----:|------|------|
 | 1 | `.ai/prompts/08-platform/frontend/0000_overview.md` | 前端总览与模块清单 |
 | 2 | `.ai/prompts/08-platform/frontend/0040_e2e-testing-protocol.md` | 各模块 E2E 测试要点 |
+| 3 | `.ai/prompts/08-platform/frontend/0050_common-components-standard.md` | 通用组件与交互规范（功能说明/操作指引/搜索区域/操作列溢出/国际化/行高亮/密码展示） |
 
 ### 1.4 子任务特定（见各子任务文件 "前置阅读" 节）
 
@@ -145,6 +146,19 @@ ComponentName.vue.zh-TW.json
 ```vue
 <DxForm label-mode="static">
 ```
+
+### 5.6 通用组件标准（每个模块必须遵循）
+
+每个业务模块必须遵循 `.ai/prompts/08-platform/frontend/0050_common-components-standard.md` 中定义的规范：
+
+- **功能说明 & 操作指引**：页面标题区域必须包含 FunctionDescriptionCard（info 图标）和 OperationGuideDrawer（help 图标），内容详细完整
+- **统一搜索区域**：所有查询条件统一为一个区域，高级查询展开追加在当前区域中，操作按钮始终在末尾
+- **Grid 操作列溢出**：前 2 个常用操作直接显示，超过部分使用 DxDropDownButton（"更多"下拉菜单），操作列宽度控制在 200px
+- **枚举/下拉数据源**：必须使用 `computed` 绑定 i18n，禁止静态缓存
+- **DevExtreme 国际化**：main.ts 已加载语言包，切换语言时 header-toolbar 自动同步 DevExtreme locale
+- **DxDateRangeBox**：必须配置 `start-date-label` 和 `end-date-label` i18n
+- **新增/编辑后行高亮**：使用 `focused-row-enabled` + `focused-row-key`
+- **重置密码展示**：重置密码后必须展示系统生成的新密码弹窗
 
 ---
 
