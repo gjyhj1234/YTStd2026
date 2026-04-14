@@ -286,9 +286,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.dashboard-page {
-  padding: 20px;
-}
+
 
 .dashboard-title {
   margin: 0 0 4px 0;
