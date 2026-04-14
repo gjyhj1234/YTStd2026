@@ -57,6 +57,15 @@ namespace YTStdTenantPlatform.Application.Dtos
         /// <summary>状态过滤</summary>
         public string? Status { get; set; }
 
+        /// <summary>角色 ID 过滤</summary>
+        public long? RoleId { get; set; }
+
+        /// <summary>创建时间开始</summary>
+        public DateTime? CreatedAtStart { get; set; }
+
+        /// <summary>创建时间结束</summary>
+        public DateTime? CreatedAtEnd { get; set; }
+
         /// <summary>规范化页码（最小为 1）</summary>
         public int NormalizedPage => Page < 1 ? 1 : Page;
 

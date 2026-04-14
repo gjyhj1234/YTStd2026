@@ -1,6 +1,6 @@
 import { httpGet, httpPost, httpPut, httpDelete } from './http'
 import type { PagedResult } from './http.types'
-import type { PlatformUserRepDTO, PlatformUserCreateReqDTO, PlatformUserUpdateReqDTO } from '../types/platform-users'
+import type { PlatformUserRepDTO, PlatformUserCreateReqDTO, PlatformUserUpdateReqDTO, ResetPasswordRepDTO } from '../types/platform-users'
 
 /** Get user list (paged) */
 export function getPlatformUsersApi(params: {
@@ -55,8 +55,8 @@ export function disablePlatformUserApi(id: number): Promise<void> {
 }
 
 /** Reset password */
-export function resetPasswordApi(id: number): Promise<void> {
-  return httpPut<void>(`/platform-users/${id}/reset-password`)
+export function resetPasswordApi(id: number): Promise<ResetPasswordRepDTO> {
+  return httpPut<ResetPasswordRepDTO>(`/platform-users/${id}/reset-password`)
 }
 
 /** Check username exists */

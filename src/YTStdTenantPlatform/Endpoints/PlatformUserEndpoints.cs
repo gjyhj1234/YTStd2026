@@ -19,10 +19,10 @@ namespace YTStdTenantPlatform.Endpoints
             var group = app.MapGroup("/api/platform-users")
                 .WithTags("平台用户管理");
 
-            group.MapGet("/", async (HttpContext ctx, int? page, int? pageSize, string? keyword, string? status) =>
+            group.MapGet("/", async (HttpContext ctx, int? page, int? pageSize, string? keyword, string? status, long? roleId, DateTime? createdAtStart, DateTime? createdAtEnd) =>
             {
                 var user = GetCurrentUser(ctx);
-                var req = new PagedRequest { Page = page ?? 1, PageSize = pageSize ?? 20, Keyword = keyword, Status = status };
+                var req = new PagedRequest { Page = page ?? 1, PageSize = pageSize ?? 20, Keyword = keyword, Status = status, RoleId = roleId, CreatedAtStart = createdAtStart, CreatedAtEnd = createdAtEnd };
                 var result = await PlatformUserAppService.GetListAsync(0, user.UserId, req);
                 await WriteJsonAsync(ctx, ApiResult<PagedResult<PlatformUserRepDTO>>.Ok(result));
             }).WithSummary("获取平台用户分页列表");
