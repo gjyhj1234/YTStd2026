@@ -4,6 +4,9 @@ import { test, expect, Page } from '@playwright/test'
  * 登录页 E2E 测试（无需预认证状态）
  */
 
+const CENTERING_TOLERANCE_PX = 2 // 2px 可覆盖 Chromium 下观测到的子像素渲染偏差
+const INVALID_USERNAME = 'invalid_user'
+
 /** 获取登录表单中的用户名输入框 */
 function getUsernameInput(page: Page) {
   return page.locator('.login-card .dx-form .dx-textbox').first().locator('input[type="text"]')
@@ -24,6 +27,34 @@ async function waitForLoginPage(page: Page) {
   await page.waitForLoadState('networkidle')
   await page.waitForTimeout(500)
   await expect(page.locator('.login-card')).toBeVisible({ timeout: 10_000 })
+}
+
+async function getLayoutMetrics(page: Page) {
+  return page.evaluate(() => {
+    const pageEl = document.querySelector('.login-page')
+    const containerEl = document.querySelector('.login-container')
+    const cardEl = document.querySelector('.login-card')
+    const footerEl = document.querySelector('.login-footer')
+    const rect = (el: Element | null) => el ? (el as HTMLElement).getBoundingClientRect() : null
+    const pageRect = rect(pageEl)
+    const containerRect = rect(containerEl)
+    const cardRect = rect(cardEl)
+    const footerStyle = footerEl ? getComputedStyle(footerEl) : null
+
+    return {
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+      pageRect,
+      containerRect,
+      cardRect,
+      footerDisplay: footerStyle?.display ?? null
+    }
+  })
+}
+
+function expectCentered(viewportWidth: number, elementWidth: number, elementLeft: number) {
+  const centeredOffset = Math.abs(((viewportWidth - elementWidth) / 2) - elementLeft)
+  expect(centeredOffset).toBeLessThanOrEqual(CENTERING_TOLERANCE_PX)
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -47,6 +78,10 @@ test.describe('登录页 — 桌面端渲染', () => {
 
   test('L03 — 桌面端应展示左侧品牌区', async ({ page }) => {
     await expect(page.locator('.login-branding')).toBeVisible()
+    const metrics = await getLayoutMetrics(page)
+    expect(Math.round(metrics.pageRect?.width ?? 0)).toBe(1280)
+    expect(Math.round(metrics.containerRect?.width ?? 0)).toBe(860)
+    expectCentered(metrics.viewportWidth, metrics.containerRect?.width ?? 0, metrics.containerRect?.left ?? 0)
   })
 
   test('L04 — 应包含用户名输入框', async ({ page }) => {
@@ -81,6 +116,9 @@ test.describe('登录页 — 平板端渲染', () => {
     await waitForLoginPage(page)
     await expect(page.locator('.login-branding')).toBeHidden()
     await expect(page.locator('.login-card')).toBeVisible()
+    const metrics = await getLayoutMetrics(page)
+    expect(metrics.containerRect?.width ?? 0).toBeLessThanOrEqual(480)
+    expectCentered(metrics.viewportWidth, metrics.containerRect?.width ?? 0, metrics.containerRect?.left ?? 0)
   })
 })
 
@@ -96,6 +134,10 @@ test.describe('登录页 — 手机端渲染', () => {
     await expect(page.locator('.login-branding')).toBeHidden()
     await expect(page.locator('.login-card .dx-form')).toBeVisible()
     await expect(getLoginBtn(page)).toBeVisible()
+    const metrics = await getLayoutMetrics(page)
+    expect(Math.round(metrics.containerRect?.width ?? 0)).toBe(375)
+    expect(Math.round(metrics.cardRect?.width ?? 0)).toBe(375)
+    expect(metrics.footerDisplay).toBe('none')
   })
 })
 
@@ -159,12 +201,12 @@ test.describe('登录页 — 登录流程', () => {
 
   test('L15 — 使用错误密码应留在登录页', async ({ page }) => {
     const usernameInput = getUsernameInput(page)
-    await usernameInput.fill('admin')
+    await usernameInput.fill(INVALID_USERNAME)
     await getPasswordInput(page).fill('wrongpassword')
     await getLoginBtn(page).click()
     await page.waitForTimeout(3000)
     expect(page.url()).toContain('login-form')
-    expect(await usernameInput.inputValue()).toBe('admin')
+    expect(await usernameInput.inputValue()).toBe(INVALID_USERNAME)
   })
 
   test('L16 — 回车键应能提交表单', async ({ page }) => {
@@ -194,7 +236,7 @@ test.describe('登录页 — 滑块验证码', () => {
 
   test('L18 — 连续 3 次登录失败后应显示滑块验证', async ({ page }) => {
     for (let i = 0; i < 3; i++) {
-      await getUsernameInput(page).fill('admin')
+      await getUsernameInput(page).fill(INVALID_USERNAME)
       await getPasswordInput(page).fill('wrong123')
       await getLoginBtn(page).click()
       // Wait for the API call to complete and error notification
