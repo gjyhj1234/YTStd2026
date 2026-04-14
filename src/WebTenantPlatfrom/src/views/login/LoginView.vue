@@ -62,7 +62,7 @@
 
           </DxForm>
 
-          <!-- 滑动验证 - 多次失败后显示 -->
+          <!-- 滑块验证码 - 3次失败后显示（放在DxForm外避免v-if渲染问题） -->
           <div
             v-if="showCaptcha"
             class="captcha-wrapper"
@@ -134,6 +134,7 @@ import DxLoadIndicator from 'devextreme-vue/load-indicator'
 import notify from 'devextreme/ui/notify'
 
 import { loginApi } from '../../api/auth'
+import { BusinessError } from '../../api/http'
 import { useAuthStore } from '../../store/auth'
 import type { LoginReqDTO } from '../../types/auth'
 
@@ -165,9 +166,9 @@ let captchaTrackWidth = 0
 function onCaptchaMouseDown(e: MouseEvent) {
   if (captchaVerified.value) return
   captchaDragging = true
-  captchaStartX = e.clientX - (captchaProgress.value / 100) * captchaTrackWidth
   const track = (e.target as HTMLElement).closest('.captcha-track') as HTMLElement | null
   if (track) captchaTrackWidth = track.clientWidth
+  captchaStartX = e.clientX - (captchaProgress.value / 100) * captchaTrackWidth
   document.addEventListener('mousemove', onCaptchaMouseMove)
   document.addEventListener('mouseup', onCaptchaMouseUp)
 }
@@ -264,6 +265,35 @@ function onLanguageChanged(e: { value: string }) {
   localStorage.setItem('locale', e.value)
 }
 
+function handleLoginError(error: unknown): void {
+  if (error instanceof BusinessError) {
+    const msg = error.message || ''
+    if (msg.indexOf('AuthCredentialsRequired') !== -1) {
+      notify({ message: t('请输入用户名'), type: 'error', displayTime: 3000 })
+    } else if (msg.indexOf('AuthInvalidCredentials') !== -1) {
+      notify({ message: t('用户名或密码错误'), type: 'error', displayTime: 3000 })
+    } else if (msg.indexOf('AuthAccountDisabled') !== -1) {
+      notify({ message: t('账户已禁用'), type: 'error', displayTime: 3000 })
+    } else if (msg.indexOf('AuthAccountLocked') !== -1) {
+      notify({ message: t('账户已锁定'), type: 'error', displayTime: 3000 })
+    } else {
+      notify({ message: t('用户名或密码错误'), type: 'error', displayTime: 3000 })
+    }
+  } else {
+    const axiosErr = error as { response?: { status?: number } }
+    const status = axiosErr.response?.status
+    if (status === 401) {
+      notify({ message: t('用户名或密码错误'), type: 'error', displayTime: 3000 })
+    } else if (status === 403) {
+      notify({ message: t('账户已禁用'), type: 'error', displayTime: 3000 })
+    } else if (status === 423) {
+      notify({ message: t('账户已锁定'), type: 'error', displayTime: 3000 })
+    } else {
+      notify({ message: t('用户名或密码错误'), type: 'error', displayTime: 3000 })
+    }
+  }
+}
+
 async function onSubmit() {
   const formInstance = formRef.value?.instance
   if (!formInstance) return
@@ -319,35 +349,7 @@ async function onSubmit() {
       captchaProgress.value = 0
     }
 
-    // Import BusinessError type for instanceof check
-    const { BusinessError } = await import('../../api/http')
-
-    if (error instanceof BusinessError) {
-      const msg = error.message || ''
-      if (msg.indexOf('AuthCredentialsRequired') !== -1) {
-        notify({ message: t('请输入用户名'), type: 'error', displayTime: 3000 })
-      } else if (msg.indexOf('AuthInvalidCredentials') !== -1) {
-        notify({ message: t('用户名或密码错误'), type: 'error', displayTime: 3000 })
-      } else if (msg.indexOf('AuthAccountDisabled') !== -1) {
-        notify({ message: t('账户已禁用'), type: 'error', displayTime: 3000 })
-      } else if (msg.indexOf('AuthAccountLocked') !== -1) {
-        notify({ message: t('账户已锁定'), type: 'error', displayTime: 3000 })
-      } else {
-        notify({ message: t('用户名或密码错误'), type: 'error', displayTime: 3000 })
-      }
-    } else {
-      const axiosErr = error as { response?: { status?: number } }
-      const status = axiosErr.response?.status
-      if (status === 401) {
-        notify({ message: t('用户名或密码错误'), type: 'error', displayTime: 3000 })
-      } else if (status === 403) {
-        notify({ message: t('账户已禁用'), type: 'error', displayTime: 3000 })
-      } else if (status === 423) {
-        notify({ message: t('账户已锁定'), type: 'error', displayTime: 3000 })
-      } else {
-        notify({ message: t('用户名或密码错误'), type: 'error', displayTime: 3000 })
-      }
-    }
+    handleLoginError(error)
   }
 }
 </script>

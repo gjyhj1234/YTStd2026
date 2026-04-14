@@ -11,8 +11,8 @@
   "账户已禁用": "Account is disabled",
   "账户已锁定": "Account is locked",
   "登录中": "Signing in...",
-  "请拖动滑块完成验证": "Please drag the slider to verify",
-  "向右拖动滑块": "Drag slider to the right",
+  "请拖动滑块完成验证": "Drag the slider to verify",
+  "向右拖动滑块": "Slide right to verify",
   "验证通过": "Verified",
   "请先完成滑块验证": "Please complete slider verification first"
 }

@@ -57,6 +57,16 @@ function expectCentered(viewportWidth: number, elementWidth: number, elementLeft
   expect(centeredOffset).toBeLessThanOrEqual(CENTERING_TOLERANCE_PX)
 }
 
+/** 点击语言切换下拉（使用 force 避免 dx-license 覆盖层拦截） */
+async function clickLangSwitcher(page: Page) {
+  await page.locator('.login-lang-switcher .dx-selectbox').click({ force: true })
+}
+
+/** 选择下拉选项（使用 force 避免 dx-license 覆盖层拦截） */
+async function selectLangOption(page: Page, text: string) {
+  await page.locator('.dx-list-item').filter({ hasText: text }).click({ force: true })
+}
+
 // ══════════════════════════════════════════════════════════════
 // 桌面端渲染 (1280×720)
 // ══════════════════════════════════════════════════════════════
@@ -239,10 +249,12 @@ test.describe('登录页 — 滑块验证码', () => {
       await getUsernameInput(page).fill(INVALID_USERNAME)
       await getPasswordInput(page).fill('wrong123')
       await getLoginBtn(page).click()
-      // Wait for the API call to complete and error notification
+      // Wait for API response and error notification to complete
       await page.waitForTimeout(3000)
+      // Ensure form is re-enabled before next attempt
+      await expect(getLoginBtn(page)).toBeEnabled({ timeout: 5_000 })
     }
-    await expect(page.locator('[data-testid="slider-captcha"]')).toBeVisible({ timeout: 5_000 })
+    await expect(page.locator('[data-testid="slider-captcha"]')).toBeVisible({ timeout: 10_000 })
   })
 })
 
@@ -257,43 +269,43 @@ test.describe('登录页 — 多语言切换', () => {
   })
 
   test('L19 — 切换到英文', async ({ page }) => {
-    await page.locator('.login-lang-switcher .dx-selectbox').click()
-    await page.locator('.dx-list-item').filter({ hasText: 'English' }).click()
+    await clickLangSwitcher(page)
+    await selectLangOption(page, 'English')
     await page.waitForTimeout(500)
     await expect(page.locator('.login-card .dx-button').filter({ hasText: 'Sign In' })).toBeVisible({ timeout: 3_000 })
     await expect(page.locator('.login-title')).toContainText('Tenant Management Platform')
   })
 
   test('L20 — 切换到日本語', async ({ page }) => {
-    await page.locator('.login-lang-switcher .dx-selectbox').click()
-    await page.locator('.dx-list-item').filter({ hasText: '日本語' }).click()
+    await clickLangSwitcher(page)
+    await selectLangOption(page, '日本語')
     await page.waitForTimeout(500)
     await expect(page.locator('.login-card .dx-button').filter({ hasText: 'ログイン' })).toBeVisible({ timeout: 3_000 })
     await expect(page.locator('.login-title')).toContainText('テナント管理プラットフォーム')
   })
 
   test('L21 — 切换到 Bahasa Melayu', async ({ page }) => {
-    await page.locator('.login-lang-switcher .dx-selectbox').click()
-    await page.locator('.dx-list-item').filter({ hasText: 'Bahasa Melayu' }).click()
+    await clickLangSwitcher(page)
+    await selectLangOption(page, 'Bahasa Melayu')
     await page.waitForTimeout(500)
     await expect(page.locator('.login-card .dx-button').filter({ hasText: 'Log Masuk' })).toBeVisible({ timeout: 3_000 })
     await expect(page.locator('.login-title')).toContainText('Platform Pengurusan Penyewa')
   })
 
   test('L22 — 切换到繁體中文', async ({ page }) => {
-    await page.locator('.login-lang-switcher .dx-selectbox').click()
-    await page.locator('.dx-list-item').filter({ hasText: '繁體中文' }).click()
+    await clickLangSwitcher(page)
+    await selectLangOption(page, '繁體中文')
     await page.waitForTimeout(500)
     await expect(page.locator('.login-card .dx-button').filter({ hasText: '登入' })).toBeVisible({ timeout: 3_000 })
     await expect(page.locator('.login-title')).toContainText('租戶管理平台')
   })
 
   test('L23 — 切换回简体中文', async ({ page }) => {
-    await page.locator('.login-lang-switcher .dx-selectbox').click()
-    await page.locator('.dx-list-item').filter({ hasText: 'English' }).click()
+    await clickLangSwitcher(page)
+    await selectLangOption(page, 'English')
     await page.waitForTimeout(500)
-    await page.locator('.login-lang-switcher .dx-selectbox').click()
-    await page.locator('.dx-list-item').filter({ hasText: '简体中文' }).click()
+    await clickLangSwitcher(page)
+    await selectLangOption(page, '简体中文')
     await page.waitForTimeout(500)
     await expect(page.locator('.login-card .dx-button').filter({ hasText: '登录' })).toBeVisible({ timeout: 3_000 })
     await expect(page.locator('.login-title')).toContainText('租户管理平台')
