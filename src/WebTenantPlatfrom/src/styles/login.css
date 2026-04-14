@@ -111,9 +111,9 @@
 
 .login-submit-indicator {
   position: absolute;
-  top: 50%;
-  left: calc(50% - 48px);
-  transform: translateY(-50%);
+  top: -28px;
+  left: 50%;
+  transform: translateX(-50%);
   pointer-events: none;
 }
 

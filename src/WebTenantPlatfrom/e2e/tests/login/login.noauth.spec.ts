@@ -4,7 +4,7 @@ import { test, expect, Page } from '@playwright/test'
  * 登录页 E2E 测试（无需预认证状态）
  */
 
-const CENTERING_TOLERANCE_PX = 2 // 允许浏览器子像素渲染导致的轻微偏差
+const CENTERING_TOLERANCE_PX = 2 // 2px 可覆盖 Chromium 下观测到的子像素渲染偏差
 const INVALID_USERNAME = 'invalid_user'
 
 /** 获取登录表单中的用户名输入框 */
@@ -52,6 +52,11 @@ async function getLayoutMetrics(page: Page) {
   })
 }
 
+function expectCentered(viewportWidth: number, elementWidth: number, elementLeft: number) {
+  const centeredOffset = Math.abs(((viewportWidth - elementWidth) / 2) - elementLeft)
+  expect(centeredOffset).toBeLessThanOrEqual(CENTERING_TOLERANCE_PX)
+}
+
 // ══════════════════════════════════════════════════════════════
 // 桌面端渲染 (1280×720)
 // ══════════════════════════════════════════════════════════════
@@ -76,8 +81,7 @@ test.describe('登录页 — 桌面端渲染', () => {
     const metrics = await getLayoutMetrics(page)
     expect(Math.round(metrics.pageRect?.width ?? 0)).toBe(1280)
     expect(Math.round(metrics.containerRect?.width ?? 0)).toBe(860)
-    const centeredOffset = Math.abs(((metrics.viewportWidth - (metrics.containerRect?.width ?? 0)) / 2) - (metrics.containerRect?.left ?? 0))
-    expect(centeredOffset).toBeLessThanOrEqual(CENTERING_TOLERANCE_PX)
+    expectCentered(metrics.viewportWidth, metrics.containerRect?.width ?? 0, metrics.containerRect?.left ?? 0)
   })
 
   test('L04 — 应包含用户名输入框', async ({ page }) => {
@@ -114,8 +118,7 @@ test.describe('登录页 — 平板端渲染', () => {
     await expect(page.locator('.login-card')).toBeVisible()
     const metrics = await getLayoutMetrics(page)
     expect(metrics.containerRect?.width ?? 0).toBeLessThanOrEqual(480)
-    const centeredOffset = Math.abs(((metrics.viewportWidth - (metrics.containerRect?.width ?? 0)) / 2) - (metrics.containerRect?.left ?? 0))
-    expect(centeredOffset).toBeLessThanOrEqual(CENTERING_TOLERANCE_PX)
+    expectCentered(metrics.viewportWidth, metrics.containerRect?.width ?? 0, metrics.containerRect?.left ?? 0)
   })
 })
 
