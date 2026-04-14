@@ -14,8 +14,8 @@
 | 对应提示词 | `.ai/prompts/08-platform/frontend/0022_platform-role-page.md` |
 | 后端 API 提示词 | `.ai/prompts/08-platform/backend/platform-role-api.md` |
 | 依赖任务 | F1-1 主布局（✅ 已完成） |
-| 完成会话 | `session-summary-20260413-13` |
-| 状态 | ✅ 已完成 |
+| 完成会话 | `session-summary-20260413-13`（初始完成）, `session-summary-20260414-02`（E2E 修复） |
+| 状态 | ✅ 已完成（含 E2E 修复） |
 
 ---
 
