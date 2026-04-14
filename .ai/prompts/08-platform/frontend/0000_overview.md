@@ -59,9 +59,9 @@
 | 编号 | 模块 | 提示词 | 状态 | 并行组 |
 |:----:|------|--------|:----:|:-----:|
 | F2-1 | 仪表盘 | `0020_dashboard-page.md`（✅ 已重写） | ✅ | - |
-| F2-2 | 平台用户管理 | `0021_platform-user-page.md`（✅ 已重写） | ⬜ | A |
-| F2-3 | 平台角色管理 | `0022_platform-role-page.md`（✅ 已重写） | ⬜ | A |
-| F2-4 | 平台权限管理 | `0023_platform-permission-page.md`（✅ 已重写） | ⬜ | A |
+| F2-2 | 平台用户管理 | `0021_platform-user-page.md`（✅ 已重写） | ✅ | A |
+| F2-3 | 平台角色管理 | `0022_platform-role-page.md`（✅ 已重写） | ✅ | A |
+| F2-4 | 平台权限管理 | `0023_platform-permission-page.md`（✅ 已重写） | ✅ | A |
 | F2-5 | 租户管理 | `0024_tenant-page.md`（✅ 已重写） | ⬜ | B |
 | F2-6 | 租户信息管理 | `0025_tenant-info-page.md`（✅ 已重写） | ⬜ | B |
 | F2-7 | 租户资源管理 | `0026_tenant-resource-page.md`（✅ 已重写） | ⬜ | B |
@@ -92,6 +92,12 @@
 > **每个业务模块（F2-1 ~ F2-16）编码完成后，必须按 `0040_e2e-testing-protocol.md` 编写并执行 E2E 测试。**
 > 环境预检与迭代流程见 `.ai/system/e2e-testing-workflow.md`。
 > Playwright 测试规范见 `.ai/prompts/03-frontend/08-playwright-e2e.md`。
+
+### 子任务执行体系
+
+> 从 S14 起，F2-5 ~ F2-16 的开发任务已拆分为独立的子任务文件。
+> 详见 `.ai/tasks/platform-frontend/README.md`。
+> 每个子任务聚焦一个功能模块，确保 Agent 在单次会话内完整交付。
 
 ---
 
