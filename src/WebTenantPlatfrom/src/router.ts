@@ -1,6 +1,7 @@
 import auth from './auth'
 import { createRouter, createWebHashHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
+import { useAuthStore } from './store/auth'
 
 import defaultLayout from './layouts/side-nav-outer-toolbar.vue'
 import simpleLayout from './layouts/single-card.vue'
@@ -235,7 +236,18 @@ router.beforeEach((to, _from, next) => {
         query: { redirect: to.fullPath }
       })
     } else {
-      next()
+      // If token exists but user data is missing (stale auth state),
+      // clear auth and redirect to login to get fresh permissions
+      const authStore = useAuthStore()
+      if (!authStore.user) {
+        authStore.clearAuth()
+        next({
+          name: 'login-form',
+          query: { redirect: to.fullPath }
+        })
+      } else {
+        next()
+      }
     }
   } else {
     next()

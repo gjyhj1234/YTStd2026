@@ -6,10 +6,6 @@
 .dx-swatch-additional,
 .dx-swatch-additional-dark {
   .side-navigation-menu .menu-container .dx-treeview {
-    .dx-treeview-item-content {
-      padding-left: 20px !important;
-    }
-
     .dx-state-focused,
     .dx-state-active,
     .dx-state-selected,

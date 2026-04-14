@@ -193,10 +193,6 @@ watch(
         // ##
 
         // ## Anti-shift CSS: prevent layout changes on selection
-        .dx-treeview-item-content {
-          padding-left: 20px !important;
-        }
-
         .dx-state-focused,
         .dx-state-active,
         .dx-state-selected,
