@@ -41,11 +41,16 @@ setup('authenticate as admin', async ({ page, request }) => {
     Permissions: result.Data.Permissions || []
   })
 
-  // 3. 导航到 dashboard 验证认证状态
+  // 3. Reload page to ensure Pinia store initializes from localStorage
+  //    (hash navigation alone may not trigger a full app re-initialization)
+  await page.reload()
+  await page.waitForLoadState('networkidle')
+
+  // 4. Navigate to dashboard and verify authenticated state
   await page.goto('/#/dashboard')
   await page.waitForLoadState('networkidle')
   await page.waitForTimeout(2000)
 
-  // 4. 保存认证状态（包含 localStorage 中的 Token 和用户信息）
+  // 5. Save authenticated state (includes localStorage with Token and user info)
   await page.context().storageState({ path: AUTH_FILE })
 })
