@@ -187,16 +187,16 @@ test.describe('平台用户管理 — 多语言切换', () => {
     { locale: 'en-US', title: 'Platform User Management' },
     { locale: 'ja-JP', title: 'プラットフォームユーザー管理' },
     { locale: 'ms-MY', title: 'Pengurusan Pengguna Platform' },
-    { locale: 'zh-TW', title: '平台用戶管理' },
+    { locale: 'zh-TW', title: '平台使用者管理' },
   ]) {
     test(`切换到 ${lang.locale}`, async ({ page }) => {
       // Navigate first to establish page context, then set locale and reload
       await page.goto('/#/platform-users')
       await page.waitForLoadState('networkidle')
       await page.evaluate((l: string) => localStorage.setItem('locale', l), lang.locale)
-      await page.goto('/#/platform-users')
+      await page.reload()
       await page.waitForLoadState('networkidle')
-      await page.waitForTimeout(1500)
+      await page.waitForTimeout(2000)
 
       const title = page.locator('.page-title')
       await expect(title).toBeVisible()

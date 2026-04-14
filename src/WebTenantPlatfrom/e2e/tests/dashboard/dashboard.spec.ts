@@ -164,9 +164,11 @@ test.describe('仪表盘 — 快捷操作', () => {
 
   test('D03m — 快捷操作按钮可见（管理员权限）', async ({ page }) => {
     // Admin should have all permissions, all 3 buttons should be visible
-    const btnTenant = page.locator('[data-testid="btn-create-tenant"]')
-    const btnUser = page.locator('[data-testid="btn-create-user"]')
-    const btnAudit = page.locator('[data-testid="btn-audit-logs"]')
+    // DxButton does not forward data-testid to DOM; use text-based locators within action-buttons
+    const actionBtns = page.locator('.action-buttons .dx-button')
+    const btnTenant = actionBtns.filter({ hasText: /创建租户|Create Tenant/i })
+    const btnUser = actionBtns.filter({ hasText: /创建用户|Create User/i })
+    const btnAudit = actionBtns.filter({ hasText: /审计日志|Audit Log/i })
 
     await expect(btnTenant).toBeVisible({ timeout: 5_000 })
     await expect(btnUser).toBeVisible({ timeout: 5_000 })
@@ -174,7 +176,7 @@ test.describe('仪表盘 — 快捷操作', () => {
   })
 
   test('D03n — 点击"创建租户"跳转到租户列表页', async ({ page }) => {
-    const btn = page.locator('[data-testid="btn-create-tenant"]')
+    const btn = page.locator('.action-buttons .dx-button').filter({ hasText: /创建租户|Create Tenant/i })
     await expect(btn).toBeVisible({ timeout: 5_000 })
     await btn.click()
     await page.waitForTimeout(500)
@@ -182,7 +184,7 @@ test.describe('仪表盘 — 快捷操作', () => {
   })
 
   test('D03o — 点击"创建用户"跳转到用户管理页', async ({ page }) => {
-    const btn = page.locator('[data-testid="btn-create-user"]')
+    const btn = page.locator('.action-buttons .dx-button').filter({ hasText: /创建用户|Create User/i })
     await expect(btn).toBeVisible({ timeout: 5_000 })
     await btn.click()
     await page.waitForTimeout(500)
@@ -190,7 +192,7 @@ test.describe('仪表盘 — 快捷操作', () => {
   })
 
   test('D03p — 点击"查看审计日志"跳转到审计日志页', async ({ page }) => {
-    const btn = page.locator('[data-testid="btn-audit-logs"]')
+    const btn = page.locator('.action-buttons .dx-button').filter({ hasText: /审计日志|Audit Log/i })
     await expect(btn).toBeVisible({ timeout: 5_000 })
     await btn.click()
     await page.waitForTimeout(500)

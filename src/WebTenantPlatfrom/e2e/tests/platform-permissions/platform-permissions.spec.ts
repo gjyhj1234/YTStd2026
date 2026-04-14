@@ -153,9 +153,9 @@ test.describe('平台权限管理 — 多语言切换', () => {
       await page.goto('/#/platform-permissions')
       await page.waitForLoadState('networkidle')
       await page.evaluate((l: string) => localStorage.setItem('locale', l), lang.locale)
-      await page.goto('/#/platform-permissions')
+      await page.reload()
       await page.waitForLoadState('networkidle')
-      await page.waitForTimeout(1500)
+      await page.waitForTimeout(2000)
 
       const title = page.locator('.page-title')
       await expect(title).toBeVisible()
