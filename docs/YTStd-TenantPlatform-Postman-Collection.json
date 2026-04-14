@@ -1092,7 +1092,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/platform-roles/?page=1&pageSize=20&keyword=&status=",
+              "raw": "{{baseUrl}}/api/platform-roles/?page=1&pageSize=20&keyword=&status=&sortField=&sortOrder=",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -1121,6 +1121,16 @@
                   "key": "status",
                   "value": "",
                   "disabled": false
+                },
+                {
+                  "key": "sortField",
+                  "value": "",
+                  "description": "排序字段（Code/Name/CreatedAt）"
+                },
+                {
+                  "key": "sortOrder",
+                  "value": "",
+                  "description": "排序方向（asc/desc）"
                 }
               ]
             }

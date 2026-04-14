@@ -39,13 +39,14 @@
 
 | 组件 | 查阅问题 | 用途 |
 |------|---------|------|
-| DxDataGrid | `DxDataGrid CustomStore remote paging load function skip take totalCount` | 角色列表远程分页 |
+| DxDataGrid | `DxDataGrid CustomStore remote paging load function skip take totalCount sort` | 角色列表远程分页与排序 |
 | DxForm | `DxForm validation rules required stringLength async validationCallback` | 新增/编辑表单验证 |
 | DxPopup | `DxPopup content template slot visible showing hiding event` | 新增/编辑/权限绑定/成员绑定弹窗 |
-| DxTreeList | `DxTreeList selection mode multiple recursive selectedRowKeys key-expr parent-id-expr` | 权限绑定树 |
+| DxTreeView | `DxTreeView showCheckBoxesMode selectNodesRecursive searchEnabled selectionMode multiple` | 权限绑定树（带级联勾选、搜索、计数） |
 | DxTextBox | `DxTextBox placeholder value-changed mode` | 表单输入 |
 | DxLoadPanel | `DxLoadPanel visible position shading` | 页面加载 |
 | DxToolbar | `DxToolbar items location widget DxButton` | 工具栏 |
+| DxDropDownButton | `DxDropDownButton items display-expr key-expr item-click drop-down-options` | 操作列「更多」菜单 |
 
 每个组件查阅后必须调用 `devexpress_docs_get_content` 获取全文，阅读代码示例。
 
@@ -57,7 +58,7 @@
 
 | 操作 | HTTP 方法 | URL | 请求体 | 响应体 |
 |------|----------|-----|--------|--------|
-| 角色列表 | GET | `/api/platform-roles?page=1&pageSize=20&keyword=&status=` | - | `ApiResult<PagedResult<PlatformRoleRepDTO>>` |
+| 角色列表 | GET | `/api/platform-roles?page=1&pageSize=20&keyword=&status=&sortField=&sortOrder=` | - | `ApiResult<PagedResult<PlatformRoleRepDTO>>` |
 | 角色详情 | GET | `/api/platform-roles/{id}` | - | `ApiResult<PlatformRoleRepDTO>` |
 | 创建角色 | POST | `/api/platform-roles` | `{ Code, Name, Description }` | `ApiResult<long>` |
 | 更新角色 | PUT | `/api/platform-roles/{id}` | `{ Name, Description }` | `ApiResult` |
@@ -93,11 +94,15 @@
 
 | 区域 | 组件 | 内容 |
 |------|------|------|
-| 页面标题 | `<h2>` + `$t('平台角色管理')` | 页面主标题 |
-| 页面副标题 | `<p>` + `$t('管理平台级角色，包括创建、编辑、启用/禁用、权限分配和成员管理')` | 页面说明 |
-| 功能说明区 | `FunctionDescriptionCard` | 说明本页面提供的核心能力 |
-| 查询区 | 自定义查询栏 | 关键词 + 状态筛选 |
+| 页面标题区 | `.page-header` > `.page-header-text` | `h2` 标题 + `p` 副标题 |
+| 页面操作区 | `.page-header` > `.page-header-actions` | `FunctionDescriptionCard` + `OperationGuideDrawer` |
+| 查询区 | `.search-area` > `.search-row` | 关键词（带标签） + 状态筛选（带标签） + 查询/重置按钮 |
 | 工具栏 | `DxToolbar` | 新增 |
+| 数据列表 | `DxDataGrid` + `CustomStore` | 远程分页+排序，`focused-row-enabled`，操作列使用 `DxDropDownButton`「更多」 |
+| 新增/编辑弹窗 | `DxPopup` + `DxForm` | 角色编码、名称、描述 |
+| 详情弹窗 | `DxPopup` | 只读字段展示 |
+| 权限绑定弹窗 | `DxPopup` + `DxTreeView` | 快捷模板 + 搜索框 + 计数 + 级联勾选树 + 取消/保存 |
+| 成员绑定弹窗 | `DxPopup` + `DxDataGrid` | 多选用户列表 + 取消/保存 |
 | 表格区 | `DxDataGrid` + `CustomStore` | 角色列表 |
 | 分页 | `DxDataGrid` 内置 `DxPager` + `DxPaging` | 远程分页 |
 | 新增弹窗 | `DxPopup` + `DxForm` | 创建角色表单 |
