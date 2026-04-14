@@ -16,7 +16,7 @@
     <!-- 统计卡片区 -->
     <div class="stat-cards" data-testid="stat-cards">
       <div class="stat-card" data-testid="stat-card-active-users">
-        <div class="stat-icon" :style="{ backgroundColor: '#1890ff' }">
+        <div class="stat-icon stat-icon-blue">
           <i class="dx-icon-group"></i>
         </div>
         <div class="stat-content">
@@ -26,7 +26,7 @@
       </div>
 
       <div class="stat-card" data-testid="stat-card-new-users">
-        <div class="stat-icon" :style="{ backgroundColor: '#52c41a' }">
+        <div class="stat-icon stat-icon-green">
           <i class="dx-icon-add"></i>
         </div>
         <div class="stat-content">
@@ -36,7 +36,7 @@
       </div>
 
       <div class="stat-card" data-testid="stat-card-api-calls">
-        <div class="stat-icon" :style="{ backgroundColor: '#fa8c16' }">
+        <div class="stat-icon stat-icon-orange">
           <i class="dx-icon-globe"></i>
         </div>
         <div class="stat-content">
@@ -46,7 +46,7 @@
       </div>
 
       <div class="stat-card" data-testid="stat-card-storage">
-        <div class="stat-icon" :style="{ backgroundColor: '#722ed1' }">
+        <div class="stat-icon stat-icon-purple">
           <i class="dx-icon-folder"></i>
         </div>
         <div class="stat-content">
@@ -73,6 +73,7 @@
           </DxArgumentAxis>
           <DxChartLegend :visible="false" />
           <DxChartTooltip :enabled="true" />
+          <DxAdaptiveLayout :height="200" :width="200" />
         </DxChart>
       </div>
 
@@ -91,12 +92,13 @@
           </DxArgumentAxis>
           <DxChartLegend :visible="false" />
           <DxChartTooltip :enabled="true" />
+          <DxAdaptiveLayout :height="200" :width="200" />
         </DxChart>
       </div>
     </div>
 
-    <div class="chart-row">
-      <div class="chart-container chart-container-full" data-testid="chart-metrics">
+    <div class="chart-row chart-row-full">
+      <div class="chart-container" data-testid="chart-metrics">
         <DxPieChart
           :data-source="metricsData"
           palette="Bright"
@@ -116,6 +118,7 @@
             vertical-alignment="top"
           />
           <DxPieTooltip :enabled="true" />
+          <DxPieAdaptiveLayout :height="200" :width="200" />
         </DxPieChart>
       </div>
     </div>
@@ -125,7 +128,6 @@
       <h3 class="section-title">{{ $t('快捷操作') }}</h3>
       <div class="action-buttons">
         <DxButton
-          v-if="authStore.hasPermission('tenant.create')"
           :text="$t('创建租户')"
           icon="add"
           type="default"
@@ -134,7 +136,6 @@
           @click="goTo('/tenants')"
         />
         <DxButton
-          v-if="authStore.hasPermission('platform.user.create')"
           :text="$t('创建用户')"
           icon="add"
           type="default"
@@ -143,7 +144,6 @@
           @click="goTo('/platform-users')"
         />
         <DxButton
-          v-if="authStore.hasPermission('audit.list')"
           :text="$t('查看审计日志')"
           icon="description"
           type="default"
@@ -163,11 +163,11 @@ import {
   DxChart,
   DxSeries as DxChartSeries,
   DxArgumentAxis,
-  DxValueAxis,
   DxLabel as DxChartLabel,
   DxTitle as DxChartTitle,
   DxLegend as DxChartLegend,
-  DxTooltip as DxChartTooltip
+  DxTooltip as DxChartTooltip,
+  DxAdaptiveLayout
 } from 'devextreme-vue/chart'
 import {
   DxPieChart,
@@ -176,7 +176,8 @@ import {
   DxLegend as DxPieLegend,
   DxTooltip as DxPieTooltip,
   DxTitle as DxPieChartTitleComp,
-  DxConnector
+  DxConnector,
+  DxAdaptiveLayout as DxPieAdaptiveLayout
 } from 'devextreme-vue/pie-chart'
 import { DxLoadPanel } from 'devextreme-vue/load-panel'
 import { DxButton } from 'devextreme-vue/button'
@@ -293,13 +294,13 @@ onMounted(() => {
   margin: 0 0 4px 0;
   font-size: 24px;
   font-weight: 600;
-  color: #333;
+  color: var(--base-text-color);
 }
 
 .dashboard-subtitle {
   margin: 0 0 24px 0;
   font-size: 14px;
-  color: #999;
+  color: var(--base-text-color-alpha-7);
 }
 
 .stat-cards {
@@ -313,9 +314,9 @@ onMounted(() => {
   display: flex;
   align-items: center;
   padding: 20px;
-  background: #fff;
+  background: var(--base-bg);
   border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--dx-color-border);
 }
 
 .stat-icon {
@@ -329,6 +330,22 @@ onMounted(() => {
   margin-right: 16px;
 }
 
+.stat-icon-blue {
+  background-color: #1890ff;
+}
+
+.stat-icon-green {
+  background-color: #52c41a;
+}
+
+.stat-icon-orange {
+  background-color: #fa8c16;
+}
+
+.stat-icon-purple {
+  background-color: #722ed1;
+}
+
 .stat-icon i {
   font-size: 22px;
   color: #fff;
@@ -336,18 +353,19 @@ onMounted(() => {
 
 .stat-content {
   flex: 1;
+  min-width: 0;
 }
 
 .stat-label {
   font-size: 13px;
-  color: #999;
+  color: var(--base-text-color-alpha-7);
   margin-bottom: 4px;
 }
 
 .stat-value {
   font-size: 24px;
   font-weight: 700;
-  color: #333;
+  color: var(--base-text-color);
 }
 
 .chart-row {
@@ -357,22 +375,23 @@ onMounted(() => {
   margin-bottom: 24px;
 }
 
-.chart-container {
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-  padding: 16px;
-  min-height: 300px;
+.chart-row-full {
+  grid-template-columns: 1fr;
 }
 
-.chart-container-full {
-  grid-column: 1 / -1;
+.chart-container {
+  background: var(--base-bg);
+  border-radius: 8px;
+  border: 1px solid var(--dx-color-border);
+  padding: 16px;
+  height: 350px;
+  overflow: hidden;
 }
 
 .quick-actions {
-  background: #fff;
+  background: var(--base-bg);
   border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--dx-color-border);
   padding: 20px;
 }
 
@@ -380,12 +399,13 @@ onMounted(() => {
   margin: 0 0 16px 0;
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: var(--base-text-color);
 }
 
 .action-buttons {
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 @media (max-width: 1024px) {
@@ -396,11 +416,23 @@ onMounted(() => {
   .chart-row {
     grid-template-columns: 1fr;
   }
+
+  .chart-container {
+    height: 320px;
+  }
 }
 
 @media (max-width: 600px) {
   .stat-cards {
     grid-template-columns: 1fr;
+  }
+
+  .chart-container {
+    height: 280px;
+  }
+
+  .action-buttons {
+    flex-direction: column;
   }
 }
 </style>

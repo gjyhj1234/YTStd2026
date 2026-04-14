@@ -9,10 +9,24 @@ export interface CurrentUser {
   Permissions: string[]
 }
 
+const USER_STORAGE_KEY = 'auth_user'
+
+function loadUserFromStorage(): CurrentUser | null {
+  try {
+    const raw = localStorage.getItem(USER_STORAGE_KEY)
+    if (raw) {
+      return JSON.parse(raw) as CurrentUser
+    }
+  } catch {
+    // ignore parse errors
+  }
+  return null
+}
+
 export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(localStorage.getItem('auth_token'))
   const tenantId = ref<number | null>(null)
-  const user = ref<CurrentUser | null>(null)
+  const user = ref<CurrentUser | null>(loadUserFromStorage())
 
   const isAuthenticated = computed(() => !!token.value)
   const permissions = computed(() => user.value?.Permissions || [])
@@ -28,6 +42,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   function setUser(newUser: CurrentUser): void {
     user.value = newUser
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser))
   }
 
   function clearAuth(): void {
@@ -35,6 +50,7 @@ export const useAuthStore = defineStore('auth', () => {
     tenantId.value = null
     user.value = null
     localStorage.removeItem('auth_token')
+    localStorage.removeItem(USER_STORAGE_KEY)
   }
 
   function hasPermission(code: string): boolean {
