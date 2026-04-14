@@ -17,6 +17,12 @@ platform-frontend/
 ├── 00-F0-4-router-guards.md           # F0-4 路由与权限守卫 ✅
 ├── 00-F0-5-state-management.md        # F0-5 状态管理 ✅
 ├── 00-F0-6-common-components.md       # F0-6 通用组件 ✅
+├── 00-F1-1-layout.md                  # F1-1 主布局 ✅
+├── 00-F1-2-login-page.md              # F1-2 登录页 ✅
+├── 00-F2-1-dashboard.md               # F2-1 仪表盘 ✅
+├── 00-F2-2-platform-users.md          # F2-2 平台用户管理 ✅
+├── 00-F2-3-platform-roles.md          # F2-3 平台角色管理 ✅
+├── 00-F2-4-platform-permissions.md    # F2-4 平台权限管理 ✅
 ├── 01-F2-5-tenant-page.md             # F2-5 租户管理
 ├── 02-F2-6-tenant-info-page.md        # F2-6 租户信息管理
 ├── 03-F2-7-tenant-resource-page.md    # F2-7 租户资源管理
@@ -56,6 +62,12 @@ platform-frontend/
 | F0-4 | 路由与权限守卫 | 基础设施 | — | ✅ |
 | F0-5 | 状态管理 | 基础设施 | — | ✅ |
 | F0-6 | 通用组件 | 基础设施 | — | ✅ |
+| F1-1 | 主布局 | 布局层 | — | ✅ |
+| F1-2 | 登录页 | 布局层 | — | ✅ |
+| F2-1 | 仪表盘 | 业务页面 | — | ✅ |
+| F2-2 | 平台用户管理 | 业务页面 | A | ✅ |
+| F2-3 | 平台角色管理 | 业务页面 | A | ✅ |
+| F2-4 | 平台权限管理 | 业务页面 | A | ✅ |
 | 01 | F2-5 租户管理 | 租户列表 | B | ⬜ |
 | 02 | F2-6 租户信息 | 租户信息 | B | ⬜ |
 | 03 | F2-7 租户资源 | 资源配额 | B | ⬜ |
@@ -95,12 +107,12 @@ platform-frontend/
 | F0-4 | 路由与权限守卫 | session-summary-20260413-10 | `00-F0-4-router-guards.md` |
 | F0-5 | 状态管理 | session-summary-20260413-09/10 | `00-F0-5-state-management.md` |
 | F0-6 | 通用组件 | session-summary-20260413-10 | `00-F0-6-common-components.md` |
-| F1-1 | 主布局 | session-summary-20260413-10 | — |
-| F1-2 | 登录页 | session-summary-20260413-11 | — |
-| F2-1 | 仪表盘 | session-summary-20260413-12 | — |
-| F2-2 | 平台用户管理 | session-summary-20260413-13 | — |
-| F2-3 | 平台角色管理 | session-summary-20260413-13 | — |
-| F2-4 | 平台权限管理 | session-summary-20260413-13 | — |
+| F1-1 | 主布局 | session-summary-20260413-10 | `00-F1-1-layout.md` |
+| F1-2 | 登录页 | session-summary-20260413-11/12 | `00-F1-2-login-page.md` |
+| F2-1 | 仪表盘 | session-summary-20260413-12 | `00-F2-1-dashboard.md` |
+| F2-2 | 平台用户管理 | session-summary-20260413-13 | `00-F2-2-platform-users.md` |
+| F2-3 | 平台角色管理 | session-summary-20260413-13 | `00-F2-3-platform-roles.md` |
+| F2-4 | 平台权限管理 | session-summary-20260413-13 | `00-F2-4-platform-permissions.md` |
 
 ---
 
