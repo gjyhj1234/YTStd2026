@@ -9,59 +9,110 @@
       shading-color="rgba(0,0,0,0.2)"
     />
 
-    <h2 class="page-title">{{ $t('平台用户管理') }}</h2>
-    <p class="page-subtitle">{{ $t('管理平台级用户账号，包括创建、编辑、启用/禁用、重置密码等操作') }}</p>
-
-    <FunctionDescriptionCard v-model:visible="showDescription">
-      <p>{{ $t('管理平台级用户账号，包括创建、编辑、启用/禁用、重置密码等操作') }}</p>
-    </FunctionDescriptionCard>
-
-    <!-- Search Bar -->
-    <div class="search-bar">
-      <DxTextBox
-        v-model:value="searchKeyword"
-        :placeholder="$t('请输入用户名或显示名')"
-        :show-clear-button="true"
-        width="280"
-        @enter-key="onSearch"
-      />
-      <DxSelectBox
-        v-model:value="searchStatus"
-        :items="statusOptions"
-        display-expr="label"
-        value-expr="value"
-        :placeholder="$t('请选择状态')"
-        width="160"
-        :show-clear-button="true"
-      />
-      <DxButton :text="$t('查询')" icon="search" type="default" @click="onSearch" />
-      <DxButton :text="$t('重置')" icon="refresh" styling-mode="outlined" @click="onReset" />
-      <DxButton
-        :text="showAdvanced ? $t('收起') : $t('高级查询')"
-        styling-mode="text"
-        @click="showAdvanced = !showAdvanced"
-      />
+    <!-- Page Header with title + icon triggers -->
+    <div class="page-header">
+      <div class="page-header-text">
+        <h2 class="page-title">{{ $t('平台用户管理') }}</h2>
+        <p class="page-subtitle">{{ $t('管理平台级用户账号，包括创建、编辑、启用/禁用、重置密码等操作') }}</p>
+      </div>
+      <div class="page-header-actions">
+        <FunctionDescriptionCard v-model:visible="showDescription">
+          <h4>{{ $t('功能用途') }}</h4>
+          <p>{{ $t('平台用户管理用于管理系统级管理员账号。支持创建、编辑、删除用户，以及启用/禁用状态切换和密码重置操作。') }}</p>
+          <h4>{{ $t('字段说明') }}</h4>
+          <ul>
+            <li><strong>{{ $t('用户名') }}</strong>：{{ $t('登录账号，创建后不可修改，仅允许字母、数字和下划线') }}</li>
+            <li><strong>{{ $t('显示名') }}</strong>：{{ $t('用户展示名称，用于界面显示') }}</li>
+            <li><strong>{{ $t('邮箱') }}</strong>：{{ $t('用户邮箱地址，用于通知和密码找回') }}</li>
+            <li><strong>{{ $t('手机') }}</strong>：{{ $t('用户手机号码') }}</li>
+            <li><strong>{{ $t('角色') }}</strong>：{{ $t('用户关联的平台角色，决定其权限范围') }}</li>
+            <li><strong>{{ $t('状态') }}</strong>：{{ $t('已启用/已禁用，禁用后用户无法登录') }}</li>
+          </ul>
+          <h4>{{ $t('使用场景') }}</h4>
+          <ul>
+            <li>{{ $t('新员工入职时创建平台管理员账号') }}</li>
+            <li>{{ $t('员工离职或岗位调整时禁用/启用账号') }}</li>
+            <li>{{ $t('用户忘记密码时重置密码') }}</li>
+            <li>{{ $t('按角色或时间范围筛选查询用户') }}</li>
+          </ul>
+        </FunctionDescriptionCard>
+        <OperationGuideDrawer v-model:visible="showGuide">
+          <ol class="guide-steps">
+            <li>{{ $t('step_search') }}</li>
+            <li>{{ $t('step_advanced') }}</li>
+            <li>{{ $t('step_create') }}</li>
+            <li>{{ $t('step_edit') }}</li>
+            <li>{{ $t('step_status') }}</li>
+            <li>{{ $t('step_reset_pwd') }}</li>
+            <li>{{ $t('step_batch') }}</li>
+            <li>{{ $t('step_delete') }}</li>
+          </ol>
+        </OperationGuideDrawer>
+      </div>
     </div>
 
-    <!-- Advanced Search -->
-    <div v-if="showAdvanced" class="advanced-search">
-      <DxSelectBox
-        v-model:value="searchRoleId"
-        :items="allRoles"
-        display-expr="Name"
-        value-expr="Id"
-        :placeholder="$t('请选择角色')"
-        width="200"
-        :show-clear-button="true"
-        :search-enabled="true"
-      />
-      <DxDateRangeBox
-        v-model:start-date="searchDateStart"
-        v-model:end-date="searchDateEnd"
-        :start-date-label="$t('创建时间')"
-        display-format="yyyy-MM-dd"
-        width="320"
-      />
+    <!-- Unified Search Area -->
+    <div class="search-area">
+      <div class="search-row">
+        <div class="search-field">
+          <label class="search-label">{{ $t('关键词') }}</label>
+          <DxTextBox
+            v-model:value="searchKeyword"
+            :placeholder="$t('请输入用户名或显示名')"
+            :show-clear-button="true"
+            width="220"
+            @enter-key="onSearch"
+          />
+        </div>
+        <div class="search-field">
+          <label class="search-label">{{ $t('状态') }}</label>
+          <DxSelectBox
+            v-model:value="searchStatus"
+            :items="statusOptionsComputed"
+            display-expr="label"
+            value-expr="value"
+            :placeholder="$t('请选择状态')"
+            width="150"
+            :show-clear-button="true"
+          />
+        </div>
+        <template v-if="showAdvanced">
+          <div class="search-field">
+            <label class="search-label">{{ $t('角色') }}</label>
+            <DxSelectBox
+              v-model:value="searchRoleId"
+              :items="allRoles"
+              display-expr="Name"
+              value-expr="Id"
+              :placeholder="$t('请选择角色')"
+              width="180"
+              :show-clear-button="true"
+              :search-enabled="true"
+            />
+          </div>
+          <div class="search-field">
+            <label class="search-label">{{ $t('创建时间') }}</label>
+            <DxDateRangeBox
+              v-model:start-date="searchDateStart"
+              v-model:end-date="searchDateEnd"
+              :start-date-label="$t('开始日期')"
+              :end-date-label="$t('结束日期')"
+              display-format="yyyy-MM-dd"
+              width="300"
+            />
+          </div>
+        </template>
+        <div class="search-actions">
+          <DxButton :text="$t('查询')" icon="search" type="default" @click="onSearch" />
+          <DxButton :text="$t('重置')" icon="refresh" styling-mode="outlined" @click="onReset" />
+          <DxButton
+            :text="showAdvanced ? $t('收起') : $t('高级查询')"
+            :icon="showAdvanced ? 'chevronup' : 'chevrondown'"
+            styling-mode="text"
+            @click="showAdvanced = !showAdvanced"
+          />
+        </div>
+      </div>
     </div>
 
     <!-- Toolbar -->
@@ -107,6 +158,9 @@
       :remote-operations="true"
       :no-data-text="$t('暂无数据')"
       :selected-row-keys="selectedRowKeys"
+      :focused-row-enabled="true"
+      :focused-row-key="focusedRowKey"
+      :auto-navigate-to-focused-row="true"
       key-expr="Id"
       @selection-changed="onSelectionChanged"
     >
@@ -126,7 +180,7 @@
       <DxColumn data-field="Phone" :caption="$t('手机')" :width="130" :allow-sorting="false" />
       <DxColumn data-field="Status" :caption="$t('状态')" :width="100" :allow-sorting="false" cell-template="statusCell" />
       <DxColumn data-field="CreatedAt" :caption="$t('创建时间')" :width="180" :allow-sorting="true" cell-template="dateCell" />
-      <DxColumn :caption="$t('操作')" :width="420" :allow-sorting="false" cell-template="actionCell" />
+      <DxColumn :caption="$t('操作')" :width="200" :allow-sorting="false" cell-template="actionCell" />
 
       <template #statusCell="{ data: cellData }">
         <span :class="cellData.data.Status === 'Active' ? 'status-enabled' : 'status-disabled'">
@@ -154,34 +208,15 @@
             styling-mode="text"
             @click="openEditDialog(cellData.data)"
           />
-          <DxButton
-            v-if="authStore.hasPermission(PLATFORM_USER_ENABLE) && cellData.data.Status === 'Disabled'"
-            :text="$t('启用')"
-            icon="check"
+          <DxDropDownButton
+            :text="$t('更多')"
+            icon="overflow"
             styling-mode="text"
-            @click="onEnable(cellData.data)"
-          />
-          <DxButton
-            v-if="authStore.hasPermission(PLATFORM_USER_DISABLE) && cellData.data.Status === 'Active'"
-            :text="$t('禁用')"
-            icon="close"
-            styling-mode="text"
-            @click="onDisable(cellData.data)"
-          />
-          <DxButton
-            v-if="authStore.hasPermission(PLATFORM_USER_RESET_PWD)"
-            :text="$t('重置密码')"
-            icon="key"
-            styling-mode="text"
-            @click="onResetPassword(cellData.data)"
-          />
-          <DxButton
-            v-if="authStore.hasPermission(PLATFORM_USER_DELETE)"
-            :text="$t('删除')"
-            icon="trash"
-            styling-mode="text"
-            type="danger"
-            @click="onDelete(cellData.data)"
+            :items="getMoreActions(cellData.data)"
+            display-expr="text"
+            key-expr="id"
+            :drop-down-options="{ width: 160 }"
+            @item-click="onMoreActionClick($event, cellData.data)"
           />
         </div>
       </template>
@@ -312,21 +347,28 @@
       </template>
     </DxPopup>
 
-    <OperationGuideDrawer v-model:visible="showGuide">
+    <!-- Reset Password Result Popup -->
+    <DxPopup
+      :visible="resetPwdResultVisible"
+      :title="$t('重置密码成功')"
+      :width="400"
+      :height="'auto'"
+      :show-close-button="true"
+      @hiding="resetPwdResultVisible = false"
+    >
       <template #content>
-        <div class="platform-users-page">
-          <!-- main content above -->
+        <div class="reset-pwd-result">
+          <p>{{ $t('新密码已生成，请妥善保管：') }}</p>
+          <div class="reset-pwd-value">{{ resetPwdNewPassword }}</div>
+          <DxButton :text="$t('确定')" type="default" @click="resetPwdResultVisible = false" />
         </div>
       </template>
-      <ol>
-        <li>{{ $t('管理平台级用户账号，包括创建、编辑、启用/禁用、重置密码等操作') }}</li>
-      </ol>
-    </OperationGuideDrawer>
+    </DxPopup>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CustomStore from 'devextreme/data/custom_store'
 import type { LoadOptions } from 'devextreme/data'
@@ -341,6 +383,7 @@ import { DxTextBox } from 'devextreme-vue/text-box'
 import { DxSelectBox } from 'devextreme-vue/select-box'
 import { DxDateRangeBox } from 'devextreme-vue/date-range-box'
 import { DxButton } from 'devextreme-vue/button'
+import { DxDropDownButton } from 'devextreme-vue/drop-down-button'
 import { DxToolbar, DxItem as DxToolbarItem } from 'devextreme-vue/toolbar'
 import { DxPopup } from 'devextreme-vue/popup'
 import {
@@ -389,7 +432,7 @@ const { t } = useI18n()
 const authStore = useAuthStore()
 
 const pageLoading = ref(false)
-const showDescription = ref(true)
+const showDescription = ref(false)
 const showGuide = ref(false)
 const showAdvanced = ref(false)
 const searchKeyword = ref('')
@@ -399,13 +442,15 @@ const searchDateStart = ref<Date | null>(null)
 const searchDateEnd = ref<Date | null>(null)
 const gridRef = ref()
 const selectedRowKeys = ref<number[]>([])
+const focusedRowKey = ref<number | null>(null)
 const allRoles = ref<PlatformRoleRepDTO[]>([])
 
-const statusOptions = [
+// Reactive status options using computed (fixes i18n switch issue)
+const statusOptionsComputed = computed(() => [
   { value: null, label: t('全部') },
   { value: 'Active', label: t('已启用') },
   { value: 'Disabled', label: t('已禁用') }
-]
+])
 
 // CustomStore for remote paging
 const dataSource = new CustomStore({
@@ -452,6 +497,32 @@ function onReset(): void {
   searchDateStart.value = null
   searchDateEnd.value = null
   onSearch()
+}
+
+// More actions dropdown for row operations (overflow pattern)
+function getMoreActions(row: PlatformUserRepDTO): Array<{ id: string; text: string; icon: string }> {
+  const actions: Array<{ id: string; text: string; icon: string }> = []
+  if (authStore.hasPermission(PLATFORM_USER_ENABLE) && row.Status === 'Disabled') {
+    actions.push({ id: 'enable', text: t('启用'), icon: 'check' })
+  }
+  if (authStore.hasPermission(PLATFORM_USER_DISABLE) && row.Status === 'Active') {
+    actions.push({ id: 'disable', text: t('禁用'), icon: 'close' })
+  }
+  if (authStore.hasPermission(PLATFORM_USER_RESET_PWD)) {
+    actions.push({ id: 'reset-pwd', text: t('重置密码'), icon: 'key' })
+  }
+  if (authStore.hasPermission(PLATFORM_USER_DELETE)) {
+    actions.push({ id: 'delete', text: t('删除'), icon: 'trash' })
+  }
+  return actions
+}
+
+function onMoreActionClick(e: { itemData: { id: string } }, row: PlatformUserRepDTO): void {
+  const actionId = e.itemData.id
+  if (actionId === 'enable') onEnable(row)
+  else if (actionId === 'disable') onDisable(row)
+  else if (actionId === 'reset-pwd') onResetPassword(row)
+  else if (actionId === 'delete') onDelete(row)
 }
 
 // Form dialog
@@ -520,6 +591,7 @@ async function onSubmitForm(): Promise<void> {
   }
   submitting.value = true
   try {
+    let savedId: number | null = null
     if (isEditing.value && editingId.value) {
       await updatePlatformUserApi(editingId.value, {
         DisplayName: formData.value.DisplayName,
@@ -527,9 +599,10 @@ async function onSubmitForm(): Promise<void> {
         Phone: formData.value.Phone,
         RoleIds: formData.value.RoleIds
       })
+      savedId = editingId.value
       notifySuccess('更新成功')
     } else {
-      await createPlatformUserApi({
+      const newId = await createPlatformUserApi({
         Username: formData.value.Username,
         Password: formData.value.Password,
         DisplayName: formData.value.DisplayName,
@@ -537,10 +610,15 @@ async function onSubmitForm(): Promise<void> {
         Phone: formData.value.Phone,
         RoleIds: formData.value.RoleIds
       })
+      savedId = newId
       notifySuccess('创建成功')
     }
     closeFormDialog()
     onSearch()
+    // Highlight saved row after refresh
+    if (savedId) {
+      focusedRowKey.value = savedId
+    }
   } catch {
     // error handled by interceptor
   } finally {
@@ -569,6 +647,7 @@ async function onEnable(row: PlatformUserRepDTO): Promise<void> {
     await enablePlatformUserApi(row.Id)
     notifySuccess('启用成功')
     onSearch()
+    focusedRowKey.value = row.Id
   } catch {
     // error handled by interceptor
   }
@@ -581,18 +660,28 @@ async function onDisable(row: PlatformUserRepDTO): Promise<void> {
     await disablePlatformUserApi(row.Id)
     notifySuccess('禁用成功')
     onSearch()
+    focusedRowKey.value = row.Id
   } catch {
     // error handled by interceptor
   }
 }
 
+// Reset password result
+const resetPwdResultVisible = ref(false)
+const resetPwdNewPassword = ref('')
+
 async function onResetPassword(row: PlatformUserRepDTO): Promise<void> {
   const confirmed = await confirmAction('确认重置用户 {name} 的密码', { name: row.DisplayName })
   if (!confirmed) return
   try {
-    await resetPasswordApi(row.Id)
-    notifySuccess('重置密码成功')
-    onSearch()
+    const result = await resetPasswordApi(row.Id)
+    const newPwd = result?.GeneratedPassword
+    if (newPwd) {
+      resetPwdNewPassword.value = newPwd
+      resetPwdResultVisible.value = true
+    } else {
+      notifySuccess('重置密码成功')
+    }
   } catch {
     // error handled by interceptor
   }
@@ -681,6 +770,24 @@ onMounted(() => {
   padding: 20px;
 }
 
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.page-header-text {
+  flex: 1;
+}
+
+.page-header-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding-top: 4px;
+}
+
 .page-title {
   margin: 0 0 4px 0;
   font-size: 24px;
@@ -689,26 +796,42 @@ onMounted(() => {
 }
 
 .page-subtitle {
-  margin: 0 0 16px 0;
+  margin: 0;
   font-size: 14px;
   color: #999;
 }
 
-.search-bar {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 12px;
-  align-items: center;
-}
-
-.advanced-search {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
-  align-items: center;
-  padding: 12px;
+.search-area {
   background: #fafafa;
   border-radius: 4px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.search-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.search-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.search-label {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+.search-actions {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  padding-bottom: 1px;
 }
 
 .grid-toolbar {
@@ -723,7 +846,7 @@ onMounted(() => {
 .action-buttons {
   display: flex;
   gap: 4px;
-  flex-wrap: wrap;
+  align-items: center;
 }
 
 .status-enabled {
@@ -770,5 +893,27 @@ onMounted(() => {
 .detail-value {
   flex: 1;
   color: #333;
+}
+
+.guide-steps {
+  padding-left: 20px;
+  line-height: 2.2;
+}
+
+.reset-pwd-result {
+  text-align: center;
+  padding: 16px 0;
+}
+
+.reset-pwd-value {
+  font-size: 20px;
+  font-weight: bold;
+  color: #1890ff;
+  padding: 16px;
+  margin: 12px 0 20px;
+  background: #f0f7ff;
+  border-radius: 4px;
+  letter-spacing: 1px;
+  font-family: monospace;
 }
 </style>

@@ -30,6 +30,11 @@ export interface PlatformUserRepDTO {
   Remark: string | null
 }
 
+/** Reset password response */
+export interface ResetPasswordRepDTO {
+  GeneratedPassword: string | null
+}
+
 /** User role (from /platform-roles/all) */
 export interface PlatformUserRoleDTO {
   Id: number

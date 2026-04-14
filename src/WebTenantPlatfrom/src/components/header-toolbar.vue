@@ -92,6 +92,9 @@ defineProps<{
   toggleMenuFunc?: (e: { event: PointerEvent }) => void
 }>()
 
+import { locale as dxLocale } from 'devextreme/localization'
+import { dxLocaleMap } from '../utils/dx-locale'
+
 const router = useRouter()
 const route = useRoute()
 const { t, locale } = useI18n()
@@ -119,6 +122,8 @@ const userMenuItems = computed(() => [
 function onLanguageChanged(e: { value: string }) {
   locale.value = e.value
   localStorage.setItem('locale', e.value)
+  // Sync DevExtreme locale for DxDateRangeBox, dialog buttons, etc.
+  dxLocale(dxLocaleMap[e.value] || 'en')
 }
 
 function onUserMenuItemClick(e: { itemData: { id: string } }) {

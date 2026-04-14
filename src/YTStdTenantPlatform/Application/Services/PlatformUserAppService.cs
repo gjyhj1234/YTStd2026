@@ -24,7 +24,23 @@ namespace YTStdTenantPlatform.Application.Services
             if (!queryResult.Success || data == null)
                 return new PagedResult<PlatformUserRepDTO> { Page = request.NormalizedPage, PageSize = request.NormalizedPageSize };
 
-            var filtered = FilterUsers(data, request);
+            // Load role members if RoleId filter is specified
+            HashSet<long>? roleUserIds = null;
+            if (request.RoleId.HasValue)
+            {
+                var (rmResult, rmData) = await PlatformRoleMemberCRUD.GetListAsync(tenantId, operatorId);
+                if (rmResult.Success && rmData != null)
+                {
+                    roleUserIds = new HashSet<long>();
+                    foreach (var rm in rmData)
+                    {
+                        if (rm.RoleId == request.RoleId.Value)
+                            roleUserIds.Add(rm.UserId);
+                    }
+                }
+            }
+
+            var filtered = FilterUsers(data, request, roleUserIds);
             var paged = Paginate(filtered, request);
             var items = new List<PlatformUserRepDTO>(paged.Count);
             foreach (var u in paged)
@@ -305,7 +321,7 @@ namespace YTStdTenantPlatform.Application.Services
         };
 
         /// <summary>过滤用户</summary>
-        private static List<PlatformUser> FilterUsers(IReadOnlyList<PlatformUser> data, PagedRequest req)
+        private static List<PlatformUser> FilterUsers(IReadOnlyList<PlatformUser> data, PagedRequest req, HashSet<long>? roleUserIds = null)
         {
             var list = new List<PlatformUser>();
             foreach (var u in data)
@@ -319,6 +335,12 @@ namespace YTStdTenantPlatform.Application.Services
                     u.Username.IndexOf(req.Keyword, StringComparison.OrdinalIgnoreCase) < 0 &&
                     u.DisplayName.IndexOf(req.Keyword, StringComparison.OrdinalIgnoreCase) < 0 &&
                     u.Email.IndexOf(req.Keyword, StringComparison.OrdinalIgnoreCase) < 0)
+                    continue;
+                if (roleUserIds != null && !roleUserIds.Contains(u.Id))
+                    continue;
+                if (req.CreatedAtStart.HasValue && u.CreatedAt < req.CreatedAtStart.Value)
+                    continue;
+                if (req.CreatedAtEnd.HasValue && u.CreatedAt > req.CreatedAtEnd.Value)
                     continue;
                 list.Add(u);
             }

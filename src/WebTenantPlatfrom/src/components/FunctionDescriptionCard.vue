@@ -1,21 +1,35 @@
 <template>
-  <div v-if="visible" class="function-description-card">
-    <div class="card-header">
-      <span class="card-title">{{ $t('功能说明') }}</span>
-      <dx-button
-        icon="close"
-        styling-mode="text"
-        @click="onClose"
-      />
-    </div>
-    <div class="card-content">
-      <slot />
-    </div>
+  <div>
+    <DxButton
+      icon="info"
+      styling-mode="text"
+      :hint="$t('功能说明')"
+      @click="onToggle"
+    />
+    <DxPopup
+      :visible="visible"
+      :title="$t('功能说明')"
+      :width="600"
+      :height="'auto'"
+      :show-close-button="true"
+      :drag-enabled="true"
+      @hiding="onClose"
+    >
+      <template #content>
+        <DxScrollView>
+          <div class="function-description-content">
+            <slot />
+          </div>
+        </DxScrollView>
+      </template>
+    </DxPopup>
   </div>
 </template>
 
 <script setup lang="ts">
-import DxButton from 'devextreme-vue/button'
+import { DxButton } from 'devextreme-vue/button'
+import { DxPopup } from 'devextreme-vue/popup'
+import DxScrollView from 'devextreme-vue/scroll-view'
 
 defineProps<{
   visible?: boolean
@@ -25,35 +39,20 @@ const emit = defineEmits<{
   (e: 'update:visible', value: boolean): void
 }>()
 
+function onToggle() {
+  emit('update:visible', true)
+}
+
 function onClose() {
   emit('update:visible', false)
 }
 </script>
 
 <style scoped>
-.function-description-card {
-  background-color: var(--base-bg);
-  border: 1px solid var(--dx-color-border);
-  border-radius: 4px;
-  padding: 16px;
-  margin-bottom: 16px;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.card-title {
-  font-weight: bold;
-  font-size: 14px;
-}
-
-.card-content {
+.function-description-content {
+  padding: 8px 0;
   font-size: 13px;
-  line-height: 1.6;
+  line-height: 1.8;
   color: var(--base-text-color-alpha-7);
 }
 </style>
