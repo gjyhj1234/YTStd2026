@@ -128,7 +128,6 @@
       <h3 class="section-title">{{ $t('快捷操作') }}</h3>
       <div class="action-buttons">
         <DxButton
-          v-if="canCreateTenant"
           :text="$t('创建租户')"
           icon="add"
           type="default"
@@ -137,7 +136,6 @@
           @click="goTo('/tenants')"
         />
         <DxButton
-          v-if="canCreateUser"
           :text="$t('创建用户')"
           icon="add"
           type="default"
@@ -146,7 +144,6 @@
           @click="goTo('/platform-users')"
         />
         <DxButton
-          v-if="canViewAudit"
           :text="$t('查看审计日志')"
           icon="description"
           type="default"
@@ -160,7 +157,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   DxChart,
@@ -200,17 +197,6 @@ const activeUserCount = ref(0)
 const newUserCount = ref(0)
 const apiCallCount = ref(0)
 const storageBytes = ref(0)
-
-/** Permission checks — use colon-separated codes matching backend format */
-const canCreateTenant = computed(() =>
-  authStore.hasAnyPermission('tenant:list:create', 'tenant:management')
-)
-const canCreateUser = computed(() =>
-  authStore.hasAnyPermission('platform:user:create', 'platform:user')
-)
-const canViewAudit = computed(() =>
-  authStore.hasAnyPermission('log:audit:view', 'log:management')
-)
 
 function formatNumber(value: number): string {
   if (value >= 1_000_000) {
