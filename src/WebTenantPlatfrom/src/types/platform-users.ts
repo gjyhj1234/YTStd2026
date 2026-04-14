@@ -16,21 +16,24 @@ export interface PlatformUserUpdateReqDTO {
   RoleIds: number[]
 }
 
-/** User response */
+/** User response (matches actual backend API) */
 export interface PlatformUserRepDTO {
   Id: number
   Username: string
   DisplayName: string
-  Email: string
-  Phone: string
-  Status: number
-  Roles: PlatformUserRoleDTO[]
+  Email: string | null
+  Phone: string | null
+  Status: string
+  MfaEnabled: boolean
+  LastLoginAt: string | null
   CreatedAt: string
-  UpdatedAt: string
+  Remark: string | null
 }
 
-/** User role */
+/** User role (from /platform-roles/all) */
 export interface PlatformUserRoleDTO {
   Id: number
+  Code: string
   Name: string
+  Status: string
 }
