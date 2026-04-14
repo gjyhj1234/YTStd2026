@@ -93,9 +93,10 @@ curl -s http://localhost:5173/ | head -c 200
    - 更新路由（router.ts）
    - 更新权限常量（constants/permissions.ts，如需要）
 4. 构建验证：npm run build
-5. E2E 测试编写与迭代（最多 5 次）
+5. E2E 测试编写与迭代（最多 5 次），当迭代5次任然没有完成子任务要求，将本次执行进度、遗留问题等输出 session-summary 至 .ai/workspace/，便于下次任务继续修改。
 6. 自审（self-review-protocol F1-F7）
 7. 输出 session-summary 至 .ai/workspace/
+8. 更新所执行的子任务文档.ai/tasks/platform-frontend/0x-Fx-x-{module}.md文件的状态
 ```
 
 ---
@@ -164,7 +165,7 @@ ComponentName.vue.zh-TW.json
 1. 在 `.ai/workspace/` 创建 `session-summary-{YYYYMMDD}-{seq}.md`
 2. 更新 `.ai/tasks/platform-frontend/README.md` 中的执行状态
 3. 更新 `.ai/prompts/08-platform/frontend/0000_overview.md` 中的模块状态
-
+4. 更新所执行的子任务文档.ai/tasks/platform-frontend/0x-Fx-x-{module}.md文件的状态
 ---
 
 ## 版本
