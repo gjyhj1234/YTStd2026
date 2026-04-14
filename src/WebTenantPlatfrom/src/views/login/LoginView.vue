@@ -33,6 +33,7 @@
         <form @submit.prevent="onSubmit">
           <DxForm
             ref="formRef"
+            :key="`login-form-${showCaptcha ? 'captcha' : 'plain'}`"
             :form-data="formData"
             :disabled="logging"
             label-mode="static"

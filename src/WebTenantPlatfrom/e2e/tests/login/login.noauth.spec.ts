@@ -26,6 +26,29 @@ async function waitForLoginPage(page: Page) {
   await expect(page.locator('.login-card')).toBeVisible({ timeout: 10_000 })
 }
 
+async function getLayoutMetrics(page: Page) {
+  return page.evaluate(() => {
+    const pageEl = document.querySelector('.login-page')
+    const containerEl = document.querySelector('.login-container')
+    const cardEl = document.querySelector('.login-card')
+    const footerEl = document.querySelector('.login-footer')
+    const rect = (el: Element | null) => el ? (el as HTMLElement).getBoundingClientRect() : null
+    const pageRect = rect(pageEl)
+    const containerRect = rect(containerEl)
+    const cardRect = rect(cardEl)
+    const footerStyle = footerEl ? getComputedStyle(footerEl) : null
+
+    return {
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+      pageRect,
+      containerRect,
+      cardRect,
+      footerDisplay: footerStyle?.display ?? null
+    }
+  })
+}
+
 // ══════════════════════════════════════════════════════════════
 // 桌面端渲染 (1280×720)
 // ══════════════════════════════════════════════════════════════
@@ -47,6 +70,11 @@ test.describe('登录页 — 桌面端渲染', () => {
 
   test('L03 — 桌面端应展示左侧品牌区', async ({ page }) => {
     await expect(page.locator('.login-branding')).toBeVisible()
+    const metrics = await getLayoutMetrics(page)
+    expect(Math.round(metrics.pageRect?.width ?? 0)).toBe(1280)
+    expect(Math.round(metrics.containerRect?.width ?? 0)).toBe(860)
+    const centeredOffset = Math.abs(((metrics.viewportWidth - (metrics.containerRect?.width ?? 0)) / 2) - (metrics.containerRect?.left ?? 0))
+    expect(centeredOffset).toBeLessThanOrEqual(2)
   })
 
   test('L04 — 应包含用户名输入框', async ({ page }) => {
@@ -81,6 +109,10 @@ test.describe('登录页 — 平板端渲染', () => {
     await waitForLoginPage(page)
     await expect(page.locator('.login-branding')).toBeHidden()
     await expect(page.locator('.login-card')).toBeVisible()
+    const metrics = await getLayoutMetrics(page)
+    expect(metrics.containerRect?.width ?? 0).toBeLessThanOrEqual(480)
+    const centeredOffset = Math.abs(((metrics.viewportWidth - (metrics.containerRect?.width ?? 0)) / 2) - (metrics.containerRect?.left ?? 0))
+    expect(centeredOffset).toBeLessThanOrEqual(2)
   })
 })
 
@@ -96,6 +128,10 @@ test.describe('登录页 — 手机端渲染', () => {
     await expect(page.locator('.login-branding')).toBeHidden()
     await expect(page.locator('.login-card .dx-form')).toBeVisible()
     await expect(getLoginBtn(page)).toBeVisible()
+    const metrics = await getLayoutMetrics(page)
+    expect(Math.round(metrics.containerRect?.width ?? 0)).toBe(375)
+    expect(Math.round(metrics.cardRect?.width ?? 0)).toBe(375)
+    expect(metrics.footerDisplay).toBe('none')
   })
 })
 
