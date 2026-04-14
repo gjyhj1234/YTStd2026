@@ -106,7 +106,6 @@
               class="login-submit-indicator"
               width="20px"
               height="20px"
-              :visible="true"
             />
           </div>
         </form>
