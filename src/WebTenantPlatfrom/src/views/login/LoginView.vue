@@ -33,7 +33,6 @@
         <form @submit.prevent="onSubmit">
           <DxForm
             ref="formRef"
-            :key="`login-form-${showCaptcha ? 'captcha' : 'plain'}`"
             :form-data="formData"
             :disabled="logging"
             label-mode="static"
@@ -62,9 +61,13 @@
             </DxSimpleItem>
 
             <!-- 滑动验证 - 多次失败后显示 -->
-            <DxEmptyItem v-if="showCaptcha">
+            <DxEmptyItem>
               <template #default>
-                <div class="captcha-wrapper" data-testid="slider-captcha">
+                <div
+                  v-show="showCaptcha"
+                  class="captcha-wrapper"
+                  data-testid="slider-captcha"
+                >
                   <p class="captcha-label">{{ $t('请拖动滑块完成验证') }}</p>
                   <div
                     class="captcha-track"

@@ -195,12 +195,12 @@ test.describe('登录页 — 登录流程', () => {
 
   test('L15 — 使用错误密码应留在登录页', async ({ page }) => {
     const usernameInput = getUsernameInput(page)
-    await usernameInput.fill('admin')
+    await usernameInput.fill('not-exists-user')
     await getPasswordInput(page).fill('wrongpassword')
     await getLoginBtn(page).click()
     await page.waitForTimeout(3000)
     expect(page.url()).toContain('login-form')
-    expect(await usernameInput.inputValue()).toBe('admin')
+    expect(await usernameInput.inputValue()).toBe('not-exists-user')
   })
 
   test('L16 — 回车键应能提交表单', async ({ page }) => {
@@ -230,7 +230,7 @@ test.describe('登录页 — 滑块验证码', () => {
 
   test('L18 — 连续 3 次登录失败后应显示滑块验证', async ({ page }) => {
     for (let i = 0; i < 3; i++) {
-      await getUsernameInput(page).fill('admin')
+      await getUsernameInput(page).fill('not-exists-user')
       await getPasswordInput(page).fill('wrong123')
       await getLoginBtn(page).click()
       // Wait for the API call to complete and error notification
