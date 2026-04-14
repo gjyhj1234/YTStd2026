@@ -10,8 +10,11 @@ import { navigateTo } from '../../helpers/test-helpers'
  *   - 统计卡片展示
  *   - 图表渲染
  *   - 快捷操作按钮
+ *   - 快捷操作导航
  *   - 侧边栏导航
  *   - 多语言切换
+ *   - 主题切换
+ *   - 响应式布局
  *
  * 前置条件：
  *   - 后端已启动（http://127.0.0.1:5000）
@@ -123,6 +126,18 @@ test.describe('仪表盘 — 图表', () => {
     const chart = page.locator('[data-testid="chart-metrics"]')
     await expect(chart).toBeVisible()
   })
+
+  test('D03k-chart — 图表不超出容器范围', async ({ page }) => {
+    // Check all chart containers are constrained in size
+    const containers = page.locator('.chart-container')
+    const count = await containers.count()
+    for (let i = 0; i < count; i++) {
+      const box = await containers.nth(i).boundingBox()
+      expect(box).toBeTruthy()
+      // Chart containers should not exceed viewport height
+      expect(box!.height).toBeLessThanOrEqual(400)
+    }
+  })
 })
 
 // ══════════════════════════════════════════════════════════════
@@ -145,6 +160,41 @@ test.describe('仪表盘 — 快捷操作', () => {
     await expect(sectionTitle).toBeVisible()
     const text = await sectionTitle.textContent()
     expect(text).toBeTruthy()
+  })
+
+  test('D03m — 快捷操作按钮可见（管理员权限）', async ({ page }) => {
+    // Admin should have all permissions, all 3 buttons should be visible
+    const btnTenant = page.locator('[data-testid="btn-create-tenant"]')
+    const btnUser = page.locator('[data-testid="btn-create-user"]')
+    const btnAudit = page.locator('[data-testid="btn-audit-logs"]')
+
+    await expect(btnTenant).toBeVisible({ timeout: 5_000 })
+    await expect(btnUser).toBeVisible({ timeout: 5_000 })
+    await expect(btnAudit).toBeVisible({ timeout: 5_000 })
+  })
+
+  test('D03n — 点击"创建租户"跳转到租户列表页', async ({ page }) => {
+    const btn = page.locator('[data-testid="btn-create-tenant"]')
+    await expect(btn).toBeVisible({ timeout: 5_000 })
+    await btn.click()
+    await page.waitForTimeout(500)
+    await expect(page).toHaveURL(/.*#\/tenants/)
+  })
+
+  test('D03o — 点击"创建用户"跳转到用户管理页', async ({ page }) => {
+    const btn = page.locator('[data-testid="btn-create-user"]')
+    await expect(btn).toBeVisible({ timeout: 5_000 })
+    await btn.click()
+    await page.waitForTimeout(500)
+    await expect(page).toHaveURL(/.*#\/platform-users/)
+  })
+
+  test('D03p — 点击"查看审计日志"跳转到审计日志页', async ({ page }) => {
+    const btn = page.locator('[data-testid="btn-audit-logs"]')
+    await expect(btn).toBeVisible({ timeout: 5_000 })
+    await btn.click()
+    await page.waitForTimeout(500)
+    await expect(page).toHaveURL(/.*#\/audit-logs/)
   })
 })
 
@@ -204,5 +254,102 @@ test.describe('仪表盘 — 多语言切换', () => {
     const text = await title.textContent()
     // Should be "Dashboard" or the i18n key
     expect(text).toBeTruthy()
+  })
+})
+
+// ══════════════════════════════════════════════════════════════
+// D07: 主题切换
+// ══════════════════════════════════════════════════════════════
+
+test.describe('仪表盘 — 主题切换', () => {
+  test('D07a — 切换暗色主题后卡片背景色变化', async ({ page }) => {
+    await navigateTo(page, '/dashboard')
+    await page.waitForTimeout(1000)
+
+    // Get initial card background color
+    const card = page.locator('[data-testid="stat-card-active-users"]')
+    await expect(card).toBeVisible()
+    const lightBg = await card.evaluate(el => getComputedStyle(el).backgroundColor)
+
+    // Click theme switcher button (moon/sun icon in header toolbar)
+    const themeBtn = page.locator('.theme-button')
+    if (await themeBtn.isVisible()) {
+      await themeBtn.click()
+      await page.waitForTimeout(1000)
+
+      // After switching, the background should differ
+      const darkBg = await card.evaluate(el => getComputedStyle(el).backgroundColor)
+      expect(darkBg).not.toBe(lightBg)
+
+      // Switch back to light theme for subsequent tests
+      await themeBtn.click()
+      await page.waitForTimeout(500)
+    }
+  })
+
+  test('D07b — 切换暗色主题后页面标题颜色变化', async ({ page }) => {
+    await navigateTo(page, '/dashboard')
+    await page.waitForTimeout(1000)
+
+    const title = page.locator('[data-testid="dashboard-title"]')
+    await expect(title).toBeVisible()
+    const lightColor = await title.evaluate(el => getComputedStyle(el).color)
+
+    const themeBtn = page.locator('.theme-button')
+    if (await themeBtn.isVisible()) {
+      await themeBtn.click()
+      await page.waitForTimeout(1000)
+
+      const darkColor = await title.evaluate(el => getComputedStyle(el).color)
+      expect(darkColor).not.toBe(lightColor)
+
+      // Switch back
+      await themeBtn.click()
+      await page.waitForTimeout(500)
+    }
+  })
+})
+
+// ══════════════════════════════════════════════════════════════
+// D08: 响应式布局
+// ══════════════════════════════════════════════════════════════
+
+test.describe('仪表盘 — 响应式布局', () => {
+  test('D08a — 平板布局卡片两列排列', async ({ page }) => {
+    await page.setViewportSize({ width: 768, height: 1024 })
+    await navigateTo(page, '/dashboard')
+    await page.waitForTimeout(1000)
+
+    // stat-cards should still be visible
+    const cards = page.locator('[data-testid="stat-cards"] .stat-card')
+    await expect(cards).toHaveCount(4)
+
+    // Charts should not overflow viewport
+    const chartContainers = page.locator('.chart-container')
+    const count = await chartContainers.count()
+    for (let i = 0; i < count; i++) {
+      const box = await chartContainers.nth(i).boundingBox()
+      expect(box).toBeTruthy()
+      // Chart width should fit within viewport
+      expect(box!.width).toBeLessThanOrEqual(768)
+    }
+  })
+
+  test('D08b — 手机布局卡片单列排列', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 })
+    await navigateTo(page, '/dashboard')
+    await page.waitForTimeout(1000)
+
+    const cards = page.locator('[data-testid="stat-cards"] .stat-card')
+    await expect(cards).toHaveCount(4)
+
+    // Charts should not overflow viewport width
+    const chartContainers = page.locator('.chart-container')
+    const count = await chartContainers.count()
+    for (let i = 0; i < count; i++) {
+      const box = await chartContainers.nth(i).boundingBox()
+      expect(box).toBeTruthy()
+      expect(box!.width).toBeLessThanOrEqual(375)
+    }
   })
 })

@@ -22,17 +22,30 @@ setup('authenticate as admin', async ({ page, request }) => {
   const token = result.Data?.Token
   expect(token).toBeTruthy()
 
-  // 2. 导航到页面并注入 Token 到 localStorage
+  // 2. 导航到页面并注入 Token 和用户信息到 localStorage
   await page.goto('/')
-  await page.evaluate((t: string) => {
-    localStorage.setItem('auth_token', t)
-  }, token)
+  await page.evaluate((loginData: { Token: string; UserId: number; Username: string; DisplayName: string; Permissions: string[] }) => {
+    localStorage.setItem('auth_token', loginData.Token)
+    localStorage.setItem('auth_user', JSON.stringify({
+      Id: loginData.UserId,
+      Username: loginData.Username,
+      DisplayName: loginData.DisplayName,
+      Email: '',
+      Permissions: loginData.Permissions
+    }))
+  }, {
+    Token: result.Data.Token,
+    UserId: result.Data.UserId,
+    Username: result.Data.Username,
+    DisplayName: result.Data.DisplayName,
+    Permissions: result.Data.Permissions || []
+  })
 
   // 3. 导航到 dashboard 验证认证状态
   await page.goto('/#/dashboard')
   await page.waitForLoadState('networkidle')
   await page.waitForTimeout(2000)
 
-  // 4. 保存认证状态（包含 localStorage 中的 Token）
+  // 4. 保存认证状态（包含 localStorage 中的 Token 和用户信息）
   await page.context().storageState({ path: AUTH_FILE })
 })
