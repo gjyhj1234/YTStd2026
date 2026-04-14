@@ -17,21 +17,13 @@ import jaMessages from 'devextreme/localization/messages/ja.json'
 import enMessages from 'devextreme/localization/messages/en.json'
 import App from './App.vue'
 import appInfo from './app-info'
+import { dxLocaleMap } from './utils/dx-locale'
 
 // Load DevExtreme locale dictionaries
 loadMessages(zhMessages)
 loadMessages(zhTwMessages)
 loadMessages(jaMessages)
 loadMessages(enMessages)
-
-// Map vue-i18n locales to DevExtreme locales
-const dxLocaleMap: Record<string, string> = {
-  'zh-CN': 'zh',
-  'zh-TW': 'zh-TW',
-  'ja-JP': 'ja',
-  'en-US': 'en',
-  'ms-MY': 'en' // fallback to English for Malay
-}
 
 // Set initial DevExtreme locale from saved preference
 const savedLocale = localStorage.getItem('locale') || 'zh-CN'
@@ -49,9 +41,6 @@ themes.initialized(() => {
   app.use(router)
   app.use(i18n)
   app.config.globalProperties.$appInfo = appInfo
-
-  // Provide dxLocaleMap for use by components that need to sync locale
-  app.provide('dxLocaleMap', dxLocaleMap)
 
   app.mount('#app')
 })

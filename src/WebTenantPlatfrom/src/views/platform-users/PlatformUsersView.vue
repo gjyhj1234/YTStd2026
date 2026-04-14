@@ -675,8 +675,9 @@ async function onResetPassword(row: PlatformUserRepDTO): Promise<void> {
   if (!confirmed) return
   try {
     const result = await resetPasswordApi(row.Id)
-    if (result.GeneratedPassword) {
-      resetPwdNewPassword.value = result.GeneratedPassword
+    const newPwd = result?.GeneratedPassword
+    if (newPwd) {
+      resetPwdNewPassword.value = newPwd
       resetPwdResultVisible.value = true
     } else {
       notifySuccess('重置密码成功')

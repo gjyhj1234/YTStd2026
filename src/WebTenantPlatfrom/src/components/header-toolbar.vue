@@ -93,20 +93,12 @@ defineProps<{
 }>()
 
 import { locale as dxLocale } from 'devextreme/localization'
+import { dxLocaleMap } from '../utils/dx-locale'
 
 const router = useRouter()
 const route = useRoute()
 const { t, locale } = useI18n()
 const authStore = useAuthStore()
-
-// DevExtreme locale mapping
-const dxLocaleMap: Record<string, string> = {
-  'zh-CN': 'zh',
-  'zh-TW': 'zh-TW',
-  'ja-JP': 'ja',
-  'en-US': 'en',
-  'ms-MY': 'en'
-}
 
 const currentLocale = computed(() => locale.value)
 
