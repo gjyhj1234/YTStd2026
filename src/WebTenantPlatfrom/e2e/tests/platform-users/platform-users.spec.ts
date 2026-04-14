@@ -74,45 +74,48 @@ test.describe('平台用户管理 — 页面渲染', () => {
   })
 
   test('U03b — 查询区元素完整', async ({ page }) => {
-    const searchBar = page.locator('.search-bar')
-    await expect(searchBar).toBeVisible()
+    const searchArea = page.locator('.search-area')
+    await expect(searchArea).toBeVisible()
 
     // Keyword input
-    const keywordInput = searchBar.locator('.dx-textbox').first()
+    const keywordInput = searchArea.locator('.dx-textbox').first()
     await expect(keywordInput).toBeVisible()
 
     // Status dropdown
-    const statusSelect = searchBar.locator('.dx-selectbox')
+    const statusSelect = searchArea.locator('.dx-selectbox')
     await expect(statusSelect).toBeVisible()
 
     // Search button
-    const searchBtn = searchBar.locator('.dx-button').filter({ hasText: /查询|Search|検索|Cari|查詢/i }).first()
+    const searchBtn = searchArea.locator('.dx-button').filter({ hasText: /查询|Search|検索|Cari|查詢/i }).first()
     await expect(searchBtn).toBeVisible()
 
     // Reset button
-    const resetBtn = searchBar.locator('.dx-button').filter({ hasText: /重置|Reset|リセット|Set Semula|重設/i }).first()
+    const resetBtn = searchArea.locator('.dx-button').filter({ hasText: /重置|Reset|リセット|Set Semula|重設/i }).first()
     await expect(resetBtn).toBeVisible()
   })
 
   test('U03c — 高级查询展开/收起', async ({ page }) => {
-    // Advanced section should be hidden initially
-    const advancedSection = page.locator('.advanced-search')
-    await expect(advancedSection).toBeHidden()
+    const searchArea = page.locator('.search-area')
+
+    // Advanced fields (role dropdown) should not be visible initially
+    // The role DxSelectBox is the 2nd selectbox in the search area; it only appears when expanded
+    const roleSelect = searchArea.locator('.dx-selectbox').nth(1)
+    await expect(roleSelect).toBeHidden()
 
     // Click advanced button — text toggles between 高级查询 and 收起
-    const advBtn = page.locator('.search-bar .dx-button').filter({ hasText: /高级查询|Advanced|詳細|Carian|進階/i }).first()
+    const advBtn = searchArea.locator('.dx-button').filter({ hasText: /高级查询|Advanced|詳細|Carian|進階/i }).first()
     await expect(advBtn).toBeVisible()
     await advBtn.click()
     await page.waitForTimeout(500)
 
-    // Advanced section should be visible
-    await expect(advancedSection).toBeVisible()
+    // Role dropdown should now be visible (advanced section expanded)
+    await expect(roleSelect).toBeVisible()
 
     // Click collapse button (text has changed to 收起/Collapse)
-    const collapseBtn = page.locator('.search-bar .dx-button').filter({ hasText: /收起|Collapse|閉じる|Tutup|收起/i }).first()
+    const collapseBtn = searchArea.locator('.dx-button').filter({ hasText: /收起|Collapse|閉じる|Tutup|收起/i }).first()
     await collapseBtn.click()
     await page.waitForTimeout(500)
-    await expect(advancedSection).toBeHidden()
+    await expect(roleSelect).toBeHidden()
   })
 
   test('U03d — 工具栏按钮可见', async ({ page }) => {
@@ -131,15 +134,15 @@ test.describe('平台用户管理 — 搜索', () => {
     await navigateTo(page, '/platform-users')
     await page.waitForTimeout(2000)
 
-    const searchBar = page.locator('.search-bar')
-    const searchInput = searchBar.locator('.dx-textbox').first().locator('input[type="text"]')
+    const searchArea = page.locator('.search-area')
+    const searchInput = searchArea.locator('.dx-textbox').first().locator('input[type="text"]')
     await expect(searchInput).toBeVisible()
 
     // Type a search term
     await searchInput.fill('admin')
 
     // Click search button
-    const searchBtn = searchBar.locator('.dx-button').filter({ hasText: /查询|Search|検索|Cari|查詢/i }).first()
+    const searchBtn = searchArea.locator('.dx-button').filter({ hasText: /查询|Search|検索|Cari|查詢/i }).first()
     await searchBtn.click()
     await page.waitForTimeout(1500)
 
@@ -153,11 +156,11 @@ test.describe('平台用户管理 — 搜索', () => {
     await navigateTo(page, '/platform-users')
     await page.waitForTimeout(2000)
 
-    const searchBar = page.locator('.search-bar')
-    const searchInput = searchBar.locator('.dx-textbox').first().locator('input[type="text"]')
+    const searchArea = page.locator('.search-area')
+    const searchInput = searchArea.locator('.dx-textbox').first().locator('input[type="text"]')
     await searchInput.fill('nonexistent_user_xyz_' + TEST_SUFFIX)
 
-    const searchBtn = searchBar.locator('.dx-button').filter({ hasText: /查询|Search|検索|Cari|查詢/i }).first()
+    const searchBtn = searchArea.locator('.dx-button').filter({ hasText: /查询|Search|検索|Cari|查詢/i }).first()
     await searchBtn.click()
     await page.waitForTimeout(1500)
 
@@ -312,17 +315,25 @@ test.describe('平台用户管理 — 编辑用户', () => {
 // ══════════════════════════════════════════════════════════════
 
 test.describe('平台用户管理 — 禁用/启用', () => {
-  test('U07 & U08 — 禁用和启用按钮可见性', async ({ page }) => {
+  test('U07 & U08 — 操作按钮可见（查看、编辑、更多）', async ({ page }) => {
     await navigateTo(page, '/platform-users')
     await page.waitForTimeout(2000)
     await waitForGridLoaded(page)
 
-    // The admin user should be Active, so "禁用" button should be visible
+    // The admin user row should have action buttons
     const firstRow = page.locator('.dx-datagrid-rowsview .dx-data-row').first()
-    const actionBtns = firstRow.locator('.action-buttons .dx-button')
-    const count = await actionBtns.count()
-    // Should have multiple action buttons (查看, 编辑, 禁用, 重置密码, 删除)
-    expect(count).toBeGreaterThanOrEqual(3)
+
+    // View button
+    const viewBtn = firstRow.locator('.action-buttons .dx-button').filter({ hasText: /查看|View|詳細|Lihat|檢視/i })
+    await expect(viewBtn).toBeVisible()
+
+    // Edit button
+    const editBtn = firstRow.locator('.action-buttons .dx-button').filter({ hasText: /编辑|Edit|編集|編輯/i })
+    await expect(editBtn).toBeVisible()
+
+    // More dropdown button (contains disable/enable, reset pwd, delete)
+    const moreBtn = firstRow.locator('.action-buttons .dx-dropdownbutton')
+    await expect(moreBtn).toBeVisible()
   })
 })
 
@@ -331,15 +342,26 @@ test.describe('平台用户管理 — 禁用/启用', () => {
 // ══════════════════════════════════════════════════════════════
 
 test.describe('平台用户管理 — 重置密码', () => {
-  test('U09 — 重置密码按钮可见', async ({ page }) => {
+  test('U09 — 重置密码按钮在更多菜单中可见', async ({ page }) => {
     await navigateTo(page, '/platform-users')
     await page.waitForTimeout(2000)
     await waitForGridLoaded(page)
 
-    // First row should have reset password button
+    // First row should have "更多" (More) overflow dropdown
     const firstRow = page.locator('.dx-datagrid-rowsview .dx-data-row').first()
-    const resetBtn = firstRow.locator('.dx-button').filter({ hasText: /重置密码|Reset|リセット|Set Semula|重設/i })
-    await expect(resetBtn).toBeVisible()
+    const moreBtn = firstRow.locator('.dx-dropdownbutton .dx-button').filter({ hasText: /更多|More|その他|Lagi|更多/i })
+    await expect(moreBtn).toBeVisible()
+
+    // Click to open dropdown menu
+    await moreBtn.click()
+    await page.waitForTimeout(500)
+
+    // Reset password item should be visible in the dropdown overlay
+    const resetItem = page.locator('.dx-list-item').filter({ hasText: /重置密码|Reset|リセット|Set Semula|重設/i })
+    await expect(resetItem).toBeVisible()
+
+    // Close the dropdown by pressing Escape
+    await page.keyboard.press('Escape')
   })
 })
 
@@ -382,12 +404,12 @@ test.describe('平台用户管理 — 桌面端', () => {
 
     // Page title visible
     await expect(page.locator('.page-title')).toBeVisible()
-    // Search bar visible
-    await expect(page.locator('.search-bar')).toBeVisible()
+    // Search area visible
+    await expect(page.locator('.search-area')).toBeVisible()
     // Grid visible
     await expect(page.locator('.dx-datagrid')).toBeVisible()
-    // Sidebar visible
-    await expect(page.locator('.dx-treeview')).toBeVisible()
+    // Sidebar drawer visible (contains the treeview navigation)
+    await expect(page.locator('.dx-drawer-content')).toBeVisible()
   })
 })
 
