@@ -11,6 +11,12 @@
 platform-frontend/
 ├── README.md                          # 本文件 — 子任务索引
 ├── 00-common-prereqs.md               # 通用前置阅读与环境约束（每个子任务前必读）
+├── 00-F0-1-scaffold.md                # F0-1 脚手架搭建 ✅
+├── 00-F0-2-axios.md                   # F0-2 axios 封装 ✅
+├── 00-F0-3-i18n.md                    # F0-3 i18n 基础设施 ✅
+├── 00-F0-4-router-guards.md           # F0-4 路由与权限守卫 ✅
+├── 00-F0-5-state-management.md        # F0-5 状态管理 ✅
+├── 00-F0-6-common-components.md       # F0-6 通用组件 ✅
 ├── 01-F2-5-tenant-page.md             # F2-5 租户管理
 ├── 02-F2-6-tenant-info-page.md        # F2-6 租户信息管理
 ├── 03-F2-7-tenant-resource-page.md    # F2-7 租户资源管理
@@ -44,6 +50,12 @@ platform-frontend/
 | 序号 | 子任务 | 模块 | 并行组 | 状态 |
 |:----:|--------|------|:------:|:----:|
 | 00 | 通用前置 | — | — | ✅ 已编写 |
+| F0-1 | 脚手架搭建 | 基础设施 | — | ✅ |
+| F0-2 | axios 封装 | 基础设施 | — | ✅ |
+| F0-3 | i18n 基础设施 | 基础设施 | — | ✅ |
+| F0-4 | 路由与权限守卫 | 基础设施 | — | ✅ |
+| F0-5 | 状态管理 | 基础设施 | — | ✅ |
+| F0-6 | 通用组件 | 基础设施 | — | ✅ |
 | 01 | F2-5 租户管理 | 租户列表 | B | ⬜ |
 | 02 | F2-6 租户信息 | 租户信息 | B | ⬜ |
 | 03 | F2-7 租户资源 | 资源配额 | B | ⬜ |
@@ -75,15 +87,20 @@ platform-frontend/
 
 以下模块已在之前的会话中完成，无需重复执行：
 
-| 编号 | 模块 | 完成会话 |
-|:----:|------|---------|
-| F0-1 ~ F0-6 | 基础设施层 | session-summary-20260413-09 |
-| F1-1 | 主布局 | session-summary-20260413-10 |
-| F1-2 | 登录页 | session-summary-20260413-11 |
-| F2-1 | 仪表盘 | session-summary-20260413-12 |
-| F2-2 | 平台用户管理 | session-summary-20260413-13 |
-| F2-3 | 平台角色管理 | session-summary-20260413-13 |
-| F2-4 | 平台权限管理 | session-summary-20260413-13 |
+| 编号 | 模块 | 完成会话 | 子任务文件 |
+|:----:|------|---------|-----------|
+| F0-1 | 脚手架搭建 | session-summary-20260413-09 | `00-F0-1-scaffold.md` |
+| F0-2 | axios 封装 | session-summary-20260413-09 | `00-F0-2-axios.md` |
+| F0-3 | i18n 基础设施 | session-summary-20260413-09 | `00-F0-3-i18n.md` |
+| F0-4 | 路由与权限守卫 | session-summary-20260413-10 | `00-F0-4-router-guards.md` |
+| F0-5 | 状态管理 | session-summary-20260413-09/10 | `00-F0-5-state-management.md` |
+| F0-6 | 通用组件 | session-summary-20260413-10 | `00-F0-6-common-components.md` |
+| F1-1 | 主布局 | session-summary-20260413-10 | — |
+| F1-2 | 登录页 | session-summary-20260413-11 | — |
+| F2-1 | 仪表盘 | session-summary-20260413-12 | — |
+| F2-2 | 平台用户管理 | session-summary-20260413-13 | — |
+| F2-3 | 平台角色管理 | session-summary-20260413-13 | — |
+| F2-4 | 平台权限管理 | session-summary-20260413-13 | — |
 
 ---
 
