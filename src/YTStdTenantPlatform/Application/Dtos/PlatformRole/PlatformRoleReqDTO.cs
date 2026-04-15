@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Serialization;
 
 namespace YTStdTenantPlatform.Application.Dtos
 {
@@ -26,6 +27,7 @@ namespace YTStdTenantPlatform.Application.Dtos
     public sealed class RolePermissionBindReqDTO
     {
         /// <summary>权限 ID 列表</summary>
+        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
         public long[] PermissionIds { get; set; } = Array.Empty<long>();
     }
 
@@ -33,6 +35,7 @@ namespace YTStdTenantPlatform.Application.Dtos
     public sealed class RoleMemberBindReqDTO
     {
         /// <summary>用户 ID 列表</summary>
+        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
         public long[] UserIds { get; set; } = Array.Empty<long>();
     }
 }

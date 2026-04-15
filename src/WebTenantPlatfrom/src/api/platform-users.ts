@@ -25,37 +25,37 @@ export function getPlatformUsersApi(params: {
 }
 
 /** Get user detail */
-export function getPlatformUserApi(id: number): Promise<PlatformUserRepDTO> {
+export function getPlatformUserApi(id: string | number): Promise<PlatformUserRepDTO> {
   return httpGet<PlatformUserRepDTO>(`/platform-users/${id}`)
 }
 
 /** Create user */
-export function createPlatformUserApi(data: PlatformUserCreateReqDTO): Promise<number> {
-  return httpPost<number>('/platform-users', data)
+export function createPlatformUserApi(data: PlatformUserCreateReqDTO): Promise<string | number> {
+  return httpPost<string | number>('/platform-users', data)
 }
 
 /** Update user */
-export function updatePlatformUserApi(id: number, data: PlatformUserUpdateReqDTO): Promise<void> {
+export function updatePlatformUserApi(id: string | number, data: PlatformUserUpdateReqDTO): Promise<void> {
   return httpPut<void>(`/platform-users/${id}`, data)
 }
 
 /** Delete user */
-export function deletePlatformUserApi(id: number): Promise<void> {
+export function deletePlatformUserApi(id: string | number): Promise<void> {
   return httpDelete<void>(`/platform-users/${id}`)
 }
 
 /** Enable user */
-export function enablePlatformUserApi(id: number): Promise<void> {
+export function enablePlatformUserApi(id: string | number): Promise<void> {
   return httpPut<void>(`/platform-users/${id}/enable`)
 }
 
 /** Disable user */
-export function disablePlatformUserApi(id: number): Promise<void> {
+export function disablePlatformUserApi(id: string | number): Promise<void> {
   return httpPut<void>(`/platform-users/${id}/disable`)
 }
 
 /** Reset password */
-export function resetPasswordApi(id: number): Promise<ResetPasswordRepDTO> {
+export function resetPasswordApi(id: string | number): Promise<ResetPasswordRepDTO> {
   return httpPut<ResetPasswordRepDTO>(`/platform-users/${id}/reset-password`)
 }
 
@@ -65,11 +65,11 @@ export function checkUsernameExistsApi(username: string): Promise<boolean> {
 }
 
 /** Batch enable users */
-export function batchEnableUsersApi(ids: number[]): Promise<void> {
+export function batchEnableUsersApi(ids: Array<string | number>): Promise<void> {
   return httpPut<void>('/platform-users/batch-enable', { Ids: ids })
 }
 
 /** Batch disable users */
-export function batchDisableUsersApi(ids: number[]): Promise<void> {
+export function batchDisableUsersApi(ids: Array<string | number>): Promise<void> {
   return httpPut<void>('/platform-users/batch-disable', { Ids: ids })
 }

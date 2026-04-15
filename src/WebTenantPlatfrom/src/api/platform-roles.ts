@@ -23,32 +23,32 @@ export function getPlatformRolesApi(params: {
 }
 
 /** Get role detail */
-export function getPlatformRoleApi(id: number): Promise<PlatformRoleRepDTO> {
+export function getPlatformRoleApi(id: string | number): Promise<PlatformRoleRepDTO> {
   return httpGet<PlatformRoleRepDTO>(`/platform-roles/${id}`)
 }
 
 /** Create role */
-export function createPlatformRoleApi(data: CreatePlatformRoleReqDTO): Promise<number> {
-  return httpPost<number>('/platform-roles', data)
+export function createPlatformRoleApi(data: CreatePlatformRoleReqDTO): Promise<string | number> {
+  return httpPost<string | number>('/platform-roles', data)
 }
 
 /** Update role */
-export function updatePlatformRoleApi(id: number, data: UpdatePlatformRoleReqDTO): Promise<void> {
+export function updatePlatformRoleApi(id: string | number, data: UpdatePlatformRoleReqDTO): Promise<void> {
   return httpPut<void>(`/platform-roles/${id}`, data)
 }
 
 /** Delete role */
-export function deletePlatformRoleApi(id: number): Promise<void> {
+export function deletePlatformRoleApi(id: string | number): Promise<void> {
   return httpDelete<void>(`/platform-roles/${id}`)
 }
 
 /** Enable role */
-export function enablePlatformRoleApi(id: number): Promise<void> {
+export function enablePlatformRoleApi(id: string | number): Promise<void> {
   return httpPut<void>(`/platform-roles/${id}/enable`)
 }
 
 /** Disable role */
-export function disablePlatformRoleApi(id: number): Promise<void> {
+export function disablePlatformRoleApi(id: string | number): Promise<void> {
   return httpPut<void>(`/platform-roles/${id}/disable`)
 }
 
@@ -58,17 +58,22 @@ export function checkRoleCodeExistsApi(code: string): Promise<boolean> {
 }
 
 /** Get role permissions */
-export function getRolePermissionsApi(id: number): Promise<number[]> {
-  return httpGet<number[]>(`/platform-roles/${id}/permissions`)
+export function getRolePermissionsApi(id: string | number): Promise<Array<string | number>> {
+  return httpGet<Array<string | number>>(`/platform-roles/${id}/permissions`)
 }
 
 /** Bind permissions to role */
-export function bindRolePermissionsApi(id: number, permissionIds: number[]): Promise<void> {
+export function bindRolePermissionsApi(id: string | number, permissionIds: Array<string | number>): Promise<void> {
   return httpPost<void>(`/platform-roles/${id}/permissions`, { PermissionIds: permissionIds })
 }
 
+/** Get role members (user IDs) */
+export function getRoleMembersApi(id: string | number): Promise<Array<string | number>> {
+  return httpGet<Array<string | number>>(`/platform-roles/${id}/members`)
+}
+
 /** Bind members to role */
-export function bindRoleMembersApi(id: number, userIds: number[]): Promise<void> {
+export function bindRoleMembersApi(id: string | number, userIds: Array<string | number>): Promise<void> {
   return httpPost<void>(`/platform-roles/${id}/members`, { UserIds: userIds })
 }
 
