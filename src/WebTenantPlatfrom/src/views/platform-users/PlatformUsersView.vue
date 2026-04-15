@@ -231,7 +231,7 @@
     <DxPopup
       :visible="formDialogVisible"
       :title="isEditing ? $t('编辑用户') : $t('新增用户')"
-      :width="600"
+      :width="popupWidth"
       :height="'auto'"
       :show-close-button="true"
       :drag-enabled="true"
@@ -305,7 +305,7 @@
     <DxPopup
       :visible="detailDialogVisible"
       :title="$t('用户详情')"
-      :width="500"
+      :width="popupWidthSmall"
       :height="'auto'"
       :show-close-button="true"
       @hiding="detailDialogVisible = false"
@@ -362,7 +362,7 @@
     <DxPopup
       :visible="resetPwdResultVisible"
       :title="$t('重置密码成功')"
-      :width="400"
+      :width="popupWidthSmall"
       :height="'auto'"
       :show-close-button="true"
       @hiding="resetPwdResultVisible = false"
@@ -379,10 +379,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CustomStore from 'devextreme/data/custom_store'
 import type { LoadOptions } from 'devextreme/data'
+// Import tag_box module so DxForm can create dxTagBox editor via editor-type
+import 'devextreme/ui/tag_box'
 import {
   DxDataGrid,
   DxColumn,
@@ -456,6 +458,15 @@ const selectedRowKeys = ref<Array<string | number>>([])
 const focusedRowKey = ref<string | number | null>(null)
 const allRoles = ref<PlatformRoleSimpleRepDTO[]>([])
 const batchOperating = ref(false)
+
+// Responsive popup widths (adapt to mobile screens)
+const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1280)
+function onWindowResize(): void { windowWidth.value = window.innerWidth }
+if (typeof window !== 'undefined') {
+  window.addEventListener('resize', onWindowResize)
+}
+const popupWidth = computed(() => Math.min(600, windowWidth.value - 20))
+const popupWidthSmall = computed(() => Math.min(500, windowWidth.value - 20))
 
 // Reactive status options using computed (fixes i18n switch issue)
 const statusOptionsComputed = computed(() => [
@@ -807,6 +818,12 @@ async function loadRoles(): Promise<void> {
 
 onMounted(() => {
   loadRoles()
+})
+
+onUnmounted(() => {
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('resize', onWindowResize)
+  }
 })
 </script>
 
