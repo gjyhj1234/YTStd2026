@@ -290,7 +290,12 @@
             :label="{ text: $t('角色') }"
             editor-type="dxTagBox"
             :editor-options="roleEditorOptions"
-          />
+          >
+            <DxCustomRule
+              :validation-callback="validateRoleIds"
+              :message="$t('请选择至少一个角色')"
+            />
+          </DxSimpleItem>
         </DxForm>
         <div class="dialog-buttons">
           <DxButton :text="$t('取消')" styling-mode="outlined" @click="closeFormDialog" />
@@ -335,6 +340,10 @@
             <span :class="detailData.Status === 'Active' ? 'status-enabled' : 'status-disabled'">
               {{ detailData.Status === 'Active' ? $t('已启用') : $t('已禁用') }}
             </span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">{{ $t('角色') }}</span>
+            <span class="detail-value role-tags">{{ (detailData.RoleNames || []).join(', ') || '-' }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">{{ $t('创建时间') }}</span>
@@ -400,7 +409,8 @@ import {
   DxStringLengthRule,
   DxPatternRule,
   DxAsyncRule,
-  DxEmailRule
+  DxEmailRule,
+  DxCustomRule
 } from 'devextreme-vue/validator'
 import { DxLoadPanel } from 'devextreme-vue/load-panel'
 import FunctionDescriptionCard from '../../components/FunctionDescriptionCard.vue'
@@ -599,6 +609,10 @@ async function validateUsernameUnique(params: { value: string }): Promise<boolea
   } catch {
     return true
   }
+}
+
+function validateRoleIds(e: { value: unknown }): boolean {
+  return Array.isArray(e.value) && e.value.length > 0
 }
 
 async function onSubmitForm(): Promise<void> {

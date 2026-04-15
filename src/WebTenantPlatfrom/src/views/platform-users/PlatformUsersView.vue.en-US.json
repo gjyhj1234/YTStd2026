@@ -26,6 +26,7 @@
   "请输入正确的邮箱地址": "Please enter a valid email",
   "邮箱长度不超过 100 个字符": "Email must not exceed 100 characters",
   "手机号长度不超过 20 个字符": "Phone number must not exceed 20 characters",
+  "请选择至少一个角色": "Select at least one role",
   "确认启用用户 {name}": "Confirm enable user {name}",
   "确认禁用用户 {name}": "Confirm disable user {name}",
   "确认重置用户 {name} 的密码": "Confirm reset password for user {name}",
