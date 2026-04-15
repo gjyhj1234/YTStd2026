@@ -178,9 +178,14 @@
       <DxColumn data-field="DisplayName" :caption="$t('显示名')" :allow-sorting="false" />
       <DxColumn data-field="Email" :caption="$t('邮箱')" :allow-sorting="false" />
       <DxColumn data-field="Phone" :caption="$t('手机')" :width="130" :allow-sorting="false" />
+      <DxColumn data-field="RoleNames" :caption="$t('角色')" :allow-sorting="false" cell-template="rolesCell" />
       <DxColumn data-field="Status" :caption="$t('状态')" :width="100" :allow-sorting="false" cell-template="statusCell" />
       <DxColumn data-field="CreatedAt" :caption="$t('创建时间')" :width="180" :allow-sorting="true" cell-template="dateCell" />
       <DxColumn :caption="$t('操作')" :width="200" :allow-sorting="false" cell-template="actionCell" />
+
+      <template #rolesCell="{ data: cellData }">
+        <span class="role-tags">{{ (cellData.data.RoleNames || []).join(', ') || '-' }}</span>
+      </template>
 
       <template #statusCell="{ data: cellData }">
         <span :class="cellData.data.Status === 'Active' ? 'status-enabled' : 'status-disabled'">
@@ -437,12 +442,12 @@ const showGuide = ref(false)
 const showAdvanced = ref(false)
 const searchKeyword = ref('')
 const searchStatus = ref<string | null>(null)
-const searchRoleId = ref<number | null>(null)
+const searchRoleId = ref<string | number | null>(null)
 const searchDateStart = ref<Date | null>(null)
 const searchDateEnd = ref<Date | null>(null)
 const gridRef = ref()
-const selectedRowKeys = ref<number[]>([])
-const focusedRowKey = ref<number | null>(null)
+const selectedRowKeys = ref<Array<string | number>>([])
+const focusedRowKey = ref<string | number | null>(null)
 const allRoles = ref<PlatformRoleRepDTO[]>([])
 
 // Reactive status options using computed (fixes i18n switch issue)
@@ -528,7 +533,7 @@ function onMoreActionClick(e: { itemData: { id: string } }, row: PlatformUserRep
 // Form dialog
 const formDialogVisible = ref(false)
 const isEditing = ref(false)
-const editingId = ref<number | null>(null)
+const editingId = ref<string | number | null>(null)
 const submitting = ref(false)
 const formRef = ref()
 const formData = ref({
@@ -537,13 +542,13 @@ const formData = ref({
   DisplayName: '',
   Email: '',
   Phone: '',
-  RoleIds: [] as number[]
+  RoleIds: [] as Array<string | number>
 })
 
 function openCreateDialog(): void {
   isEditing.value = false
   editingId.value = null
-  formData.value = { Username: '', Password: '', DisplayName: '', Email: '', Phone: '', RoleIds: [] }
+  formData.value = { Username: '', Password: '', DisplayName: '', Email: '', Phone: '', RoleIds: [] as Array<string | number> }
   formDialogVisible.value = true
 }
 
@@ -558,7 +563,7 @@ async function openEditDialog(row: PlatformUserRepDTO): Promise<void> {
       DisplayName: detail.DisplayName,
       Email: detail.Email || '',
       Phone: detail.Phone || '',
-      RoleIds: []
+      RoleIds: detail.RoleIds ? [...detail.RoleIds] : []
     }
     formDialogVisible.value = true
   } catch {
@@ -591,7 +596,7 @@ async function onSubmitForm(): Promise<void> {
   }
   submitting.value = true
   try {
-    let savedId: number | null = null
+    let savedId: string | number | null = null
     if (isEditing.value && editingId.value) {
       await updatePlatformUserApi(editingId.value, {
         DisplayName: formData.value.DisplayName,
@@ -768,6 +773,11 @@ onMounted(() => {
 <style scoped>
 .platform-users-page {
   padding: 20px;
+}
+
+.role-tags {
+  color: #1890ff;
+  font-size: 12px;
 }
 
 .page-header {
