@@ -69,8 +69,12 @@ test.describe('平台用户管理 — 页面渲染', () => {
     // Check that the grid header has enough columns
     const headerCells = page.locator('.dx-datagrid-headers .dx-header-row td')
     const count = await headerCells.count()
-    // Should have at least: checkbox + ID + Username + DisplayName + Email + Phone + Status + CreatedAt + Actions = 9
+    // Should have at least: checkbox + ID + Username + DisplayName + Email + Phone + Roles + Status + CreatedAt + Actions = 10
     expect(count).toBeGreaterThanOrEqual(4)
+
+    // Verify Roles column header is present
+    const rolesHeader = headerPanel.locator('td').filter({ hasText: /角色|Roles|ロール|Peranan/i })
+    await expect(rolesHeader).toBeVisible()
   })
 
   test('U03b — 查询区元素完整', async ({ page }) => {
@@ -211,6 +215,42 @@ test.describe('平台用户管理 — 新增用户', () => {
     const invalidFields = page.locator('.dx-popup-content .dx-textbox.dx-invalid')
     const count = await invalidFields.count()
     expect(count).toBeGreaterThan(0)
+  })
+
+  test('U11b — 未选择角色时提交应触发角色必填验证', async ({ page }) => {
+    await navigateTo(page, '/platform-users')
+    await page.waitForTimeout(2000)
+
+    // Open create dialog
+    const addBtn = page.locator('.toolbar-buttons .dx-button').filter({ hasText: /新增|Create|新規|Tambah|新增/i }).first()
+    await addBtn.click()
+    await page.waitForTimeout(500)
+
+    const popup = page.locator('.dx-overlay-wrapper .dx-popup-content')
+    await expect(popup).toBeVisible({ timeout: 5_000 })
+
+    // Fill required text fields but NOT roles
+    const formTextBoxes = popup.locator('.dx-form .dx-textbox')
+    const usernameInput = formTextBoxes.nth(0).locator('input[type="text"]')
+    const passwordInput = popup.locator('input[type="password"]')
+    const displayNameInput = formTextBoxes.nth(2).locator('input[type="text"]')
+
+    await usernameInput.fill(`roletest_${TEST_SUFFIX}`)
+    await passwordInput.fill('gjwq1234')
+    await displayNameInput.fill('Role Test User')
+
+    // Click submit without selecting any role
+    const saveBtn = popup.locator('.dialog-buttons .dx-button').filter({ hasText: /确定|OK|Confirm/i }).first()
+    await saveBtn.click()
+    await page.waitForTimeout(1000)
+
+    // The popup should still be visible (validation blocked submission)
+    const formStillVisible = await popup.locator('.dx-form').isVisible()
+    expect(formStillVisible).toBe(true)
+
+    // Role error message should be visible below the form
+    const roleError = page.locator('.role-error')
+    await expect(roleError).toBeVisible({ timeout: 3_000 })
   })
 
   test('U04b — 创建用户完整流程', async ({ page }) => {
@@ -389,6 +429,24 @@ test.describe('平台用户管理 — 查看详情', () => {
     const detailRows = detailContent.locator('.detail-row')
     const count = await detailRows.count()
     expect(count).toBeGreaterThanOrEqual(5)
+  })
+
+  test('详情弹窗包含角色字段', async ({ page }) => {
+    await navigateTo(page, '/platform-users')
+    await page.waitForTimeout(2000)
+    await waitForGridLoaded(page)
+
+    const firstRow = page.locator('.dx-datagrid-rowsview .dx-data-row').first()
+    const viewBtn = firstRow.locator('.dx-button').filter({ hasText: /查看|View|詳細|Lihat|檢視/i })
+    await viewBtn.click()
+    await page.waitForTimeout(1000)
+
+    const detailContent = page.locator('.detail-content')
+    await expect(detailContent).toBeVisible({ timeout: 5_000 })
+
+    // Verify "角色" label is present in detail popup
+    const rolesLabel = detailContent.locator('.detail-label').filter({ hasText: /角色|Roles|ロール|Peranan/i })
+    await expect(rolesLabel).toBeVisible()
   })
 })
 

@@ -290,8 +290,10 @@
             :label="{ text: $t('角色') }"
             editor-type="dxTagBox"
             :editor-options="roleEditorOptions"
+            :validation-rules="roleValidationRules"
           />
         </DxForm>
+        <div v-if="roleError" class="role-error">{{ roleError }}</div>
         <div class="dialog-buttons">
           <DxButton :text="$t('取消')" styling-mode="outlined" @click="closeFormDialog" />
           <DxButton :text="$t('确定')" type="default" :disabled="submitting" @click="onSubmitForm" />
@@ -335,6 +337,10 @@
             <span :class="detailData.Status === 'Active' ? 'status-enabled' : 'status-disabled'">
               {{ detailData.Status === 'Active' ? $t('已启用') : $t('已禁用') }}
             </span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">{{ $t('角色') }}</span>
+            <span class="detail-value role-tags">{{ (detailData.RoleNames || []).join(', ') || '-' }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">{{ $t('创建时间') }}</span>
@@ -466,6 +472,13 @@ const roleEditorOptions = computed(() => ({
   showSelectionControls: true,
   searchEnabled: true
 }))
+
+// Validation rules for RoleIds (must select at least one role)
+const roleValidationRules = computed(() => [{
+  type: 'custom',
+  validationCallback: (e: { value: unknown }) => Array.isArray(e.value) && e.value.length > 0,
+  message: t('请选择至少一个角色')
+}])
 
 // CustomStore for remote paging
 const dataSource = new CustomStore({
@@ -601,11 +614,19 @@ async function validateUsernameUnique(params: { value: string }): Promise<boolea
   }
 }
 
+const roleError = ref('')
+
 async function onSubmitForm(): Promise<void> {
   if (formRef.value?.instance) {
     const result = formRef.value.instance.validate()
     if (result && !result.isValid) return
   }
+  // Explicit RoleIds validation (DxForm custom rules may not trigger for dxTagBox editor-type)
+  if (!Array.isArray(formData.value.RoleIds) || formData.value.RoleIds.length === 0) {
+    roleError.value = t('请选择至少一个角色')
+    return
+  }
+  roleError.value = ''
   submitting.value = true
   try {
     let savedId: string | number | null = null
@@ -930,6 +951,13 @@ onMounted(() => {
   border-radius: 4px;
   letter-spacing: 1px;
   font-family: monospace;
+}
+
+.role-error {
+  color: #f5222d;
+  font-size: 12px;
+  margin-top: 4px;
+  padding-left: 2px;
 }
 
 /* Mobile responsive */
