@@ -395,6 +395,8 @@ import { DxSelectBox } from 'devextreme-vue/select-box'
 import { DxDateRangeBox } from 'devextreme-vue/date-range-box'
 import { DxButton } from 'devextreme-vue/button'
 import { DxDropDownButton } from 'devextreme-vue/drop-down-button'
+// DxTagBox must be imported so DxForm can resolve editor-type="dxTagBox"
+import 'devextreme/ui/tag_box'
 import { DxToolbar, DxItem as DxToolbarItem } from 'devextreme-vue/toolbar'
 import { DxPopup } from 'devextreme-vue/popup'
 import {
@@ -816,7 +818,7 @@ onMounted(() => {
 }
 
 .role-tags {
-  color: #1890ff;
+  color: var(--base-accent);
   font-size: 12px;
 }
 
@@ -841,11 +843,11 @@ onMounted(() => {
   margin: 0;
   font-size: 18px !important;
   font-weight: 600;
-  color: #333;
+  color: var(--base-text-color);
 }
 
 .search-area {
-  background: #fafafa;
+  background: var(--base-bg-darken-5, var(--base-bg));
   border-radius: 4px;
   padding: 12px 16px;
   margin-bottom: 12px;
@@ -866,7 +868,7 @@ onMounted(() => {
 
 .search-label {
   font-size: 12px;
-  color: #666;
+  color: var(--base-text-color-alpha-7, var(--base-text-color));
   font-weight: 500;
 }
 
@@ -875,6 +877,7 @@ onMounted(() => {
   gap: 8px;
   align-items: flex-end;
   padding-bottom: 1px;
+  flex-shrink: 0;
 }
 
 .grid-toolbar {
@@ -884,6 +887,7 @@ onMounted(() => {
 .toolbar-buttons {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .action-buttons {
@@ -893,16 +897,16 @@ onMounted(() => {
 }
 
 .status-enabled {
-  color: #52c41a;
-  background-color: #f6ffed;
+  color: var(--dx-color-success, #52c41a);
+  background-color: rgba(82, 196, 26, 0.1);
   padding: 2px 8px;
   border-radius: 4px;
   font-size: 12px;
 }
 
 .status-disabled {
-  color: #f5222d;
-  background-color: #fff2f0;
+  color: var(--dx-color-danger, #f5222d);
+  background-color: rgba(245, 34, 45, 0.1);
   padding: 2px 8px;
   border-radius: 4px;
   font-size: 12px;
@@ -914,7 +918,7 @@ onMounted(() => {
   gap: 12px;
   margin-top: 20px;
   padding-top: 16px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--dx-color-border, #f0f0f0);
 }
 
 .detail-content {
@@ -924,18 +928,18 @@ onMounted(() => {
 .detail-row {
   display: flex;
   padding: 8px 0;
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: 1px solid var(--dx-color-border, #f5f5f5);
 }
 
 .detail-label {
   width: 120px;
-  color: #999;
+  color: var(--base-text-color-alpha-7, var(--base-text-color));
   flex-shrink: 0;
 }
 
 .detail-value {
   flex: 1;
-  color: #333;
+  color: var(--base-text-color);
 }
 
 .guide-steps {
@@ -951,17 +955,18 @@ onMounted(() => {
 .reset-pwd-value {
   font-size: 20px;
   font-weight: bold;
-  color: #1890ff;
+  color: var(--base-accent);
   padding: 16px;
   margin: 12px 0 20px;
-  background: #f0f7ff;
+  background: rgba(var(--base-accent), 0.08);
+  background: var(--base-bg-darken-5, var(--base-bg));
   border-radius: 4px;
   letter-spacing: 1px;
   font-family: monospace;
 }
 
 .role-error {
-  color: #f5222d;
+  color: var(--dx-color-danger, #f5222d);
   font-size: 12px;
   margin-top: 4px;
   padding-left: 2px;
@@ -974,7 +979,7 @@ onMounted(() => {
   }
 
   .page-title {
-    font-size: 16px;
+    font-size: 16px !important;
   }
 
   .search-area {
@@ -982,22 +987,70 @@ onMounted(() => {
   }
 
   .search-row {
+    flex-direction: column;
     gap: 8px;
   }
 
-  .search-field :deep(.dx-textbox),
-  .search-field :deep(.dx-selectbox) {
-    width: 100% !important;
+  .search-field {
+    width: 100%;
+    min-width: 0;
   }
 
-  .search-field {
+  .search-field :deep(.dx-textbox),
+  .search-field :deep(.dx-selectbox),
+  .search-field :deep(.dx-daterangebox) {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .search-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding-bottom: 0;
+  }
+
+  .search-actions :deep(.dx-button) {
     flex: 1;
-    min-width: 120px;
+    min-width: 80px;
   }
 
   .toolbar-buttons {
     flex-wrap: wrap;
     gap: 4px;
+    width: 100%;
+  }
+
+  .toolbar-buttons :deep(.dx-button) {
+    flex: none;
+  }
+
+  .action-buttons {
+    flex-wrap: wrap;
+  }
+
+  .detail-row {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .detail-label {
+    width: auto;
+  }
+}
+
+/* Small phone (≤375px) */
+@media (max-width: 375px) {
+  .platform-users-page {
+    padding: 4px;
+  }
+
+  .search-area {
+    padding: 6px 8px;
+  }
+
+  .search-actions :deep(.dx-button) {
+    font-size: 12px;
   }
 }
 </style>

@@ -901,11 +901,11 @@ function formatDateTime(value: string): string {
   margin: 0;
   font-size: 18px !important;
   font-weight: 600;
-  color: #333;
+  color: var(--base-text-color);
 }
 
 .search-area {
-  background: #fafafa;
+  background: var(--base-bg-darken-5, var(--base-bg));
   border-radius: 4px;
   padding: 12px 16px;
   margin-bottom: 12px;
@@ -926,7 +926,7 @@ function formatDateTime(value: string): string {
 
 .search-label {
   font-size: 12px;
-  color: #666;
+  color: var(--base-text-color-alpha-7, var(--base-text-color));
 }
 
 .search-actions {
@@ -946,16 +946,16 @@ function formatDateTime(value: string): string {
 }
 
 .status-enabled {
-  color: #52c41a;
-  background-color: #f6ffed;
+  color: var(--dx-color-success, #52c41a);
+  background-color: rgba(82, 196, 26, 0.1);
   padding: 2px 8px;
   border-radius: 4px;
   font-size: 12px;
 }
 
 .status-disabled {
-  color: #f5222d;
-  background-color: #fff2f0;
+  color: var(--dx-color-danger, #f5222d);
+  background-color: rgba(245, 34, 45, 0.1);
   padding: 2px 8px;
   border-radius: 4px;
   font-size: 12px;
@@ -967,7 +967,7 @@ function formatDateTime(value: string): string {
   gap: 12px;
   margin-top: 20px;
   padding-top: 16px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--dx-color-border, #f0f0f0);
 }
 
 .detail-content {
@@ -977,18 +977,18 @@ function formatDateTime(value: string): string {
 .detail-row {
   display: flex;
   padding: 8px 0;
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: 1px solid var(--dx-color-border, #f5f5f5);
 }
 
 .detail-label {
   width: 120px;
-  color: #999;
+  color: var(--base-text-color-alpha-7, var(--base-text-color));
   flex-shrink: 0;
 }
 
 .detail-value {
   flex: 1;
-  color: #333;
+  color: var(--base-text-color);
 }
 
 .perm-dialog-content {
@@ -1006,7 +1006,7 @@ function formatDateTime(value: string): string {
 
 .perm-templates-label {
   font-size: 13px;
-  color: #666;
+  color: var(--base-text-color-alpha-7, var(--base-text-color));
 }
 
 .perm-toolbar {
@@ -1017,7 +1017,7 @@ function formatDateTime(value: string): string {
 
 .perm-count {
   font-size: 13px;
-  color: #1890ff;
+  color: var(--base-accent);
   white-space: nowrap;
 }
 
@@ -1028,7 +1028,7 @@ function formatDateTime(value: string): string {
 
 .perm-tree-wrapper {
   overflow: auto;
-  border: 1px solid #e8e8e8;
+  border: 1px solid var(--dx-color-border, #e8e8e8);
   border-radius: 4px;
   padding: 8px;
   min-height: 200px;
@@ -1053,7 +1053,7 @@ function formatDateTime(value: string): string {
   justify-content: flex-end;
   gap: 12px;
   padding-top: 12px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--dx-color-border, #f0f0f0);
   flex-shrink: 0;
 }
 
@@ -1069,7 +1069,7 @@ function formatDateTime(value: string): string {
   }
 
   .page-title {
-    font-size: 16px;
+    font-size: 16px !important;
   }
 
   .search-area {
@@ -1077,17 +1077,24 @@ function formatDateTime(value: string): string {
   }
 
   .search-row {
+    flex-direction: column;
     gap: 8px;
+  }
+
+  .search-field {
+    width: 100%;
+    min-width: 0;
   }
 
   .search-field :deep(.dx-textbox),
   .search-field :deep(.dx-selectbox) {
     width: 100% !important;
+    max-width: 100% !important;
   }
 
-  .search-field {
-    flex: 1;
-    min-width: 120px;
+  .search-actions {
+    width: 100%;
+    flex-wrap: wrap;
   }
 }
 </style>

@@ -76,7 +76,7 @@ export default {
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-  background-color: #fff;
+  background-color: var(--base-bg);
   overflow: hidden;
 
   img {
