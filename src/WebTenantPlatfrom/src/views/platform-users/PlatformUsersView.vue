@@ -953,6 +953,13 @@ onMounted(() => {
   font-family: monospace;
 }
 
+.role-error {
+  color: #f5222d;
+  font-size: 12px;
+  margin-top: 4px;
+  padding-left: 2px;
+}
+
 /* Mobile responsive */
 @media (max-width: 768px) {
   .platform-users-page {

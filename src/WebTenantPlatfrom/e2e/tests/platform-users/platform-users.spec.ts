@@ -248,9 +248,9 @@ test.describe('平台用户管理 — 新增用户', () => {
     const formStillVisible = await popup.locator('.dx-form').isVisible()
     expect(formStillVisible).toBe(true)
 
-    // There should be a validation error somewhere in the form (dx-invalid class)
-    const invalidCount = await popup.locator('.dx-invalid').count()
-    expect(invalidCount).toBeGreaterThan(0)
+    // Role error message should be visible below the form
+    const roleError = page.locator('.role-error')
+    await expect(roleError).toBeVisible({ timeout: 3_000 })
   })
 
   test('U04b — 创建用户完整流程', async ({ page }) => {
