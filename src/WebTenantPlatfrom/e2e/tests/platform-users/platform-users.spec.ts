@@ -47,11 +47,11 @@ test.describe('平台用户管理 — 页面渲染', () => {
     expect(text).toBeTruthy()
   })
 
-  test('U01b — 页面副标题正确展示', async ({ page }) => {
-    const subtitle = page.locator('.page-subtitle')
-    await expect(subtitle).toBeVisible()
-    const text = await subtitle.textContent()
-    expect(text).toBeTruthy()
+  test('U01b — 页面标题字号合理（18px）', async ({ page }) => {
+    const title = page.locator('.page-title')
+    await expect(title).toBeVisible()
+    const fontSize = await title.evaluate(el => getComputedStyle(el).fontSize)
+    expect(fontSize).toBe('18px')
   })
 
   test('U02 — 用户列表展示数据', async ({ page }) => {

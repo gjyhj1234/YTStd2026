@@ -13,7 +13,6 @@
     <div class="page-header">
       <div class="page-header-text">
         <h2 class="page-title">{{ $t('平台角色管理') }}</h2>
-        <p class="page-subtitle">{{ $t('管理平台级角色，包括创建、编辑、启用/禁用、权限分配和成员管理') }}</p>
       </div>
       <div class="page-header-actions">
         <FunctionDescriptionCard v-model:visible="showDescription">
@@ -101,6 +100,7 @@
       :show-borders="true"
       :hover-state-enabled="true"
       :column-auto-width="true"
+      :column-hiding-enabled="true"
       :remote-operations="true"
       :no-data-text="$t('暂无数据')"
       :focused-row-enabled="true"
@@ -116,12 +116,12 @@
         :show-navigation-buttons="true"
       />
 
-      <DxColumn data-field="Id" :caption="$t('ID')" :width="80" :allow-sorting="false" />
+      <DxColumn data-field="Id" :caption="$t('ID')" :width="80" :allow-sorting="false" :hiding-priority="0" />
       <DxColumn data-field="Code" :caption="$t('角色编码')" :allow-sorting="true" />
       <DxColumn data-field="Name" :caption="$t('角色名称')" :allow-sorting="true" />
-      <DxColumn data-field="Description" :caption="$t('描述')" :allow-sorting="false" />
+      <DxColumn data-field="Description" :caption="$t('描述')" :allow-sorting="false" :hiding-priority="1" />
       <DxColumn data-field="Status" :caption="$t('状态')" :width="100" :allow-sorting="false" cell-template="statusCell" />
-      <DxColumn data-field="CreatedAt" :caption="$t('创建时间')" :width="180" :allow-sorting="true" cell-template="dateCell" />
+      <DxColumn data-field="CreatedAt" :caption="$t('创建时间')" :width="180" :allow-sorting="true" cell-template="dateCell" :hiding-priority="2" />
       <DxColumn :caption="$t('操作')" :width="200" :allow-sorting="false" cell-template="actionCell" />
 
       <template #statusCell="{ data: cellData }">
@@ -260,7 +260,8 @@
       :visible="permDialogVisible"
       :title="$t('分配权限')"
       :width="800"
-      :height="600"
+      :height="'auto'"
+      :max-height="'90vh'"
       :show-close-button="true"
       @hiding="permDialogVisible = false"
     >
@@ -302,7 +303,7 @@
               :show-check-boxes-mode="'normal'"
               :selection-mode="'multiple'"
               :select-nodes-recursive="true"
-              :search-enabled="true"
+              :search-enabled="false"
               :search-value="permSearchText"
               :search-expr="'Name'"
               key-expr="Id"
@@ -312,7 +313,7 @@
               @selection-changed="onPermTreeSelectionChanged"
             />
           </div>
-          <div class="dialog-buttons">
+          <div class="perm-dialog-footer">
             <DxButton :text="$t('取消')" styling-mode="outlined" @click="permDialogVisible = false" />
             <DxButton :text="$t('保存')" type="default" :disabled="savingPerm" @click="onSavePermissions" />
           </div>
@@ -876,14 +877,14 @@ function formatDateTime(value: string): string {
 
 <style scoped>
 .platform-roles-page {
-  padding: 20px;
+  padding: 16px;
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 16px;
+  align-items: center;
+  margin-bottom: 12px;
 }
 
 .page-header-text {
@@ -897,29 +898,23 @@ function formatDateTime(value: string): string {
 }
 
 .page-title {
-  margin: 0 0 4px 0;
-  font-size: 24px;
+  margin: 0;
+  font-size: 18px;
   font-weight: 600;
   color: #333;
-}
-
-.page-subtitle {
-  margin: 0;
-  font-size: 14px;
-  color: #999;
 }
 
 .search-area {
   background: #fafafa;
   border-radius: 4px;
-  padding: 16px;
-  margin-bottom: 16px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
 }
 
 .search-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 12px;
   align-items: flex-end;
 }
 
@@ -941,7 +936,7 @@ function formatDateTime(value: string): string {
 }
 
 .grid-toolbar {
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .action-buttons {
@@ -999,14 +994,13 @@ function formatDateTime(value: string): string {
 .perm-dialog-content {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  gap: 8px;
 }
 
 .perm-templates {
   display: flex;
   gap: 8px;
   align-items: center;
-  margin-bottom: 12px;
   flex-wrap: wrap;
 }
 
@@ -1019,7 +1013,6 @@ function formatDateTime(value: string): string {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 12px;
 }
 
 .perm-count {
@@ -1034,17 +1027,67 @@ function formatDateTime(value: string): string {
 }
 
 .perm-tree-wrapper {
-  flex: 1;
   overflow: auto;
   border: 1px solid #e8e8e8;
   border-radius: 4px;
   padding: 8px;
-  min-height: 300px;
-  max-height: 380px;
+  min-height: 200px;
+  max-height: 400px;
+}
+
+/* Last-level (leaf) permission items display horizontally */
+.perm-tree-wrapper :deep(.dx-treeview-node:not(.dx-treeview-node-is-leaf) > .dx-treeview-node-container) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+}
+
+.perm-tree-wrapper :deep(.dx-treeview-node-is-leaf) {
+  display: inline-flex;
+  min-width: 160px;
+  max-width: 220px;
+}
+
+.perm-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+  flex-shrink: 0;
 }
 
 .guide-steps {
   padding-left: 20px;
   line-height: 2;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .platform-roles-page {
+    padding: 8px;
+  }
+
+  .page-title {
+    font-size: 16px;
+  }
+
+  .search-area {
+    padding: 8px 12px;
+  }
+
+  .search-row {
+    gap: 8px;
+  }
+
+  .search-field :deep(.dx-textbox),
+  .search-field :deep(.dx-selectbox) {
+    width: 100% !important;
+  }
+
+  .search-field {
+    flex: 1;
+    min-width: 120px;
+  }
 }
 </style>

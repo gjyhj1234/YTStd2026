@@ -41,12 +41,12 @@ test.describe('仪表盘 — 页面渲染', () => {
     expect(titleText).toBeTruthy()
   })
 
-  test('D02b — 页面副标题正确展示', async ({ page }) => {
+  test('D02b — 页面标题字号合理（18px）', async ({ page }) => {
     await navigateTo(page, '/dashboard')
-    const subtitle = page.locator('[data-testid="dashboard-subtitle"]')
-    await expect(subtitle).toBeVisible({ timeout: 10_000 })
-    const subtitleText = await subtitle.textContent()
-    expect(subtitleText).toBeTruthy()
+    const title = page.locator('[data-testid="dashboard-title"]')
+    await expect(title).toBeVisible({ timeout: 10_000 })
+    const fontSize = await title.evaluate(el => getComputedStyle(el).fontSize)
+    expect(fontSize).toBe('18px')
   })
 })
 

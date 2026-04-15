@@ -22,7 +22,6 @@
 <div class="page-header">
   <div class="page-header-text">
     <h2 class="page-title">{{ $t('模块标题') }}</h2>
-    <p class="page-subtitle">{{ $t('模块描述') }}</p>
   </div>
   <div class="page-header-actions">
     <FunctionDescriptionCard v-model:visible="showDescription">
@@ -351,8 +350,196 @@ const dataSource = new CustomStore({
 
 ---
 
+## 十、页面标题规范
+
+### 10.1 标题样式
+
+- 使用 `<h2 class="page-title">` 作为页面主标题
+- 字体大小 **18px**（桌面），**16px**（移动端 ≤768px）
+- 不使用副标题（`page-subtitle`），副标题占用空间且信息重复，已由 FunctionDescriptionCard 承载
+
+```css
+.page-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+```
+
+### 10.2 页面 Header 布局
+
+页面 header 仅包含标题和操作按钮（info/help 图标），居中对齐：
+
+```vue
+<div class="page-header">
+  <div class="page-header-text">
+    <h2 class="page-title">{{ $t('模块标题') }}</h2>
+  </div>
+  <div class="page-header-actions">
+    <FunctionDescriptionCard ... />
+    <OperationGuideDrawer ... />
+  </div>
+</div>
+```
+
+```css
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+```
+
+---
+
+## 十一、移动端适配规范（DxDataGrid + 页面布局）
+
+### 11.1 DxDataGrid 自适应列隐藏
+
+在移动端（窄屏）下，DxDataGrid 不应出现横向滚动条。必须启用 `column-hiding-enabled`，并为不重要的列设置 `hiding-priority`：
+
+```vue
+<DxDataGrid
+  :column-hiding-enabled="true"
+  ...
+>
+  <!-- hiding-priority 越小越先被隐藏，不设置的列永远不会被隐藏 -->
+  <DxColumn data-field="Id" :hiding-priority="0" />      <!-- 最先隐藏 -->
+  <DxColumn data-field="Username" />                       <!-- 永不隐藏 -->
+  <DxColumn data-field="DisplayName" />                    <!-- 永不隐藏 -->
+  <DxColumn data-field="Email" :hiding-priority="2" />
+  <DxColumn data-field="Phone" :hiding-priority="1" />
+  <DxColumn data-field="Status" />                         <!-- 永不隐藏 -->
+  <DxColumn data-field="CreatedAt" :hiding-priority="4" />
+  <DxColumn caption="操作" />                               <!-- 永不隐藏 -->
+</DxDataGrid>
+```
+
+**隐藏优先级设计原则**：
+- **永不隐藏**：主标识列（用户名/编码/名称）、状态列、操作列
+- **优先隐藏**：ID 列、辅助信息列（邮箱、手机、描述）
+- **较后隐藏**：时间列、角色列
+
+### 11.2 页面容器 padding
+
+桌面端 padding 16px，移动端 8px：
+
+```css
+.page-container {
+  padding: 16px;
+}
+
+@media (max-width: 768px) {
+  .page-container {
+    padding: 8px;
+  }
+}
+```
+
+### 11.3 搜索区域移动端适配
+
+```css
+@media (max-width: 768px) {
+  .search-area {
+    padding: 8px 12px;
+  }
+
+  .search-row {
+    gap: 8px;
+  }
+
+  .search-field {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .search-field :deep(.dx-textbox),
+  .search-field :deep(.dx-selectbox) {
+    width: 100% !important;
+  }
+}
+```
+
+### 11.4 DxDataGrid 隐藏列数据查看
+
+被隐藏的列数据可通过点击行末尾的省略号按钮展开「自适应详情行」查看，这是 DevExtreme 内置功能，无需额外开发。
+
+---
+
+## 十二、权限分配弹窗规范（更新）
+
+### 12.1 DxTreeView 搜索配置
+
+权限分配弹窗使用**外部搜索框**，DxTreeView 的 `search-enabled` 必须设为 `false`，避免出现两个搜索框：
+
+```vue
+<!-- ✅ 正确 — 外部搜索框 + search-enabled=false -->
+<DxTextBox v-model:value="permSearchText" mode="search" />
+<DxTreeView
+  :search-enabled="false"
+  :search-value="permSearchText"
+  ...
+/>
+
+<!-- ❌ 错误 — search-enabled=true 会导致树内出现第二个搜索框 -->
+<DxTreeView :search-enabled="true" ... />
+```
+
+### 12.2 叶子节点横向排列
+
+最后一级（叶子节点）权限项使用横向排列，节省树空间：
+
+```css
+/* 叶子节点的父容器使用 flex 横向排列 */
+.perm-tree-wrapper :deep(.dx-treeview-node:not(.dx-treeview-node-is-leaf) > .dx-treeview-node-container) {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.perm-tree-wrapper :deep(.dx-treeview-node-is-leaf) {
+  display: inline-flex;
+  min-width: 160px;
+  max-width: 220px;
+}
+```
+
+### 12.3 弹窗高度与保存按钮
+
+弹窗使用 `height: 'auto'` + `max-height: '90vh'`，保存按钮使用独立的 `perm-dialog-footer` 样式，确保不被遮挡：
+
+```vue
+<DxPopup :height="'auto'" :max-height="'90vh'" ...>
+  <template #content>
+    <div class="perm-dialog-content">
+      <!-- ... tree content ... -->
+      <div class="perm-dialog-footer">
+        <DxButton :text="$t('取消')" ... />
+        <DxButton :text="$t('保存')" ... />
+      </div>
+    </div>
+  </template>
+</DxPopup>
+```
+
+```css
+.perm-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+  flex-shrink: 0;
+}
+```
+
+---
+
 ## 版本
 
-- 版本：1.0
+- 版本：1.1
 - 创建日期：2026-04-14
+- 更新日期：2026-04-15
+- 更新内容：新增第十、十一、十二节（页面标题规范、移动端适配规范、权限分配弹窗规范更新）
 - 用途：定义平台前端通用组件与交互规范，确保后续所有模块统一复用
