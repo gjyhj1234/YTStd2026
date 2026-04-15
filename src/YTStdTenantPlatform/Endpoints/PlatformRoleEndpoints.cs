@@ -102,6 +102,13 @@ namespace YTStdTenantPlatform.Endpoints
                 await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
             }).WithSummary("获取角色已绑定的权限 ID 列表");
 
+            group.MapGet("/{id:long}/members", async (HttpContext ctx, long id) =>
+            {
+                var user = GetCurrentUser(ctx);
+                var result = await PlatformRoleAppService.GetMemberIdsAsync(0, user.UserId, id);
+                await WriteJsonAsync(ctx, result, result.Code == 0 ? 200 : 400);
+            }).WithSummary("获取角色已绑定的用户 ID 列表");
+
             group.MapGet("/check-code-exists", async (HttpContext ctx, string? code) =>
             {
                 if (string.IsNullOrWhiteSpace(code)) { await WriteJsonAsync(ctx, ApiResult<bool>.Ok(false)); return; }

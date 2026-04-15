@@ -194,6 +194,20 @@ namespace YTStdTenantPlatform.Application.Services
         public static async ValueTask<ApiResult> BindPermissionsAsync(
             int tenantId, long operatorId, long roleId, RolePermissionBindReqDTO req)
         {
+            // 先清除该角色现有的所有权限绑定
+            var (existResult, existData) = await PlatformRolePermissionCRUD.GetListAsync(tenantId, operatorId);
+            if (existResult.Success && existData != null)
+            {
+                foreach (var rp in existData)
+                {
+                    if (rp.RoleId == roleId)
+                    {
+                        await PlatformRolePermissionCRUD.DeleteAsync(tenantId, operatorId, rp.Id);
+                    }
+                }
+            }
+
+            // 插入新的权限绑定
             var now = DateTime.UtcNow;
             foreach (var permId in req.PermissionIds)
             {
@@ -218,6 +232,20 @@ namespace YTStdTenantPlatform.Application.Services
         public static async ValueTask<ApiResult> BindMembersAsync(
             int tenantId, long operatorId, long roleId, RoleMemberBindReqDTO req)
         {
+            // 先清除该角色现有的所有成员绑定
+            var (existResult, existData) = await PlatformRoleMemberCRUD.GetListAsync(tenantId, operatorId);
+            if (existResult.Success && existData != null)
+            {
+                foreach (var rm in existData)
+                {
+                    if (rm.RoleId == roleId)
+                    {
+                        await PlatformRoleMemberCRUD.DeleteAsync(tenantId, operatorId, rm.Id);
+                    }
+                }
+            }
+
+            // 插入新的成员绑定
             var now = DateTime.UtcNow;
             foreach (var userId in req.UserIds)
             {
@@ -281,6 +309,21 @@ namespace YTStdTenantPlatform.Application.Services
             {
                 if (rp.RoleId == roleId)
                     ids.Add(rp.PermissionId);
+            }
+            return ApiResult<List<long>>.Ok(ids);
+        }
+
+        /// <summary>获取角色已绑定的用户 ID 列表</summary>
+        public static async ValueTask<ApiResult<List<long>>> GetMemberIdsAsync(int tenantId, long operatorId, long roleId)
+        {
+            var (result, data) = await PlatformRoleMemberCRUD.GetListAsync(tenantId, operatorId);
+            if (!result.Success || data == null) return ApiResult<List<long>>.Fail(ErrorCodes.RoleQueryFailed);
+
+            var ids = new List<long>();
+            foreach (var rm in data)
+            {
+                if (rm.RoleId == roleId)
+                    ids.Add(rm.UserId);
             }
             return ApiResult<List<long>>.Ok(ids);
         }

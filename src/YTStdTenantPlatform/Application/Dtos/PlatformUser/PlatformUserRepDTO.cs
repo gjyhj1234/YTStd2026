@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace YTStdTenantPlatform.Application.Dtos
 {
@@ -25,6 +26,10 @@ namespace YTStdTenantPlatform.Application.Dtos
         public DateTime CreatedAt { get; set; }
         /// <summary>备注</summary>
         public string? Remark { get; set; }
+        /// <summary>角色 ID 列表</summary>
+        public List<long>? RoleIds { get; set; }
+        /// <summary>角色名称列表（展示用）</summary>
+        public List<string>? RoleNames { get; set; }
     }
 
     /// <summary>重置密码响应</summary>

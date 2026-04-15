@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Serialization;
 
 namespace YTStdTenantPlatform.Application.Dtos
 {
@@ -17,6 +18,9 @@ namespace YTStdTenantPlatform.Application.Dtos
         public string Password { get; set; } = "";
         /// <summary>备注</summary>
         public string? Remark { get; set; }
+        /// <summary>角色 ID 列表</summary>
+        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
+        public long[]? RoleIds { get; set; }
     }
 
     /// <summary>更新平台用户请求</summary>
@@ -30,6 +34,9 @@ namespace YTStdTenantPlatform.Application.Dtos
         public string? Email { get; set; }
         /// <summary>备注</summary>
         public string? Remark { get; set; }
+        /// <summary>角色 ID 列表</summary>
+        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
+        public long[]? RoleIds { get; set; }
     }
 
     /// <summary>重置密码请求</summary>
@@ -43,6 +50,7 @@ namespace YTStdTenantPlatform.Application.Dtos
     public sealed class BatchUserIdsReqDTO
     {
         /// <summary>用户 ID 列表</summary>
+        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
         public long[] Ids { get; set; } = [];
     }
 }
