@@ -13,7 +13,6 @@
     <div class="page-header">
       <div class="page-header-text">
         <h2 class="page-title">{{ $t('平台用户管理') }}</h2>
-        <p class="page-subtitle">{{ $t('管理平台级用户账号，包括创建、编辑、启用/禁用、重置密码等操作') }}</p>
       </div>
       <div class="page-header-actions">
         <FunctionDescriptionCard v-model:visible="showDescription">
@@ -155,6 +154,7 @@
       :show-borders="true"
       :hover-state-enabled="true"
       :column-auto-width="true"
+      :column-hiding-enabled="true"
       :remote-operations="true"
       :no-data-text="$t('暂无数据')"
       :selected-row-keys="selectedRowKeys"
@@ -173,14 +173,14 @@
         :show-navigation-buttons="true"
       />
 
-      <DxColumn data-field="Id" :caption="$t('ID')" :width="80" :allow-sorting="false" />
+      <DxColumn data-field="Id" :caption="$t('ID')" :width="80" :allow-sorting="false" :hiding-priority="0" />
       <DxColumn data-field="Username" :caption="$t('用户名')" :allow-sorting="true" />
       <DxColumn data-field="DisplayName" :caption="$t('显示名')" :allow-sorting="false" />
-      <DxColumn data-field="Email" :caption="$t('邮箱')" :allow-sorting="false" />
-      <DxColumn data-field="Phone" :caption="$t('手机')" :width="130" :allow-sorting="false" />
-      <DxColumn data-field="RoleNames" :caption="$t('角色')" :allow-sorting="false" cell-template="rolesCell" />
+      <DxColumn data-field="Email" :caption="$t('邮箱')" :allow-sorting="false" :hiding-priority="2" />
+      <DxColumn data-field="Phone" :caption="$t('手机')" :width="130" :allow-sorting="false" :hiding-priority="1" />
+      <DxColumn data-field="RoleNames" :caption="$t('角色')" :allow-sorting="false" cell-template="rolesCell" :hiding-priority="3" />
       <DxColumn data-field="Status" :caption="$t('状态')" :width="100" :allow-sorting="false" cell-template="statusCell" />
-      <DxColumn data-field="CreatedAt" :caption="$t('创建时间')" :width="180" :allow-sorting="true" cell-template="dateCell" />
+      <DxColumn data-field="CreatedAt" :caption="$t('创建时间')" :width="180" :allow-sorting="true" cell-template="dateCell" :hiding-priority="4" />
       <DxColumn :caption="$t('操作')" :width="200" :allow-sorting="false" cell-template="actionCell" />
 
       <template #rolesCell="{ data: cellData }">
@@ -289,7 +289,7 @@
             data-field="RoleIds"
             :label="{ text: $t('角色') }"
             editor-type="dxTagBox"
-            :editor-options="{ items: allRoles, displayExpr: 'Name', valueExpr: 'Id', placeholder: $t('请选择角色'), showSelectionControls: true, searchEnabled: true }"
+            :editor-options="roleEditorOptions"
           />
         </DxForm>
         <div class="dialog-buttons">
@@ -457,6 +457,16 @@ const statusOptionsComputed = computed(() => [
   { value: 'Disabled', label: t('已禁用') }
 ])
 
+// Reactive role editor options computed for DxTagBox reactivity
+const roleEditorOptions = computed(() => ({
+  items: allRoles.value,
+  displayExpr: 'Name',
+  valueExpr: 'Id',
+  placeholder: t('请选择角色'),
+  showSelectionControls: true,
+  searchEnabled: true
+}))
+
 // CustomStore for remote paging
 const dataSource = new CustomStore({
   key: 'Id',
@@ -545,16 +555,18 @@ const formData = ref({
   RoleIds: [] as Array<string | number>
 })
 
-function openCreateDialog(): void {
+async function openCreateDialog(): Promise<void> {
   isEditing.value = false
   editingId.value = null
   formData.value = { Username: '', Password: '', DisplayName: '', Email: '', Phone: '', RoleIds: [] as Array<string | number> }
+  if (allRoles.value.length === 0) await loadRoles()
   formDialogVisible.value = true
 }
 
 async function openEditDialog(row: PlatformUserRepDTO): Promise<void> {
   isEditing.value = true
   editingId.value = row.Id
+  if (allRoles.value.length === 0) await loadRoles()
   try {
     const detail = await getPlatformUserApi(row.Id)
     formData.value = {
@@ -772,7 +784,7 @@ onMounted(() => {
 
 <style scoped>
 .platform-users-page {
-  padding: 20px;
+  padding: 16px;
 }
 
 .role-tags {
@@ -783,8 +795,8 @@ onMounted(() => {
 .page-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 16px;
+  align-items: center;
+  margin-bottom: 12px;
 }
 
 .page-header-text {
@@ -795,33 +807,26 @@ onMounted(() => {
   display: flex;
   gap: 4px;
   align-items: center;
-  padding-top: 4px;
 }
 
 .page-title {
-  margin: 0 0 4px 0;
-  font-size: 24px;
+  margin: 0;
+  font-size: 18px !important;
   font-weight: 600;
   color: #333;
-}
-
-.page-subtitle {
-  margin: 0;
-  font-size: 14px;
-  color: #999;
 }
 
 .search-area {
   background: #fafafa;
   border-radius: 4px;
-  padding: 16px;
-  margin-bottom: 16px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
 }
 
 .search-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 12px;
   align-items: flex-end;
 }
 
@@ -845,7 +850,7 @@ onMounted(() => {
 }
 
 .grid-toolbar {
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .toolbar-buttons {
@@ -925,5 +930,39 @@ onMounted(() => {
   border-radius: 4px;
   letter-spacing: 1px;
   font-family: monospace;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .platform-users-page {
+    padding: 8px;
+  }
+
+  .page-title {
+    font-size: 16px;
+  }
+
+  .search-area {
+    padding: 8px 12px;
+  }
+
+  .search-row {
+    gap: 8px;
+  }
+
+  .search-field :deep(.dx-textbox),
+  .search-field :deep(.dx-selectbox) {
+    width: 100% !important;
+  }
+
+  .search-field {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .toolbar-buttons {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
 }
 </style>

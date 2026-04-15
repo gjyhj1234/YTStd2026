@@ -10,7 +10,6 @@
     />
 
     <h2 class="page-title">{{ $t('平台权限管理') }}</h2>
-    <p class="page-subtitle">{{ $t('查看平台权限树层级结构，权限数据由系统维护') }}</p>
 
     <FunctionDescriptionCard v-model:visible="showDescription">
       <p>{{ $t('查看平台权限树层级结构，权限数据由系统维护') }}</p>
@@ -198,23 +197,28 @@ onMounted(() => {
 
 <style scoped>
 .platform-permissions-page {
-  padding: 20px;
+  padding: 16px;
 }
 
 .page-title {
-  margin: 0 0 4px 0;
-  font-size: 24px;
+  margin: 0 0 12px 0;
+  font-size: 18px !important;
   font-weight: 600;
   color: #333;
 }
 
-.page-subtitle {
-  margin: 0 0 16px 0;
-  font-size: 14px;
-  color: #999;
+.search-bar {
+  margin-bottom: 12px;
 }
 
-.search-bar {
-  margin-bottom: 16px;
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .platform-permissions-page {
+    padding: 8px;
+  }
+
+  .page-title {
+    font-size: 16px;
+  }
 }
 </style>

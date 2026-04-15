@@ -11,7 +11,6 @@
 
     <!-- 页面标题 -->
     <h2 class="dashboard-title" data-testid="dashboard-title">{{ $t('仪表盘') }}</h2>
-    <p class="dashboard-subtitle" data-testid="dashboard-subtitle">{{ $t('平台运营数据概览') }}</p>
 
     <!-- 统计卡片区 -->
     <div class="stat-cards" data-testid="stat-cards">
@@ -289,16 +288,10 @@ onMounted(() => {
 
 
 .dashboard-title {
-  margin: 0 0 4px 0;
-  font-size: 24px;
+  margin: 0 0 12px 0;
+  font-size: 18px !important;
   font-weight: 600;
   color: var(--base-text-color);
-}
-
-.dashboard-subtitle {
-  margin: 0 0 24px 0;
-  font-size: 14px;
-  color: var(--base-text-color-alpha-7);
 }
 
 .stat-cards {
