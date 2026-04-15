@@ -8,6 +8,8 @@ export function getPlatformRolesApi(params: {
   PageSize: number
   Keyword?: string
   Status?: string | null
+  SortField?: string
+  SortOrder?: string
 }): Promise<PagedResult<PlatformRoleRepDTO>> {
   const query: Record<string, unknown> = {
     Page: params.Page,
@@ -15,6 +17,8 @@ export function getPlatformRolesApi(params: {
   }
   if (params.Keyword) query.Keyword = params.Keyword
   if (params.Status !== null && params.Status !== undefined) query.Status = params.Status
+  if (params.SortField) query.SortField = params.SortField
+  if (params.SortOrder) query.SortOrder = params.SortOrder
   return httpGet<PagedResult<PlatformRoleRepDTO>>('/platform-roles', query)
 }
 

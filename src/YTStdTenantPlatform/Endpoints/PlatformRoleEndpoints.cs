@@ -19,10 +19,10 @@ namespace YTStdTenantPlatform.Endpoints
             var group = app.MapGroup("/api/platform-roles")
                 .WithTags("平台角色管理");
 
-            group.MapGet("/", async (HttpContext ctx, int? page, int? pageSize, string? keyword, string? status) =>
+            group.MapGet("/", async (HttpContext ctx, int? page, int? pageSize, string? keyword, string? status, string? sortField, string? sortOrder) =>
             {
                 var user = GetCurrentUser(ctx);
-                var req = new PagedRequest { Page = page ?? 1, PageSize = pageSize ?? 20, Keyword = keyword, Status = status };
+                var req = new PagedRequest { Page = page ?? 1, PageSize = pageSize ?? 20, Keyword = keyword, Status = status, SortField = sortField, SortOrder = sortOrder };
                 var result = await PlatformRoleAppService.GetListAsync(0, user.UserId, req);
                 await WriteJsonAsync(ctx, ApiResult<PagedResult<PlatformRoleRepDTO>>.Ok(result));
             }).WithSummary("获取角色分页列表");

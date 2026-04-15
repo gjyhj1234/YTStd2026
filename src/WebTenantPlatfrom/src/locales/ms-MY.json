@@ -58,5 +58,9 @@
   "启用成功": "Berjaya diaktifkan",
   "禁用成功": "Berjaya dinyahaktifkan",
   "重置密码": "Set Semula Kata Laluan",
-  "保存成功": "Berjaya disimpan"
+  "保存成功": "Berjaya disimpan",
+  "更多": "Lagi",
+  "保存": "Simpan",
+  "error.19111": "Peranan pentadbir super tidak boleh dipadam",
+  "error.19112": "Peranan mempunyai pengguna berkaitan, sila alih keluar perkaitan sebelum memadam"
 }

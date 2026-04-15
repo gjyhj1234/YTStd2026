@@ -125,6 +125,8 @@ public static class ErrorCodes
     public const int RoleDeleteFailed = 19110;
     /// <summary>禁止删除超级管理员角色</summary>
     public const int RoleCannotDeleteSuperAdmin = 19111;
+    /// <summary>角色下存在关联用户，禁止删除</summary>
+    public const int RoleHasAssociatedUsers = 19112;
 
     // ── 平台权限 (19201-19299) ──
 

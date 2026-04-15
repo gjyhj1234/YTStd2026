@@ -202,7 +202,139 @@ async function onSubmitForm() {
 
 ---
 
-## 六、重置密码结果展示
+## 六、权限分配组件规范
+
+### 6.1 组件说明
+
+权限分配弹窗使用 `DxTreeView`（非 DxTreeList），提供以下标准能力：
+
+| 能力 | 实现方式 |
+|------|---------|
+| 快捷模板 | 顶部提供预设模板按钮（如"系统管理员"、"只读用户"），点击后自动勾选对应权限 |
+| 级联勾选 | `selectNodesRecursive: true`，勾选父级自动全选子级，部分勾选显示半选状态 |
+| 实时计数 | 树顶部显示"已选择 12/85 项"，点击可切换过滤已勾选权限 |
+| 实时搜索 | 提供搜索框，输入关键字定位权限点 |
+| 数据整合 | 加载全部权限树 + 角色已有权限，合并后显示已勾选状态 |
+| 取消/保存 | 底部操作栏 |
+
+### 6.2 DxTreeView 配置
+
+```vue
+<DxTreeView
+  ref="permTreeRef"
+  :data-source="permTreeItems"
+  :show-check-boxes-mode="'normal'"
+  :selection-mode="'multiple'"
+  :select-nodes-recursive="true"
+  :search-enabled="false"
+  :search-value="permSearchText"
+  :search-expr="'Name'"
+  key-expr="Id"
+  parent-id-expr="ParentId"
+  display-expr="Name"
+  data-structure="plain"
+  @selection-changed="onPermTreeSelectionChanged"
+/>
+```
+
+### 6.3 快捷模板实现模式
+
+```typescript
+function applyPermTemplate(templateId: string): void {
+  const tree = permTreeRef.value.instance
+  if (templateId === 'admin') {
+    tree.selectAll()
+  } else if (templateId === 'viewer') {
+    tree.unselectAll()
+    // 仅选中 view/list/detail 权限
+    for (const p of allPermItems.value) {
+      if (/view|list|detail/i.test(p.Code)) {
+        tree.selectItem(p.Id)
+      }
+    }
+  }
+}
+```
+
+### 6.4 数据结构
+
+权限树使用扁平结构（`data-structure="plain"`），字段：
+
+```typescript
+interface FlatPermission {
+  Id: number
+  Code: string
+  Name: string
+  PermissionType: string
+  ParentId: number | null
+}
+```
+
+---
+
+## 七、远程排序规范
+
+### 7.1 后端参数
+
+`PagedRequest` 支持 `SortField` 和 `SortOrder` 参数：
+
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| SortField | string? | 排序字段名（如 Code, Name, CreatedAt） |
+| SortOrder | string? | 排序方向（asc / desc） |
+
+### 7.2 CustomStore 排序传递
+
+```typescript
+const dataSource = new CustomStore({
+  key: 'Id',
+  load: async (loadOptions: LoadOptions) => {
+    let sortField: string | undefined
+    let sortOrder: string | undefined
+    if (loadOptions.sort && Array.isArray(loadOptions.sort) && loadOptions.sort.length > 0) {
+      const firstSort = loadOptions.sort[0] as { selector?: string; desc?: boolean }
+      if (firstSort.selector) {
+        sortField = firstSort.selector
+        sortOrder = firstSort.desc ? 'desc' : 'asc'
+      }
+    }
+    // 传递给 API
+    const result = await getListApi({ ..., SortField: sortField, SortOrder: sortOrder })
+    return { data: result.Items, totalCount: result.Total }
+  }
+})
+```
+
+### 7.3 DxColumn 排序配置
+
+- 支持排序的列设置 `:allow-sorting="true"`
+- 不支持排序的列设置 `:allow-sorting="false"`
+
+---
+
+## 八、删除操作关联校验规范
+
+### 8.1 后端校验
+
+删除操作必须检查是否存在关联数据：
+
+- 删除角色 → 检查 `sys_user_role` 是否有关联用户
+- 删除用户 → 无需额外检查（级联处理）
+
+### 8.2 错误码
+
+| 错误码 | 含义 | 前端展示 |
+|--------|------|---------|
+| 19111 | 禁止删除超级管理员角色 | error.19111 |
+| 19112 | 角色下存在关联用户 | error.19112 |
+
+### 8.3 前端处理
+
+删除失败时，`http.ts` 拦截器自动通过 `error.${code}` 查找 i18n 翻译并展示。
+
+---
+
+## 九、重置密码结果展示
 
 重置密码后必须展示系统生成的新密码：
 

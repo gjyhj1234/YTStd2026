@@ -58,5 +58,9 @@
   "启用成功": "Enabled successfully",
   "禁用成功": "Disabled successfully",
   "重置密码": "Reset Password",
-  "保存成功": "Saved successfully"
+  "保存成功": "Saved successfully",
+  "更多": "More",
+  "保存": "Save",
+  "error.19111": "Cannot delete super admin role",
+  "error.19112": "Role has associated users, please remove associations before deleting"
 }
