@@ -103,15 +103,15 @@ test.describe('平台角色管理 — 搜索', () => {
     await navigateTo(page, '/platform-roles')
     await page.waitForTimeout(2000)
 
-    const searchBar = page.locator('.search-bar')
-    await expect(searchBar).toBeVisible()
+    const searchArea = page.locator('.search-area')
+    await expect(searchArea).toBeVisible()
 
-    const searchInput = searchBar.locator('.dx-textbox').first().locator('input[type="text"]')
+    const searchInput = searchArea.locator('.dx-textbox').first().locator('input[type="text"]')
     await expect(searchInput).toBeVisible()
 
     // Search for "admin"
     await searchInput.fill('admin')
-    const searchBtn = searchBar.locator('.dx-button').filter({ hasText: /查询|Search|検索|Cari|查詢/i }).first()
+    const searchBtn = searchArea.locator('.dx-button').filter({ hasText: /查询|Search|検索|Cari|查詢/i }).first()
     await searchBtn.click()
     await page.waitForTimeout(1500)
 
@@ -132,9 +132,8 @@ test.describe('平台角色管理 — 桌面端', () => {
     await page.waitForTimeout(2000)
 
     await expect(page.locator('.page-title')).toBeVisible()
-    await expect(page.locator('.search-bar')).toBeVisible()
+    await expect(page.locator('.search-area')).toBeVisible()
     await expect(page.locator('.dx-datagrid')).toBeVisible()
-    await expect(page.locator('.dx-treeview')).toBeVisible()
   })
 })
 

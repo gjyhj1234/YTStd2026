@@ -64,7 +64,7 @@
           <label class="search-label">{{ $t('状态') }}</label>
           <DxSelectBox
             v-model:value="searchStatus"
-            :items="statusOptionsComputed"
+            :items="statusOptions"
             display-expr="label"
             value-expr="value"
             :placeholder="$t('请选择状态')"
@@ -352,7 +352,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CustomStore from 'devextreme/data/custom_store'
 import type { LoadOptions } from 'devextreme/data'
@@ -430,7 +430,7 @@ const gridRef = ref()
 const focusedRowKey = ref<number | null>(null)
 
 // Status options using computed for i18n reactivity
-const statusOptionsComputed = computed(() => [
+const statusOptions = computed(() => [
   { value: null, label: t('全部') },
   { value: 'Active', label: t('已启用') },
   { value: 'Disabled', label: t('已禁用') }
@@ -707,17 +707,16 @@ async function openPermissionDialog(row: PlatformRoleRepDTO): Promise<void> {
     selectedPermKeys.value = existingIds || []
     permDialogVisible.value = true
     // After dialog opens, set selected keys on tree
-    setTimeout(() => {
-      if (permTreeRef.value?.instance) {
-        // Unselect all first
-        permTreeRef.value.instance.unselectAll()
-        // Select existing keys
-        const ids = existingIds || []
-        for (let i = 0; i < ids.length; i++) {
-          permTreeRef.value.instance.selectItem(ids[i])
-        }
-      }
-    }, 200)
+    await nextTick()
+    if (permTreeRef.value?.instance) {
+      // Unselect all first
+      permTreeRef.value.instance.unselectAll()
+      // Select existing keys
+      const ids = existingIds || []
+      ids.forEach((id: number) => {
+        permTreeRef.value.instance.selectItem(id)
+      })
+    }
   } catch {
     // error handled by interceptor
   }
@@ -736,13 +735,11 @@ function applyPermTemplate(templateId: string): void {
     const viewKeys: number[] = []
     for (const p of allPermItems.value) {
       const code = p.Code.toLowerCase()
-      if (code.indexOf('view') >= 0 || code.indexOf('list') >= 0 || code.indexOf('detail') >= 0) {
+      if (code.includes('view') || code.includes('list') || code.includes('detail')) {
         viewKeys.push(p.Id)
       }
     }
-    for (let i = 0; i < viewKeys.length; i++) {
-      tree.selectItem(viewKeys[i])
-    }
+    viewKeys.forEach(key => tree.selectItem(key))
     selectedPermKeys.value = viewKeys
   }
 }
@@ -768,11 +765,11 @@ function onPermTreeSelectionChanged(): void {
   if (!permTreeRef.value?.instance) return
   const nodes = permTreeRef.value.instance.getSelectedNodes()
   const keys: number[] = []
-  for (let i = 0; i < nodes.length; i++) {
-    if (nodes[i].itemData && nodes[i].itemData.Id) {
-      keys.push(nodes[i].itemData.Id)
+  nodes.forEach((node: { itemData?: { Id?: number } }) => {
+    if (node.itemData && node.itemData.Id) {
+      keys.push(node.itemData.Id)
     }
-  }
+  })
   selectedPermKeys.value = keys
 }
 
