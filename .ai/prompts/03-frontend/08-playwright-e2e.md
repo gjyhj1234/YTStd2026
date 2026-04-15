@@ -1,266 +1,178 @@
-# Playwright E2E 测试规范
+# Playwright E2E 证据规范（防伪通过版）
 
-## 目标
-
-定义前端 Playwright E2E 测试的编写标准、命名约定、最佳实践和反模式，确保所有 E2E 测试一致、可靠、可维护。
+> 本文件的目标不是教会 Agent 写几个测试，而是防止出现“功能没实现、标签绑错、权限入口消失、却仍然宣称测试通过”的情况。
 
 ---
 
-## 适用范围
+## 一、核心原则
 
-`src/WebTenantPlatfrom/e2e/` 下的所有 Playwright 测试文件。
-
----
-
-## 一、技术栈
-
-| 项目 | 选型 | 版本 |
-|------|------|------|
-| 测试框架 | Playwright Test | ^1.52.0 |
-| 浏览器 | Chromium | 仅 Chromium |
-| 语言 | TypeScript | 与项目一致 |
-| 配置文件 | `src/WebTenantPlatfrom/playwright.config.ts` | — |
+1. **未运行命令 = 未测试。**
+2. **没有命令、结果、测试文件、覆盖矩阵 = 不能声称“已验证”。**
+3. **E2E 必须覆盖成功路径和至少一个失败路径。**
+4. **关键交互必须使用稳定选择器，优先 `data-testid`。**
+5. **测试失败只能修代码或修错误测试，不能删用例。**
 
 ---
 
-## 二、目录结构
+## 二、关键输出要求
 
+每次前端任务完成后，必须至少输出以下信息：
+
+| 项目 | 必须提供 |
+| ------ | --------- |
+| 实际命令 | 例如 `cd src/WebTenantPlatfrom && npx playwright test e2e/tests/platform-users/` |
+| 覆盖文件 | 实际运行的 spec 文件 |
+| 结果统计 | 总数、通过、失败、跳过 |
+| 覆盖矩阵 | 本次覆盖了哪些业务场景 |
+| 未覆盖说明 | 哪些场景未覆盖，为什么 |
+
+---
+
+## 三、稳定选择器契约
+
+### 3.1 默认要求
+
+所有关键交互节点必须提供 `data-testid`，至少覆盖：
+
+1. 页面标题。
+2. 搜索输入框和查询按钮。
+3. DataGrid 容器。
+4. 新增按钮。
+5. 新增/编辑弹窗。
+6. 表单字段。
+7. 提交按钮。
+8. 关键状态操作按钮。
+
+### 3.2 推荐命名
+
+```text
+page-title
+search-keyword
+search-submit
+grid-main
+toolbar-create
+dialog-user-create
+field-username
+field-phone
+submit-save
+action-reset-password
 ```
-src/WebTenantPlatfrom/e2e/
-├── helpers/                    # 共享工具
-│   ├── auth.setup.ts          # 认证设置（Playwright setup project）
-│   ├── test-helpers.ts        # 页面操作工具函数
-│   └── db-helpers.ts          # 数据库操作工具
-├── tests/                      # 测试文件
-│   ├── login/                 # 模块目录
-│   │   └── login.noauth.spec.ts
-│   ├── dashboard/
-│   │   └── dashboard.spec.ts
-│   ├── platform-users/
-│   │   └── platform-users.spec.ts
-│   └── ...
-├── .auth/                      # 认证状态（.gitignore）
-│   └── user.json
-├── test-results/              # 测试结果（.gitignore）
-└── playwright-report/         # HTML 报告（.gitignore）
-```
+
+### 3.3 禁止事项
+
+1. 禁止主要依赖 `.dx-xxx` 内部类名作为唯一定位方案。
+2. 禁止主要依赖第 N 个按钮、第 N 个输入框进行断言。
+3. 禁止仅通过文本模糊匹配所有交互，尤其是多语言场景。
 
 ---
 
-## 三、测试文件命名规则
+## 四、每个模块必须覆盖的测试维度
 
-| 模式 | 说明 | Playwright 项目 |
-|------|------|----------------|
-| `{module}.spec.ts` | 需要预登录的标准测试 | `chromium`（依赖 auth-setup） |
-| `{module}.noauth.spec.ts` | 不需要登录的测试 | `no-auth` |
-
-每个前端模块对应一个测试目录和至少一个测试文件：
-
-| 模块编号 | 模块名 | 测试目录 | 测试文件 |
-|:-------:|--------|---------|---------|
-| F1-2 | 登录页 | `tests/login/` | `login.noauth.spec.ts` |
-| F2-1 | 仪表盘 | `tests/dashboard/` | `dashboard.spec.ts` |
-| F2-2 | 平台用户管理 | `tests/platform-users/` | `platform-users.spec.ts` |
-| F2-3 | 平台角色管理 | `tests/platform-roles/` | `platform-roles.spec.ts` |
-| F2-4 | 平台权限管理 | `tests/platform-permissions/` | `platform-permissions.spec.ts` |
-| F2-5 | 租户管理 | `tests/tenants/` | `tenants.spec.ts` |
-| F2-6 | 租户信息管理 | `tests/tenant-info/` | `tenant-info.spec.ts` |
-| F2-7 | 租户资源管理 | `tests/tenant-resources/` | `tenant-resources.spec.ts` |
-| F2-8 | 租户配置管理 | `tests/tenant-config/` | `tenant-config.spec.ts` |
-| F2-9 | 套餐管理 | `tests/packages/` | `packages.spec.ts` |
-| F2-10 | 订阅管理 | `tests/subscriptions/` | `subscriptions.spec.ts` |
-| F2-11 | 账单管理 | `tests/billing/` | `billing.spec.ts` |
-| F2-12 | API 集成 | `tests/api-integration/` | `api-integration.spec.ts` |
-| F2-13 | 审计日志 | `tests/audit/` | `audit.spec.ts` |
-| F2-14 | 通知管理 | `tests/notifications/` | `notifications.spec.ts` |
-| F2-15 | 文件管理 | `tests/storage/` | `storage.spec.ts` |
-| F2-16 | 平台运营 | `tests/platform-operations/` | `platform-operations.spec.ts` |
+| 维度 | 是否必须 | 说明 |
+| ------ | :--------: | ------ |
+| 页面渲染 | ✅ | 标题、关键区域、列表/表单存在 |
+| 关键路径操作 | ✅ | 至少 1 条成功路径 |
+| 表单验证 | ✅ | 至少 1 条失败路径 |
+| 权限入口可见性 | ✅ | 菜单入口、URL、按钮至少覆盖一个模块级断言 |
+| 标签-字段映射 | ✅ | 防止两个相同 label 或绑定错位 |
+| 响应式 | ✅ | 桌面/平板/手机 |
+| 多语言 | ✅ | 至少验证标题和关键按钮文本 |
+| 空态或错误态 | ✅ | 至少一个异常场景 |
 
 ---
 
-## 四、测试编写规范
+## 五、权限测试要求（新增强制项）
 
-### 4.1 使用 test-helpers.ts 中的工具函数
+每个涉及权限的模块，至少需要覆盖以下两类断言：
+
+### 5.1 入口可见性
+
+| 场景 | 断言 |
+| ------ | ------ |
+| 有列表权限 | 菜单入口可见，页面可进入 |
+| 无列表权限 | 菜单入口隐藏或禁用，URL 访问显示 403/无权限 |
+
+### 5.2 操作按钮显隐
+
+| 场景 | 断言 |
+| ------ | ------ |
+| 有更新权限 | 编辑/状态操作按钮可见 |
+| 无更新权限 | 编辑/状态操作按钮隐藏 |
+
+---
+
+## 六、表单映射测试要求（新增强制项）
+
+为防止“两个用户名 label”“手机号等字段显示错误却仍提示成功”，每个复杂表单至少覆盖：
+
+1. 字段 label 唯一性。
+2. label 与实际输入控件的一一对应。
+3. 提交后回填字段与数据字段对应正确。
+
+推荐断言方式：
 
 ```typescript
-// ✅ 正确 — 使用共享工具函数
-import { navigateTo, waitForGridLoaded, fillDxTextBox } from '../../helpers/test-helpers'
-await navigateTo(page, '/platform-users')
-await waitForGridLoaded(page)
-
-// ❌ 错误 — 直接写底层操作
-await page.goto('/#/platform-users')
-await page.waitForSelector('.dx-datagrid')
-```
-
-### 4.2 使用 describe 分组
-
-```typescript
-// ✅ 正确 — 按功能分组
-test.describe('平台用户管理 — 页面渲染', () => { ... })
-test.describe('平台用户管理 — CRUD 操作', () => { ... })
-test.describe('平台用户管理 — 搜索筛选', () => { ... })
-test.describe('平台用户管理 — 表单验证', () => { ... })
-
-// ❌ 错误 — 所有测试在顶层
-test('test1', () => { ... })
-test('test2', () => { ... })
-```
-
-### 4.3 测试用例命名
-
-```typescript
-// ✅ 正确 — 中文描述，清晰明确
-test('应正确展示用户列表', async ({ page }) => { ... })
-test('创建用户 — 填写完整信息应成功', async ({ page }) => { ... })
-test('创建用户 — 用户名为空应显示验证错误', async ({ page }) => { ... })
-
-// ❌ 错误 — 模糊命名
-test('test create', async ({ page }) => { ... })
-test('it works', async ({ page }) => { ... })
-```
-
-### 4.4 等待策略
-
-```typescript
-// ✅ 正确 — 使用语义化等待
-await expect(page.locator('.dx-datagrid')).toBeVisible({ timeout: 10_000 })
-await page.waitForResponse(resp => resp.url().includes('/api/platform-users'))
-
-// ❌ 错误 — 使用固定时间等待
-await page.waitForTimeout(5000)  // 仅在确实需要等待渲染时使用，且需注释原因
-```
-
-### 4.5 DevExtreme 组件交互
-
-DevExtreme 组件的 DOM 结构与原生 HTML 不同，需要特殊处理：
-
-```typescript
-// DxTextBox 输入 — 需要定位内部 input
-const input = page.locator('.dx-textbox').first().locator('input')
-await input.fill('value')
-
-// DxSelectBox 选择 — 需要点击打开下拉再选择
-const selectBox = page.locator('.dx-selectbox').first()
-await selectBox.click()
-const option = page.locator('.dx-list-item').filter({ hasText: '选项文本' })
-await option.click()
-
-// DxButton 点击 — 通过文本过滤
-const button = page.locator('.dx-button').filter({ hasText: '保存' })
-await button.click()
-
-// DxDataGrid 行操作 — 通过行索引和操作文本
-const row = page.locator('.dx-data-row').nth(0)
-const editBtn = row.locator('.dx-link').filter({ hasText: '编辑' })
-await editBtn.click()
-```
-
-### 4.6 断言风格
-
-```typescript
-// ✅ 正确 — 使用 Playwright 内置断言（自带重试）
-await expect(page.locator('.page-title')).toHaveText('用户管理')
-await expect(page.locator('.dx-data-row')).toHaveCount(10)
-await expect(page.locator('.error-message')).toBeVisible()
-
-// ❌ 错误 — 使用非重试断言
-const text = await page.locator('.page-title').textContent()
-expect(text).toBe('用户管理')  // 没有重试机制，可能因时序失败
+await expect(page.getByTestId('field-username')).toBeVisible()
+await expect(page.getByLabel('用户名')).toHaveCount(1)
+await expect(page.getByTestId('field-phone')).toBeVisible()
 ```
 
 ---
 
-## 五、测试覆盖标准
+## 七、推荐测试结构
 
-每个业务模块的测试**必须覆盖**以下场景：
-
-### 5.1 页面渲染（必须）
-
-- [ ] 页面标题正确展示
-- [ ] DxDataGrid 存在且加载数据
-- [ ] 工具栏按钮可见（新增、搜索等）
-- [ ] 分页器可见（如有）
-
-### 5.2 列表展示（必须）
-
-- [ ] 数据行正确渲染
-- [ ] 列头与设计一致（使用 $t() 的 caption）
-- [ ] 空数据时显示空状态提示
-
-### 5.3 创建操作（必须）
-
-- [ ] 点击新增按钮打开弹窗/表单
-- [ ] 填写有效数据提交成功
-- [ ] 提交后列表刷新显示新数据
-- [ ] 成功通知消息展示
-
-### 5.4 编辑操作（必须）
-
-- [ ] 点击编辑按钮打开弹窗/表单
-- [ ] 表单正确回填现有数据
-- [ ] 修改数据提交成功
-- [ ] 提交后列表刷新显示更新数据
-
-### 5.5 删除操作（必须）
-
-- [ ] 点击删除按钮弹出确认对话框
-- [ ] 确认删除后记录消失
-- [ ] 取消删除记录保留
-
-### 5.6 表单验证（必须）
-
-- [ ] 必填字段为空时显示验证错误
-- [ ] 格式验证（如邮箱、手机号）
-- [ ] 唯一性冲突提示（如用户名已存在）
-
-### 5.7 搜索/筛选（必须）
-
-- [ ] 输入关键字搜索，列表正确筛选
-- [ ] 清空搜索条件，列表恢复
-
----
-
-## 六、反模式清单
-
-| 编号 | 反模式 | 正确做法 |
-|:----:|--------|---------|
-| E1 | 硬编码等待时间 `waitForTimeout(5000)` | 使用 `expect().toBeVisible()` 或 `waitForResponse()` |
-| E2 | 直接操作 DOM 属性而非使用 Playwright API | 使用 `locator.fill()`、`locator.click()` |
-| E3 | 测试之间有隐式数据依赖 | 每个 describe 块独立，使用 beforeEach 准备数据 |
-| E4 | 在测试中写复杂的页面操作逻辑 | 提取到 test-helpers.ts 中 |
-| E5 | 删除失败的测试 | 修复前端代码或修正测试逻辑 |
-| E6 | 测试名使用英文或模糊描述 | 使用中文描述，清晰明确 |
-| E7 | 不等待 API 响应就断言 | 使用 `waitForResponse()` 或 `networkidle` |
-| E8 | 忽略 DevExtreme 组件的特殊 DOM 结构 | 使用 test-helpers.ts 中的工具函数 |
-
----
-
-## 七、与 CI 集成
-
-测试在 Agent 环境中运行，不需要额外 CI 配置。运行命令：
-
-```bash
-# 在项目目录下
-cd src/WebTenantPlatfrom
-
-# 运行全部测试
-npx playwright test
-
-# 运行指定模块
-npx playwright test e2e/tests/{module}/
-
-# 运行无需认证的测试
-npx playwright test --project=no-auth
-
-# 运行需要认证的测试
-npx playwright test --project=chromium
+```typescript
+test.describe('模块名 — 页面渲染', () => { ... })
+test.describe('模块名 — 关键路径', () => { ... })
+test.describe('模块名 — 表单验证', () => { ... })
+test.describe('模块名 — 权限入口', () => { ... })
+test.describe('模块名 — 响应式与多语言', () => { ... })
 ```
 
 ---
 
-## 版本
+## 八、防伪通过规则
 
-- 版本：1.0
-- 创建日期：2026-04-13
-- 创建原因：建立 Playwright E2E 测试编写标准，确保前端功能验证的一致性和完整性
+以下行为一律视为“未完成测试”：
+
+1. 没有运行 Playwright 命令。
+2. 只说“测试通过”，没有测试文件和通过数。
+3. 只测页面打开，不测核心动作。
+4. 出现失败后删除测试用例。
+5. 只测 happy path，不测失败路径。
+
+---
+
+## 九、E2E 结果记录模板
+
+```markdown
+## E2E 测试结果
+
+| 项目 | 值 |
+| ------ | --- |
+| 命令 | `cd src/WebTenantPlatfrom && npx playwright test e2e/tests/platform-users/` |
+| 总数 | 18 |
+| 通过 | 18 |
+| 失败 | 0 |
+| 跳过 | 0 |
+
+### 覆盖矩阵
+
+| 场景 | 状态 |
+| ------ | ------ |
+| 页面渲染 | ✅ |
+| 创建成功路径 | ✅ |
+| 表单验证失败路径 | ✅ |
+| 权限入口可见性 | ✅ |
+| 标签-字段映射 | ✅ |
+| 响应式 | ✅ |
+| 多语言 | ✅ |
+```
+
+---
+
+## 十、版本
+
+- 版本：2.0
+- 更新日期：2026-04-15
+- 更新重点：新增 data-testid 契约、权限入口测试、标签字段映射测试和防伪通过规则

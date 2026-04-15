@@ -23,15 +23,23 @@
 - `.ai/rules/testing.md` — 测试规范
 - `.ai/rules/postman.md` — Postman 测试规范
 - `.ai/rules/security.md` — 安全规范
+- `.ai/prompts/03-frontend/09-production-defaults.md` — 前端生产级默认能力补全
+- `.ai/prompts/03-frontend/10-component-asset-catalog.md` — 前端组件资产目录与复用决策
+- `.ai/prompts/03-frontend/11-delivery-workflow.md` — 前端任务快照、缓存与交付流程
+- `.ai/prompts/03-frontend/12-github-automation-workflow.md` — GitHub 顺序执行 workflow
+- `.ai/prompts/03-frontend/13-prompt-evolution-workflow.md` — 前端缺陷沉淀与提示词迭代
 
 ### 任务执行
 
 - 使用 `.ai/templates/task-template.md` 定义任务
+- 前端 slice / GitHub issue 优先使用 `.ai/templates/frontend-slice-task-template.md`
+- 前端任务快照与缓存优先使用 `.ai/templates/frontend-task-cache-template.md`
 - 按 `.ai/system/execution-policy.md` 执行
 - 按 `.ai/system/session-handoff.md` 续接
 - **编码完成后必须执行** `.ai/system/self-review-protocol.md` 中定义的自动化代码审查
 - **前端编码完成后必须执行** `.ai/system/e2e-testing-workflow.md` 中定义的 Playwright E2E 测试迭代
 - **每次迭代结束后必须执行** `.ai/system/readme-sync-protocol.md` 中定义的 README 同步检查
+- **前端每轮结束后必须更新** `.ai/tasks/...` 的任务快照与 `.ai/workspace/session-summary-*.md`
 
 ### E2E 测试（前端任务必读）
 
@@ -287,3 +295,23 @@ curl -s http://localhost:5173/
 ```
 
 **不允许删除测试用例来"通过"测试。必须修复前端代码或测试逻辑。**
+
+### 17. 前端任务必须填写需求补全矩阵（零容忍）
+
+业务提示词和执行中的 slice 必须显式写出：显式需求、生产默认补全、待确认项、明确不做项。**禁止**因为用户没写某项就默认不实现。
+
+### 18. 前端任务必须先做组件复用决策
+
+实现页面前，必须先确认是否复用现有共享资产；同类交互出现第 2 次时，必须评估提升为共享资产。**禁止**在多个模块重复复制搜索区、操作列、状态标签、表单壳。
+
+### 19. 使用 DxDataGrid / DxForm 时必须写能力矩阵
+
+必须显式声明排序、列宽、列隐藏、固定列、分页、页大小、焦点行、唯一性校验、提交 loading 等能力是启用、禁用还是不适用。**禁止**只写“使用 DxDataGrid / DxForm 实现”。
+
+### 20. 权限测试必须覆盖入口可见性
+
+不能只测按钮显隐。必须显式验证：菜单入口是否可见、URL 是否可达、无权限时是否显示 403/无权限提示。**禁止**出现“有查询权限但入口整体消失”的情况。
+
+### 21. E2E 结果必须提供证据，不得口头宣称“已测试”
+
+前端任务结束时必须给出：实际运行命令、测试文件、通过/失败数量、覆盖矩阵。**未运行命令 = 未测试。**

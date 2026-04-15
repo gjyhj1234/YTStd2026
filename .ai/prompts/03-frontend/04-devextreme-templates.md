@@ -1,197 +1,149 @@
-# DevExtreme Vue Application Template / UI Templates / dxdocs 使用规范
+# DevExtreme Vue 模板、dxdocs 与能力矩阵规范
 
-> 本文件定义前端开发中 DevExtreme Vue 模板体系和 dxdocs 文档查阅的强制规范。
-> 所有涉及模板、布局、组件、交互模式、页面结构的前端任务必须遵循本文件。
-
----
-
-## 一、模板体系定义
-
-### 1.1 Application Template
-
-**名称**：DevExtreme Vue Application Template
-
-**用途**：定义整个应用的骨架结构，包括：
-
-- 应用入口（App.vue）
-- 主布局（侧边栏 + 顶栏 + 内容区）
-- 导航结构（DxDrawer + DxTreeView）
-- 路由集成
-- 认证流程骨架
-- 主题配置
-
-**强制约束**：
-
-1. 必须基于 DevExtreme Vue Application Template 的标准结构搭建应用骨架
-2. 不得自行设计不兼容的布局方案
-3. 布局组件必须使用 DevExtreme 提供的 `DxDrawer`、`DxToolbar` 等
-4. 导航必须使用 `DxTreeView` 或 `DxList`
-
-**dxdocs 查阅要求**：
-
-```
-devexpress_docs_search(technologies: ["Vue"], question: "DevExtreme Vue Application Template structure layout navigation sidebar")
-devexpress_docs_search(technologies: ["Vue"], question: "DxDrawer component opened-state-mode reveal-mode position template")
-```
-
-### 1.2 UI Templates
-
-**名称**：DevExtreme Vue UI Templates
-
-**用途**：定义各类页面的标准布局模式，包括：
-
-- 列表页模板（DataGrid + 工具栏 + 分页）
-- 表单页模板（DxForm + 验证 + 提交）
-- 详情页模板（只读展示 + 操作按钮）
-- 仪表盘模板（统计卡片 + 图表）
-- 登录页模板（认证表单）
-
-**强制约束**：
-
-1. 实现新页面前必须先确认是否有对应的 UI Template 可用
-2. 如有可用的 UI Template，必须基于其结构实现，不得自行设计
-3. 如没有完全匹配的 UI Template，必须以最接近的模板为基础进行扩展
-
-**dxdocs 查阅要求**：
-
-```
-devexpress_docs_search(technologies: ["Vue"], question: "DevExtreme Vue UI Templates page layout patterns")
-```
+> 本文件不只是提醒“要查文档”，而是要求每个业务提示词对 DevExtreme 关键组件逐项声明能力开关。未声明的能力不视为“自由发挥”，而视为“需求缺项”。
 
 ---
 
-## 二、dxdocs 强制查阅规范
+## 一、模板体系总约束
 
-### 2.1 查阅工作流（每个 DevExtreme 组件必须执行）
-
-```
-步骤 1: 调用 devexpress_docs_search（每个问题仅调用一次）
-         → technologies: ["Vue"]
-         → question: 具体到组件名 + 属性/行为
-
-步骤 2: 调用 devexpress_docs_get_content
-         → 获取最相关帮助主题的全文
-
-步骤 3: 反思获取到的内容
-         → 提取可用的 API、属性、代码示例
-         → 对比当前需求，判断是否适用
-
-步骤 4: 基于检索到的信息编码
-         → 引用具体控件和属性名称
-         → 参考文档中的代码示例
-```
-
-### 2.2 必须查阅的场景
-
-| 场景 | 是否必须查阅 | 说明 |
-|------|:----------:|------|
-| 首次使用某个 DevExtreme 组件 | ✅ | 必须了解完整 API |
-| 组件行为异常 | ✅ | 可能是用法不当 |
-| 配置高级功能 | ✅ | 如远程分页、异步验证 |
-| 样式定制 | ✅ | CSS 变量、主题覆盖 |
-| 已查阅且用法简单重复 | ❌ | 可复用上次查阅结果 |
-
-### 2.3 查阅约束
-
-1. **每个问题仅调用一次 `devexpress_docs_search`**，避免冗余查询
-2. **必须基于从 dxdocs 获取的信息编码**，禁止凭猜测或过时记忆
-3. **如果文档中有相关代码示例，必须参考**
-4. **必须引用文档中提到的具体 DevExtreme 控件和属性名称**
-5. **禁止在不查阅 dxdocs 的情况下猜测 DevExtreme 组件的 API 和行为**
-
-### 2.4 常用查阅模板
-
-```
-# 数据表格
-devexpress_docs_search(technologies: ["Vue"], question: "DxDataGrid CustomStore remote operations load function skip take totalCount")
-
-# 表单
-devexpress_docs_search(technologies: ["Vue"], question: "DxForm validation rules required stringLength async validationCallback")
-
-# 弹窗
-devexpress_docs_search(technologies: ["Vue"], question: "DxPopup content template slot visible showing hiding event")
-
-# 树形列表
-devexpress_docs_search(technologies: ["Vue"], question: "DxTreeList parent-id-expr key-expr auto-expand-all selection recursive")
-
-# 抽屉导航
-devexpress_docs_search(technologies: ["Vue"], question: "DxDrawer opened-state-mode shrink reveal-mode expand position left")
-
-# 树形导航
-devexpress_docs_search(technologies: ["Vue"], question: "DxTreeView item template selectByClick focusStateEnabled CSS customization")
-
-# 下拉框
-devexpress_docs_search(technologies: ["Vue"], question: "DxSelectBox data-source display-expr value-expr search-enabled")
-
-# 标签页
-devexpress_docs_search(technologies: ["Vue"], question: "DxTabPanel items selected-index animation swipe-enabled")
-
-# 图表
-devexpress_docs_search(technologies: ["Vue"], question: "DxChart series argument-field value-field type bar line")
-
-# 主题/本地化
-devexpress_docs_search(technologies: ["Vue"], question: "DevExtreme Vue theme CSS variables localization locale loadMessages")
-```
+1. 应用骨架必须基于 **DevExtreme Vue Application Template**。
+2. 页面结构必须优先参考 **DevExtreme Vue UI Templates**。
+3. 表格、表单、弹窗、抽屉、树、分页、工具栏等标准能力优先使用 `devextreme-vue`。
+4. 在没有查过 dxdocs 之前，禁止凭经验自写替代组件。
 
 ---
 
-## 三、组件使用决策流程
+## 二、dxdocs 强制工作流
 
-在实现任何 UI 功能前，必须按以下流程决策：
+每个 DevExtreme 复杂组件都必须执行以下流程：
 
-```
-需要实现 UI 功能
-  ↓
-是否有 DevExtreme Vue 组件可用？
-  ↓ 通过 dxdocs 查阅确认
-  ├── 有 → 使用 DevExtreme 组件
-  └── 不确定 → 再次查阅 dxdocs，扩大搜索范围
-        ├── 确认有 → 使用 DevExtreme 组件
-        └── 确认无 → 停下并请求人工确认
-              ├── 人工确认可手写 → 手写组件（记录原因）
-              └── 人工确认不可 → 等待指示
-```
+1. `devexpress_docs_search(technologies: ["Vue"], question: "...")`
+2. `devexpress_docs_get_content(...)`
+3. 提取将采用的组件、属性、事件、代码示例。
+4. 把采用结果写入业务提示词或任务快照。
 
-**禁止**直接跳过查阅步骤手写以下组件：
+### 2.1 记录格式
 
-- 数据表格（必须用 DxDataGrid 或 DxTreeList）
-- 表单（必须用 DxForm）
-- 弹窗（必须用 DxPopup）
-- 抽屉（必须用 DxDrawer）
-- 分页器（必须用 DxDataGrid 内置分页或 DxPager）
-- 树形视图（必须用 DxTreeView 或 DxTreeList）
-- 工具栏（必须用 DxToolbar）
-- 下拉框（必须用 DxSelectBox 或 DxDropDownBox）
-- 日期选择器（必须用 DxDateBox）
-- 按钮（必须用 DxButton）
-- 加载面板（必须用 DxLoadPanel）
+| 组件 | 查询问题 | 采用的能力 |
+| ------ | --------- | ----------- |
+| DxDataGrid | `DxDataGrid remote operations column chooser fixed columns focused row` | `remoteOperations`、`columnChooser`、`focusedRowEnabled` |
+| DxForm | `DxForm validation rules async validation label mode static` | `validationRules`、`async`、`label-mode` |
 
 ---
 
-## 四、任务输出中的模板声明
+## 三、DxDataGrid 能力矩阵（强制逐项声明）
 
-每个前端任务完成后，必须在 session summary 中声明：
+只要业务页面使用 `DxDataGrid`，提示词中必须明确以下能力是“启用 / 禁用 / 不适用”。
+
+| 能力 | 必须声明 | 推荐默认 | 说明 |
+| ------ | --------- | --------- | ------ |
+| `remoteOperations` | ✅ | 启用 | 后台管理页默认远程分页 |
+| 默认排序字段 | ✅ | 显式声明 | 未声明即缺项 |
+| `columnAutoWidth` | ✅ | 启用 | 避免列拥挤 |
+| 列宽策略 | ✅ | 每列显式声明 | `width` / `min-width` / `auto` |
+| `allowColumnResizing` | ✅ | 启用 | 桌面端推荐 |
+| `allowColumnReordering` | ✅ | 按需启用 | 若禁用必须说明 |
+| `columnChooser` | ✅ | 评估后显式决策 | 用户需要显示/隐藏列时不能省略 |
+| 固定列 | ✅ | 主键列或操作列评估是否固定 | 特别是操作列 |
+| `columnHidingEnabled` | ✅ | 移动端启用 | 必须声明 `hidingPriority` |
+| `focusedRowEnabled` | ✅ | 启用 | 创建/编辑后高亮回到当前行 |
+| `selection` | ✅ | 明确单选/多选/无选择 | 不能隐式决定 |
+| 分页页大小 | ✅ | `[10, 20, 50, 100]` | 若不同必须说明 |
+| `showInfo` / `showNavigationButtons` | ✅ | 启用 | 分页体验基线 |
+| 空态文案 | ✅ | 启用 | `no-data-text` |
+| 加载面板 | ✅ | 启用 | `DxLoadPanel` |
+| 行操作列布局 | ✅ | 直显前 2 个 + 更多下拉 | 对应 `0050` 规范 |
+
+### 3.1 DataGrid 业务提示词写法模板
 
 ```markdown
-## DevExtreme 模板与组件使用声明
+## DevExtreme 能力矩阵
 
-### Application Template 能力
-- 使用了: [列出使用的 Application Template 能力]
+### DxDataGrid
 
-### UI Template 模式
-- 使用了: [列出使用的 UI Template 或页面结构模式]
-
-### dxdocs 查阅记录
-| 查阅问题 | 采用的组件/API/属性 |
-|---------|-------------------|
-| DxDataGrid CustomStore... | CustomStore.load, remoteOperations, ... |
-| ... | ... |
+| 能力 | 状态 | 配置/说明 |
+| ------ | ------ | ---------- |
+| 远程分页 | 启用 | `CustomStore + remoteOperations` |
+| 默认排序 | 启用 | `CreatedAt desc` |
+| 列显示/隐藏 | 禁用 | 本页面列数少，不提供 chooser |
+| 固定列 | 启用 | `操作列 fixed right` |
+| 移动端列隐藏 | 启用 | `Email=2, Phone=1, CreatedAt=4` |
+| 焦点行 | 启用 | 创建/编辑成功后定位到当前记录 |
 ```
 
 ---
 
-## 五、DevExtreme 版本约束
+## 四、DxForm 能力矩阵（强制逐项声明）
 
-- **DevExtreme Vue 版本**：25.2+（见 `.ai/context/tech-stack.md`）
-- 必须使用与该版本兼容的 API
-- 如果 dxdocs 返回的 API 标注了版本要求，必须确认兼容性
+| 能力 | 必须声明 | 推荐默认 | 说明 |
+| ------ | --------- | --------- | ------ |
+| `label-mode` | ✅ | 登录页 `static`，其他页显式决策 | 未声明即缺项 |
+| 必填校验 | ✅ | 按字段声明 | 不能笼统写“有校验” |
+| 长度校验 | ✅ | 按字段声明 | 最小值、最大值都写清 |
+| 格式校验 | ✅ | 按字段声明 | email、手机号、pattern |
+| 异步唯一性校验 | ✅ | 对唯一字段启用 | 编辑场景排除当前 Id |
+| 帮助文本 | ✅ | 显式决策 | `helpText` 是否需要 |
+| 默认值 | ✅ | 按字段声明 | 禁止隐式依赖组件默认值 |
+| 显隐条件 | ✅ | 按字段声明 | 如密码字段仅新增时可见 |
+| 禁用条件 | ✅ | 按字段声明 | 如用户名编辑时只读 |
+| 提交 loading | ✅ | 启用 | `submitting` |
+| 提交前校验 | ✅ | 启用 | `formInstance.validate()` |
+
+---
+
+## 五、DxPopup / DxDrawer 能力矩阵
+
+| 能力 | 必须声明 | 说明 |
+| ------ | --------- | ------ |
+| 标题 | ✅ | 标题文案必须国际化 |
+| 尺寸 | ✅ | `width` / `height` / `fullScreen` |
+| 内容插槽 | ✅ | 必须声明使用 `template #content` |
+| 关闭方式 | ✅ | 关闭按钮、遮罩点击、ESC 是否允许 |
+| unsaved 行为 | ✅ | 表单有未保存内容时是否提醒 |
+| 提交/取消按钮 | ✅ | 文案、位置、loading |
+
+---
+
+## 六、DxTreeView / Drawer / 权限树能力矩阵
+
+| 能力 | 必须声明 | 说明 |
+| ------ | --------- | ------ |
+| `selectByClick` | ✅ | 特别是侧边栏导航和权限分配 |
+| `focusStateEnabled` | ✅ | 影响选中态样式和焦点 |
+| 搜索方式 | ✅ | 内建搜索还是外部搜索框 |
+| 选中递归 | ✅ | 权限分配必须明确 |
+| 入口权限 | ✅ | 菜单点击、URL 直达、无权限提示 |
+| 样式覆盖 | ✅ | 如果需要 CSS 覆盖，必须说明具体原因 |
+
+---
+
+## 七、禁止自写替代能力
+
+未经 dxdocs 查证与人工确认，禁止自写以下能力替代 DevExtreme：
+
+1. 表格。
+2. 表单布局。
+3. 抽屉与侧边导航。
+4. 分页器。
+5. 选择树。
+6. 下拉框。
+7. 加载面板。
+
+---
+
+## 八、业务提示词中的最小声明集
+
+每个使用 DevExtreme 的业务提示词，至少必须包含以下 4 类声明：
+
+1. dxdocs 查询记录。
+2. 组件能力矩阵。
+3. 为什么启用或禁用了关键能力。
+4. 与测试相关的可定位点（`data-testid` 或明确的 helper 方案）。
+
+---
+
+## 九、版本
+
+- 版本：2.0
+- 更新日期：2026-04-15
+- 更新重点：新增 DataGrid / Form / Popup / TreeView 能力矩阵，解决“组件能用但能力不完整”的问题

@@ -2,6 +2,15 @@
 
 > 本文档定义了平台前端所有模块必须遵守的通用组件和交互规范。
 > 所有后续模块开发必须复用这些标准能力。
+> 与 `.ai/prompts/03-frontend/10-component-asset-catalog.md` 一起使用：本文件定义“平台已知标准”，资产目录定义“何时必须复用、何时必须升级为共享资产”。
+
+---
+
+## 零、复用优先规则
+
+1. 本文件中已定义的交互模式默认必须复用，不能在业务页面重新发明一套。
+2. 如果某个模块需要偏离本文件的标准，必须在业务提示词里写清偏离原因。
+3. 如果某类交互在多个模块重复出现但本文件尚未覆盖，必须补充到本文件或提升到共享资产目录。
 
 ---
 
@@ -10,7 +19,7 @@
 ### 1.1 组件位置
 
 | 组件 | 路径 | 用途 |
-|------|------|------|
+| ------ | ------ | ------ |
 | FunctionDescriptionCard | `src/components/FunctionDescriptionCard.vue` | 功能说明弹窗（info 图标触发） |
 | OperationGuideDrawer | `src/components/OperationGuideDrawer.vue` | 操作指引弹窗（help 图标触发） |
 
@@ -208,7 +217,7 @@ async function onSubmitForm() {
 权限分配弹窗使用 `DxTreeView`（非 DxTreeList），提供以下标准能力：
 
 | 能力 | 实现方式 |
-|------|---------|
+| ------ | ------ |
 | 快捷模板 | 顶部提供预设模板按钮（如"系统管理员"、"只读用户"），点击后自动勾选对应权限 |
 | 级联勾选 | `selectNodesRecursive: true`，勾选父级自动全选子级，部分勾选显示半选状态 |
 | 实时计数 | 树顶部显示"已选择 12/85 项"，点击可切换过滤已勾选权限 |
@@ -278,7 +287,7 @@ interface FlatPermission {
 `PagedRequest` 支持 `SortField` 和 `SortOrder` 参数：
 
 | 参数 | 类型 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | SortField | string? | 排序字段名（如 Code, Name, CreatedAt） |
 | SortOrder | string? | 排序方向（asc / desc） |
 
@@ -323,7 +332,7 @@ const dataSource = new CustomStore({
 ### 8.2 错误码
 
 | 错误码 | 含义 | 前端展示 |
-|--------|------|---------|
+| ------ | ------ | ------ |
 | 19111 | 禁止删除超级管理员角色 | error.19111 |
 | 19112 | 角色下存在关联用户 | error.19112 |
 
@@ -418,6 +427,7 @@ const dataSource = new CustomStore({
 ```
 
 **隐藏优先级设计原则**：
+
 - **永不隐藏**：主标识列（用户名/编码/名称）、状态列、操作列
 - **优先隐藏**：ID 列、辅助信息列（邮箱、手机、描述）
 - **较后隐藏**：时间列、角色列

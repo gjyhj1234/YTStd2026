@@ -10,7 +10,7 @@
 ### 1.1 系统级（每次会话必读）
 
 | 序号 | 文件 | 用途 |
-|:----:|------|------|
+| :----: | ------ | ------ |
 | 1 | `.github/copilot-instructions.md` | 关键编码约束（第 7-16 条为前端约束） |
 | 2 | `.ai/system/agent-contract.md` | Agent 协作契约 |
 | 3 | `.ai/system/e2e-testing-workflow.md` | E2E 测试工作流 |
@@ -19,20 +19,25 @@
 ### 1.2 前端规范（每次会话必读）
 
 | 序号 | 文件 | 用途 |
-|:----:|------|------|
+| :----: | ------ | ------ |
 | 1 | `.ai/prompts/03-frontend/00-governance.md` | 前端总治理 |
 | 2 | `.ai/prompts/03-frontend/04-devextreme-templates.md` | DevExtreme 模板与组件规范 |
 | 3 | `.ai/prompts/03-frontend/05-axios-standard.md` | axios 标准化实现规范 |
 | 4 | `.ai/prompts/03-frontend/06-i18n-execution.md` | 前端国际化执行规范 |
 | 5 | `.ai/prompts/03-frontend/03-anti-patterns.md` | 反模式清单 |
 | 6 | `.ai/prompts/03-frontend/08-playwright-e2e.md` | Playwright E2E 测试规范 |
-| 7 | `.ai/rules/frontend.md` | 前端开发规范 |
-| 8 | `.ai/rules/i18n.md` | 国际化规范 |
+| 7 | `.ai/prompts/03-frontend/09-production-defaults.md` | 生产级默认能力补全 |
+| 8 | `.ai/prompts/03-frontend/10-component-asset-catalog.md` | 组件资产目录与复用决策 |
+| 9 | `.ai/prompts/03-frontend/11-delivery-workflow.md` | 任务快照与交付流程 |
+| 10 | `.ai/prompts/03-frontend/12-github-automation-workflow.md` | GitHub 顺序执行 workflow |
+| 11 | `.ai/prompts/03-frontend/13-prompt-evolution-workflow.md` | 缺陷沉淀与提示词迭代 |
+| 12 | `.ai/rules/frontend.md` | 前端开发规范 |
+| 13 | `.ai/rules/i18n.md` | 国际化规范 |
 
 ### 1.3 业务总览（每次会话必读）
 
 | 序号 | 文件 | 用途 |
-|:----:|------|------|
+| :----: | ------ | ------ |
 | 1 | `.ai/prompts/08-platform/frontend/0000_overview.md` | 前端总览与模块清单 |
 | 2 | `.ai/prompts/08-platform/frontend/0040_e2e-testing-protocol.md` | 各模块 E2E 测试要点 |
 | 3 | `.ai/prompts/08-platform/frontend/0050_common-components-standard.md` | 通用组件与交互规范（功能说明/操作指引/搜索区域/操作列溢出/国际化/行高亮/密码展示） |
@@ -46,7 +51,7 @@
 ## 二、项目环境
 
 | 属性 | 值 |
-|------|---|
+| ------ | --- |
 | 前端项目路径 | `src/WebTenantPlatfrom` |
 | 技术栈 | Vue 3 + TypeScript + Vite + DevExtreme Vue 25.2+ + axios + Pinia + vue-i18n |
 | 构建命令 | `cd src/WebTenantPlatfrom && npm run build` |
@@ -83,21 +88,23 @@ curl -s http://localhost:5173/ | head -c 200
 
 每个业务模块子任务必须按以下顺序完成：
 
-```
+```text
 1. 阅读前置文件（本文件 + 子任务文件 + 后端 API 提示词）
-2. 查阅 DevExpress 文档（dxdocs）
-3. 编码实现
+2. 填写需求补全矩阵、组件复用决策表、权限入口可见性矩阵
+3. 查阅 DevExpress 文档（dxdocs）并写能力矩阵
+4. 编码实现
    - 创建 Vue 组件（views/{module}/）
    - 创建 API 文件（api/{module}.ts）
    - 创建类型定义（types/{module}.ts）
    - 创建 5 个语言文件（*.vue.{locale}.json）
    - 更新路由（router.ts）
    - 更新权限常量（constants/permissions.ts，如需要）
-4. 构建验证：npm run build
-5. E2E 测试编写与迭代（最多 5 次），当迭代5次任然没有完成子任务要求，将本次执行进度、遗留问题等输出 session-summary 至 .ai/workspace/，便于下次任务继续修改。
-6. 自审（self-review-protocol F1-F7）
-7. 输出 session-summary 至 .ai/workspace/
-8. 更新所执行的子任务文档.ai/tasks/platform-frontend/0x-Fx-x-{module}.md文件的状态
+5. 构建验证：npm run build
+6. E2E 测试编写与迭代（最多 5 次），当迭代 5 次仍未完成，必须写明阻塞点并输出 session-summary
+7. 自审（self-review-protocol F1-F7）
+8. 输出 session-summary 至 `.ai/workspace/`
+9. 更新所执行的子任务文档中的“任务快照”与状态
+10. 如果发现新的通用问题，更新相应提示词文件
 ```
 
 ---
@@ -128,7 +135,7 @@ notifySuccess(t('创建成功'))
 
 ### 5.3 每个 .vue 文件必须有 5 个语言文件
 
-```
+```text
 ComponentName.vue
 ComponentName.vue.zh-CN.json
 ComponentName.vue.en-US.json
@@ -164,7 +171,7 @@ ComponentName.vue.zh-TW.json
 
 ## 六、验收闭环
 
-```
+```text
 编码 → npm run build → E2E 测试迭代 → 代码搜索审查（F1-F7）→ 修复违规 → 再次编译 → session-summary
 ```
 
@@ -179,7 +186,9 @@ ComponentName.vue.zh-TW.json
 1. 在 `.ai/workspace/` 创建 `session-summary-{YYYYMMDD}-{seq}.md`
 2. 更新 `.ai/tasks/platform-frontend/README.md` 中的执行状态
 3. 更新 `.ai/prompts/08-platform/frontend/0000_overview.md` 中的模块状态
-4. 更新所执行的子任务文档.ai/tasks/platform-frontend/0x-Fx-x-{module}.md文件的状态
+4. 更新所执行的子任务文档中的“任务快照”区块
+5. 如果发现新通用问题，按 `.ai/prompts/03-frontend/13-prompt-evolution-workflow.md` 更新提示词沉淀
+
 ---
 
 ## 版本

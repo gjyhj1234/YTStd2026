@@ -15,6 +15,8 @@
 - **数据库**：PostgreSQL，表前缀 `sys_`
 - **文档**：`docs/TenantPlatform/`
 
+> 前端提示词执行现统一遵循 `.ai/prompts/03-frontend/00-13` 与 `.ai/templates/frontend-*.md`，模块提示词只定义 Epic，实际执行按 slice 推进。
+
 ---
 
 ## 模块总览
@@ -22,7 +24,7 @@
 ### 核心模块（P5）
 
 | 模块 | 后端提示词 | 前端提示词 | 后端状态 | 前端提示词状态 |
-|------|-----------|-----------|---------|--------------|
+| ------ | ----------- | ----------- | --------- | -------------- |
 | 认证 | `backend/auth-api.md` | —（登录页内嵌） | ✅ 已完成 | ✅ 已重写 |
 | 平台用户 | `backend/platform-user-api.md` | `frontend/0021_platform-user-page.md` | ✅ 已完成 | ✅ 已重写 |
 | 平台角色 | `backend/platform-role-api.md` | `frontend/0022_platform-role-page.md` | ✅ 已完成 | ✅ 已重写 |
@@ -35,7 +37,7 @@
 ### 扩展模块（P6）
 
 | 模块 | 后端提示词 | 前端提示词 | 后端状态 | 前端提示词状态 |
-|------|-----------|-----------|---------|--------------|
+| ------ | ----------- | ----------- | --------- | -------------- |
 | 套餐管理 | `backend/package-api.md` | `frontend/0028_package-page.md` | ✅ 已完成 | ✅ 已重写 |
 | 订阅管理 | `backend/subscription-api.md` | `frontend/0029_subscription-page.md` | ✅ 已完成 | ✅ 已重写 |
 | 计费账单 | `backend/billing-api.md` | `frontend/0030_billing-page.md` | ✅ 已完成 | ✅ 已重写 |
@@ -48,7 +50,7 @@
 ### 基础设施
 
 | 内容 | 提示词 | 状态 |
-|------|--------|------|
+| ------ | -------- | ------ |
 | 数据库设计 | `database/schema.md` | ✅ 已完成 |
 | 初始化数据 | `database/seed-data.md` | ✅ 已完成 |
 | 后端基础设施 | `backend/infrastructure.md` | ✅ 已完成 |
@@ -59,6 +61,7 @@
 | 前端登录页 | `frontend/0011_login-page.md` | ✅ 已实现（S5 F1-2） |
 | 前端首页 | `frontend/0020_dashboard-page.md` | ✅ 提示词已重写 |
 | 前端国际化 | `frontend/0002_i18n.md` | ✅ 已实现（S5 F0-3） |
+| 前端执行 workflow | `../03-frontend/11-delivery-workflow.md` / `../03-frontend/12-github-automation-workflow.md` | ✅ 已建立 |
 | 后端测试 | `testing/backend-tests.md` | ✅ 已完成（383 个测试通过） |
 | Postman 集合 | `testing/postman.md` | ✅ 已完成 |
 
@@ -67,7 +70,7 @@
 本目录根下的 `.md` 文件是各模块的功能概要与设计说明（非子目录内的 API/前端/数据库提示词）：
 
 | 文件 | 说明 |
-|------|------|
+| ------ | ------ |
 | `auth.md` | 认证模块功能概要 |
 | `permission.md` | 权限模块功能概要 |
 | `tenant.md` | 租户模块功能概要 |
@@ -89,56 +92,58 @@
 
 ### 阶段 B：核心模块后端重构
 
-5. `backend/auth-api.md` — 认证 API
-6. `backend/platform-user-api.md` — 平台用户 API
-7. `backend/platform-role-api.md` — 平台角色 API
-8. `backend/platform-permission-api.md` — 平台权限 API
-9. `backend/tenant-lifecycle-api.md` — 租户生命周期 API
-10. `backend/tenant-info-api.md` — 租户信息 API
-11. `backend/tenant-resource-api.md` — 租户资源 API
-12. `backend/tenant-config-api.md` — 租户配置 API
-13. `backend/menu-dictionary-api.md` — 菜单与字典 API
+1. `backend/auth-api.md` — 认证 API
+2. `backend/platform-user-api.md` — 平台用户 API
+3. `backend/platform-role-api.md` — 平台角色 API
+4. `backend/platform-permission-api.md` — 平台权限 API
+5. `backend/tenant-lifecycle-api.md` — 租户生命周期 API
+6. `backend/tenant-info-api.md` — 租户信息 API
+7. `backend/tenant-resource-api.md` — 租户资源 API
+8. `backend/tenant-config-api.md` — 租户配置 API
+9. `backend/menu-dictionary-api.md` — 菜单与字典 API
 
 ### 阶段 C：扩展模块后端重构
 
-14. `backend/package-api.md` — 套餐 API
-15. `backend/subscription-api.md` — 订阅 API
-16. `backend/billing-api.md` — 计费 API
-17. `backend/api-integration-api.md` — API 集成
-18. `backend/platform-operation-api.md` — 平台运营
-19. `backend/audit-api.md` — 审计日志
-20. `backend/notification-api.md` — 通知系统
-21. `backend/storage-api.md` — 文件存储
+1. `backend/package-api.md` — 套餐 API
+2. `backend/subscription-api.md` — 订阅 API
+3. `backend/billing-api.md` — 计费 API
+4. `backend/api-integration-api.md` — API 集成
+5. `backend/platform-operation-api.md` — 平台运营
+6. `backend/audit-api.md` — 审计日志
+7. `backend/notification-api.md` — 通知系统
+8. `backend/storage-api.md` — 文件存储
 
 ### 阶段 D：后端测试
 
-22. `testing/backend-tests.md` — 补齐测试
-23. `testing/postman.md` — 更新 Postman 集合
+1. `testing/backend-tests.md` — 补齐测试
+2. `testing/postman.md` — 更新 Postman 集合
 
 ### 阶段 E：前端重构
 
-24. `frontend/0001_scaffold.md` — 校验前端工程
-25. `frontend/0010_layout.md` — 校验布局
-26. `frontend/0020_dashboard-page.md` — 首页仪表盘
-27. `frontend/0021_platform-user-page.md` — 平台用户
-28. `frontend/0022_platform-role-page.md` — 平台角色
-29. `frontend/0023_platform-permission-page.md` — 平台权限
-30. `frontend/0024_tenant-page.md` — 租户管理
-31. `frontend/0025_tenant-info-page.md` — 租户信息
-32. `frontend/0026_tenant-resource-page.md` — 租户资源
-33. `frontend/0027_tenant-config-page.md` — 租户配置
-34. `frontend/0028_package-page.md` — 套餐
-35. `frontend/0029_subscription-page.md` — 订阅
-36. `frontend/0030_billing-page.md` — 计费
-37. `frontend/0031_api-integration-page.md` — API 集成
-38. `frontend/0035_platform-operation-page.md` — 平台运营
-39. `frontend/0032_audit-page.md` — 审计日志
-40. `frontend/0033_notification-page.md` — 通知
-41. `frontend/0034_storage-page.md` — 文件存储
+> 阶段 E 的每个模块任务现在都必须先拆成 slice，再交给 GitHub Copilot coding agent 执行；详见 `.ai/prompts/03-frontend/01-task-splitting.md` 与 `.ai/prompts/03-frontend/12-github-automation-workflow.md`。
+
+1. `frontend/0001_scaffold.md` — 校验前端工程
+2. `frontend/0010_layout.md` — 校验布局
+3. `frontend/0020_dashboard-page.md` — 首页仪表盘
+4. `frontend/0021_platform-user-page.md` — 平台用户
+5. `frontend/0022_platform-role-page.md` — 平台角色
+6. `frontend/0023_platform-permission-page.md` — 平台权限
+7. `frontend/0024_tenant-page.md` — 租户管理
+8. `frontend/0025_tenant-info-page.md` — 租户信息
+9. `frontend/0026_tenant-resource-page.md` — 租户资源
+10. `frontend/0027_tenant-config-page.md` — 租户配置
+11. `frontend/0028_package-page.md` — 套餐
+12. `frontend/0029_subscription-page.md` — 订阅
+13. `frontend/0030_billing-page.md` — 计费
+14. `frontend/0031_api-integration-page.md` — API 集成
+15. `frontend/0035_platform-operation-page.md` — 平台运营
+16. `frontend/0032_audit-page.md` — 审计日志
+17. `frontend/0033_notification-page.md` — 通知
+18. `frontend/0034_storage-page.md` — 文件存储
 
 ### 阶段 F：前端国际化
 
-42. `frontend/0002_i18n.md` — 全量国际化接入
+1. `frontend/0002_i18n.md` — 全量国际化接入
 
 ---
 

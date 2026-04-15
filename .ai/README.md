@@ -15,7 +15,7 @@
 
 ## 目录结构
 
-```
+```text
 .ai/
 ├── README.md                      # 本文件 — 提示词体系总览
 ├── system/                        # 系统级协议与策略
@@ -52,6 +52,8 @@
 │
 ├── templates/                     # 任务与会话模板
 │   ├── task-template.md           # 任务模板
+│   ├── frontend-slice-task-template.md # 前端 slice/issue 模板
+│   ├── frontend-task-cache-template.md # 前端任务快照与缓存模板
 │   ├── subtask-template.md        # 子任务模板
 │   └── session-summary-template.md # 会话总结模板
 │
@@ -67,7 +69,7 @@
 │   │   ├── app-service.md         # 应用服务
 │   │   ├── endpoint.md            # API 端点
 │   │   └── middleware.md          # 中间件
-│   ├── 03-frontend/               # 前端提示词（已重构为 8 个治理/规则层文件）
+│   ├── 03-frontend/               # 前端提示词（生产级执行系统）
 │   │   ├── 00-governance.md       # 前端总治理
 │   │   ├── 01-task-splitting.md   # 前端任务拆分规范
 │   │   ├── 02-parallel-execution.md # 并行执行规范
@@ -75,7 +77,13 @@
 │   │   ├── 04-devextreme-templates.md # DevExtreme 模板与组件规范
 │   │   ├── 05-axios-standard.md   # axios 标准化实现规范
 │   │   ├── 06-i18n-execution.md   # 前端国际化执行规范
-│   │   └── 07-business-prompt-template.md # 极细化业务实施提示词模板
+│   │   ├── 07-business-prompt-template.md # 极细化业务实施提示词模板
+│   │   ├── 08-playwright-e2e.md   # Playwright E2E 证据规范
+│   │   ├── 09-production-defaults.md # 生产级默认能力补全
+│   │   ├── 10-component-asset-catalog.md # 组件资产目录与复用决策
+│   │   ├── 11-delivery-workflow.md # 前端交付 workflow（快照/缓存/收尾）
+│   │   ├── 12-github-automation-workflow.md # GitHub 顺序执行 workflow
+│   │   └── 13-prompt-evolution-workflow.md # 提示词迭代与缺陷沉淀
 │   ├── 04-database/               # 数据库提示词
 │   │   ├── schema-design.md       # 表结构设计
 │   │   └── seed-data.md           # 初始化数据
@@ -199,9 +207,12 @@
 ## 核心设计原则
 
 | 原则 | 说明 |
-|------|------|
+| ------ | ------ |
 | 结构化优先 | 所有提示词采用标准化结构，包含目标、输入、输出、约束、验收标准 |
 | 可执行优先 | 提示词必须可直接指导 AI 执行，不仅是原则声明 |
+| 生产默认优先 | 需求不完整时，按默认能力补齐，而不是直接省略 |
+| 证据优先 | “已测试/已验证”必须有命令、结果、覆盖矩阵和快照文件支撑 |
+| 沉淀优先 | 同类问题修复后必须回写提示词与 workflow |
 | 小步迭代优先 | 大任务必须拆分为可独立执行的子任务 |
 | 可续跑优先 | 每个长任务支持多轮会话续接 |
 | 一致性优先 | 所有规则、命名、格式在提示词间保持统一 |
@@ -240,7 +251,7 @@
 `prompts/` 下的子目录使用两位数字前缀表示优先级和依赖顺序：
 
 | 编号 | 类别 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | 00 | 治理 | 流程与阶段控制 |
 | 01 | 项目 | 解决方案与模块初始化 |
 | 02 | 后端 | 后端实现提示词（通用） |
@@ -267,6 +278,18 @@
 - 调整提示词必须明确指定目标、范围和验收标准
 
 这些工程的提示词设计为可跨项目复用——任何使用这些底层库的项目都可以引用这些提示词。
+
+---
+
+## 前端提示词 2.0
+
+前端提示词体系现已升级为“生产级执行系统”，新增：
+
+1. `09-production-defaults.md`：在需求不完整时自动补齐生产级默认能力。
+2. `10-component-asset-catalog.md`：组件资产目录与复用决策。
+3. `11-delivery-workflow.md`：任务快照、任务缓存、session summary 的强制落盘流程。
+4. `12-github-automation-workflow.md`：适配 GitHub Copilot coding agent 1 小时限制的顺序执行 workflow。
+5. `13-prompt-evolution-workflow.md`：缺陷反哺提示词的闭环。
 
 ---
 
