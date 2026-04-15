@@ -5,7 +5,7 @@ export interface PlatformUserCreateReqDTO {
   DisplayName: string
   Email: string
   Phone: string
-  RoleIds: number[]
+  RoleIds: Array<string | number>
 }
 
 /** User update request */
@@ -13,12 +13,12 @@ export interface PlatformUserUpdateReqDTO {
   DisplayName: string
   Email: string
   Phone: string
-  RoleIds: number[]
+  RoleIds: Array<string | number>
 }
 
 /** User response (matches actual backend API) */
 export interface PlatformUserRepDTO {
-  Id: number
+  Id: string | number
   Username: string
   DisplayName: string
   Email: string | null
@@ -28,6 +28,8 @@ export interface PlatformUserRepDTO {
   LastLoginAt: string | null
   CreatedAt: string
   Remark: string | null
+  RoleIds?: Array<string | number> | null
+  RoleNames?: string[] | null
 }
 
 /** Reset password response */
@@ -37,7 +39,7 @@ export interface ResetPasswordRepDTO {
 
 /** User role (from /platform-roles/all) */
 export interface PlatformUserRoleDTO {
-  Id: number
+  Id: string | number
   Code: string
   Name: string
   Status: string

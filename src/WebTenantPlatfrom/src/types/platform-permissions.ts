@@ -1,10 +1,10 @@
 /** Permission tree node (nested from backend) */
 export interface PlatformPermissionRepDTO {
-  Id: number
+  Id: string | number
   Code: string
   Name: string
   PermissionType: string
-  ParentId: number | null
+  ParentId: string | number | null
   Path?: string
   Method?: string
   Children?: PlatformPermissionRepDTO[]
@@ -12,11 +12,11 @@ export interface PlatformPermissionRepDTO {
 
 /** Flat permission node (for DxTreeList) */
 export interface FlatPermission {
-  Id: number
+  Id: string | number
   Code: string
   Name: string
   PermissionType: string
-  ParentId: number | null
+  ParentId: string | number | null
   Path?: string
   Method?: string
 }

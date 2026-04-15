@@ -13,7 +13,7 @@ export interface UpdatePlatformRoleReqDTO {
 
 /** Role response */
 export interface PlatformRoleRepDTO {
-  Id: number
+  Id: string | number
   Code: string
   Name: string
   Description?: string
@@ -23,10 +23,10 @@ export interface PlatformRoleRepDTO {
 
 /** Role permission bind request */
 export interface RolePermissionBindReqDTO {
-  PermissionIds: number[]
+  PermissionIds: Array<string | number>
 }
 
 /** Role member bind request */
 export interface RoleMemberBindReqDTO {
-  UserIds: number[]
+  UserIds: Array<string | number>
 }

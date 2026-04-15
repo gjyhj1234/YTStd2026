@@ -291,7 +291,7 @@
               :class="{ 'perm-count-clickable': true }"
               @click="togglePermFilter"
             >
-              {{ $t('已选择 {selected}/{total} 项', { selected: selectedPermKeys.length, total: totalPermCount }) }}
+              {{ $t('已选择 {selected}/{total} 项', { selected: selectedLeafPermCount, total: totalLeafPermCount }) }}
             </span>
           </div>
           <!-- Permission Tree (DxTreeView) -->
@@ -302,7 +302,7 @@
               :show-check-boxes-mode="'normal'"
               :selection-mode="'multiple'"
               :select-nodes-recursive="true"
-              :search-enabled="false"
+              :search-enabled="true"
               :search-value="permSearchText"
               :search-expr="'Name'"
               key-expr="Id"
@@ -338,9 +338,9 @@
           key-expr="Id"
           @selection-changed="onMemberSelectionChanged"
         >
-          <DxMemberSelection mode="multiple" show-check-boxes-mode="always" />
-          <DxMemberColumn data-field="Username" :caption="$t('用户名')" />
-          <DxMemberColumn data-field="DisplayName" :caption="$t('显示名')" />
+          <DxSelection mode="multiple" show-check-boxes-mode="always" />
+          <DxColumn data-field="Username" :caption="$t('用户名')" />
+          <DxColumn data-field="DisplayName" :caption="$t('显示名')" />
         </DxDataGrid>
         <div class="dialog-buttons">
           <DxButton :text="$t('取消')" styling-mode="outlined" @click="memberDialogVisible = false" />
@@ -360,7 +360,8 @@ import {
   DxDataGrid,
   DxColumn,
   DxPaging,
-  DxPager
+  DxPager,
+  DxSelection
 } from 'devextreme-vue/data-grid'
 import { DxTreeView } from 'devextreme-vue/tree-view'
 import { DxTextBox } from 'devextreme-vue/text-box'
@@ -380,11 +381,6 @@ import {
   DxAsyncRule
 } from 'devextreme-vue/validator'
 import { DxLoadPanel } from 'devextreme-vue/load-panel'
-import {
-  DxDataGrid as DxMemberGrid,
-  DxColumn as DxMemberColumn,
-  DxSelection as DxMemberSelection
-} from 'devextreme-vue/data-grid'
 import FunctionDescriptionCard from '../../components/FunctionDescriptionCard.vue'
 import OperationGuideDrawer from '../../components/OperationGuideDrawer.vue'
 import {
@@ -398,6 +394,7 @@ import {
   checkRoleCodeExistsApi,
   getRolePermissionsApi,
   bindRolePermissionsApi,
+  getRoleMembersApi,
   bindRoleMembersApi
 } from '../../api/platform-roles'
 import { getPermissionTreeApi } from '../../api/platform-permissions'
@@ -427,7 +424,7 @@ const showGuide = ref(false)
 const searchKeyword = ref('')
 const searchStatus = ref<string | null>(null)
 const gridRef = ref()
-const focusedRowKey = ref<number | null>(null)
+const focusedRowKey = ref<string | number | null>(null)
 
 // Status options using computed for i18n reactivity
 const statusOptions = computed(() => [
@@ -509,6 +506,7 @@ function getMoreActions(row: PlatformRoleRepDTO): Array<{ id: string; text: stri
 }
 
 function onMoreActionClick(e: { itemData: { id: string } }, row: PlatformRoleRepDTO): void {
+  focusedRowKey.value = row.Id
   const actionId = e.itemData.id
   if (actionId === 'enable') onEnable(row)
   else if (actionId === 'disable') onDisable(row)
@@ -520,7 +518,7 @@ function onMoreActionClick(e: { itemData: { id: string } }, row: PlatformRoleRep
 // Form dialog
 const formDialogVisible = ref(false)
 const isEditing = ref(false)
-const editingId = ref<number | null>(null)
+const editingId = ref<string | number | null>(null)
 const submitting = ref(false)
 const formRef = ref()
 const formData = ref({
@@ -537,6 +535,7 @@ function openCreateDialog(): void {
 }
 
 async function openEditDialog(row: PlatformRoleRepDTO): Promise<void> {
+  focusedRowKey.value = row.Id
   isEditing.value = true
   editingId.value = row.Id
   try {
@@ -607,6 +606,7 @@ const detailDialogVisible = ref(false)
 const detailData = ref<PlatformRoleRepDTO | null>(null)
 
 async function openDetail(row: PlatformRoleRepDTO): Promise<void> {
+  focusedRowKey.value = row.Id
   try {
     const detail = await getPlatformRoleApi(row.Id)
     if (detail) {
@@ -660,12 +660,32 @@ const permDialogVisible = ref(false)
 const permTreeRef = ref()
 const permTreeItems = ref<FlatPermission[]>([])
 const allPermItems = ref<FlatPermission[]>([])
-const selectedPermKeys = ref<number[]>([])
+const selectedPermKeys = ref<Array<string | number>>([])
 const totalPermCount = ref(0)
 const savingPerm = ref(false)
 const permSearchText = ref('')
 const showOnlySelected = ref(false)
-let permRoleId: number | null = null
+let permRoleId: string | number | null = null
+
+// Leaf node counts for permission selection display
+const parentIds = computed(() => {
+  const ids = new Set<string | number>()
+  for (const item of allPermItems.value) {
+    if (item.ParentId !== null && item.ParentId !== undefined) {
+      ids.add(item.ParentId)
+    }
+  }
+  return ids
+})
+
+const totalLeafPermCount = computed(() => {
+  return allPermItems.value.filter(p => !parentIds.value.has(p.Id)).length
+})
+
+const selectedLeafPermCount = computed(() => {
+  const pIds = parentIds.value
+  return selectedPermKeys.value.filter(k => !pIds.has(k)).length
+})
 
 // Permission templates
 const permTemplates = computed(() => [
@@ -693,6 +713,7 @@ function flattenPermTree(nodes: PlatformPermissionRepDTO[], result: FlatPermissi
 
 async function openPermissionDialog(row: PlatformRoleRepDTO): Promise<void> {
   permRoleId = row.Id
+  focusedRowKey.value = row.Id
   permSearchText.value = ''
   showOnlySelected.value = false
   try {
@@ -713,7 +734,7 @@ async function openPermissionDialog(row: PlatformRoleRepDTO): Promise<void> {
       permTreeRef.value.instance.unselectAll()
       // Select existing keys
       const ids = existingIds || []
-      ids.forEach((id: number) => {
+      ids.forEach((id: string | number) => {
         permTreeRef.value.instance.selectItem(id)
       })
     }
@@ -732,7 +753,7 @@ function applyPermTemplate(templateId: string): void {
   } else if (templateId === 'viewer') {
     // Select only view/list permissions
     tree.unselectAll()
-    const viewKeys: number[] = []
+    const viewKeys: Array<string | number> = []
     for (const p of allPermItems.value) {
       const code = p.Code.toLowerCase()
       if (code.includes('view') || code.includes('list') || code.includes('detail')) {
@@ -749,7 +770,7 @@ function togglePermFilter(): void {
   if (showOnlySelected.value) {
     const selected = new Set(selectedPermKeys.value)
     // Also include parent nodes for selected items
-    const parents = new Set<number>()
+    const parents = new Set<string | number>()
     for (const item of allPermItems.value) {
       if (selected.has(item.Id) && item.ParentId !== null) {
         parents.add(item.ParentId)
@@ -764,8 +785,8 @@ function togglePermFilter(): void {
 function onPermTreeSelectionChanged(): void {
   if (!permTreeRef.value?.instance) return
   const nodes = permTreeRef.value.instance.getSelectedNodes()
-  const keys: number[] = []
-  nodes.forEach((node: { itemData?: { Id?: number } }) => {
+  const keys: Array<string | number> = []
+  nodes.forEach((node: { itemData?: { Id?: string | number } }) => {
     if (node.itemData && node.itemData.Id) {
       keys.push(node.itemData.Id)
     }
@@ -790,23 +811,27 @@ async function onSavePermissions(): Promise<void> {
 // Member binding
 const memberDialogVisible = ref(false)
 const memberListData = ref<PlatformUserRepDTO[]>([])
-const selectedMemberKeys = ref<number[]>([])
+const selectedMemberKeys = ref<Array<string | number>>([])
 const savingMember = ref(false)
-let memberRoleId: number | null = null
+let memberRoleId: string | number | null = null
 
 async function openMemberDialog(row: PlatformRoleRepDTO): Promise<void> {
   memberRoleId = row.Id
+  focusedRowKey.value = row.Id
   try {
-    const result = await getPlatformUsersApi({ Page: 1, PageSize: 100 })
+    const [result, existingIds] = await Promise.all([
+      getPlatformUsersApi({ Page: 1, PageSize: 100 }),
+      getRoleMembersApi(row.Id)
+    ])
     memberListData.value = result.Items || []
-    selectedMemberKeys.value = []
+    selectedMemberKeys.value = existingIds || []
     memberDialogVisible.value = true
   } catch {
     // error handled by interceptor
   }
 }
 
-function onMemberSelectionChanged(e: { selectedRowKeys: number[] }): void {
+function onMemberSelectionChanged(e: { selectedRowKeys: Array<string | number> }): void {
   selectedMemberKeys.value = e.selectedRowKeys
 }
 
