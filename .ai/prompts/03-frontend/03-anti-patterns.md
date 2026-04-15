@@ -86,7 +86,18 @@
 
 ---
 
-## 八、缺陷回写路径
+## 八、API 类型与网络反模式
+
+| 编号 | 反模式 | 风险 | 正确做法 |
+| :----: | -------- | ------ | --------- |
+| N1 | 跨模块 API 用错误的 DTO 类型接收响应 | 字段缺失或类型不对，组件绑定失败 | 每个前端 TypeScript 类型必须与后端 DTO 字段精确一一对应。不同 DTO 不能混用，必要时新建专用类型 |
+| N2 | 批量操作未禁用 `preventDuplicate` | 用户连续点击时前一个请求被 abort，仅最后一次生效 | 批量操作 API 传入 `{ preventDuplicate: false }`，并在 UI 层用 `batchOperating` ref 锁定按钮 |
+| N3 | 批量操作按钮无 loading/disabled 锁 | 用户可连续点击发起多次请求 | 批量按钮必须在操作期间 disabled，函数入口检查 `batchOperating.value` |
+| N4 | 业务提示词只列本模块 API，未列跨模块依赖 | Agent 凭猜测选择类型，导致字段不匹配 | 业务提示词必须显式列出"跨模块 API 依赖"表，包含 URL、响应体类型、前端 TypeScript 类型 |
+
+---
+
+## 九、缺陷回写路径
 
 发现反模式后，不要只修代码，还要按下表回写：
 
@@ -99,11 +110,12 @@
 | E2E 漏测/伪通过 | `08-playwright-e2e.md` |
 | 执行状态丢失 | `11-delivery-workflow.md` |
 | GitHub 队列不合理 | `12-github-automation-workflow.md` |
+| API 类型/网络问题 | `03-anti-patterns.md` 第八节 |
 
 ---
 
 ## 版本
 
-- 版本：2.0
+- 版本：2.1
 - 更新日期：2026-04-15
-- 更新重点：在原有 DevExtreme/i18n 反模式基础上，新增需求补全、组件复用、权限入口、测试证据、任务快照等反模式
+- 更新重点：新增 API 类型与网络反模式（N1-N4：跨模块 DTO 类型不匹配、批量操作防重复、按钮锁定、跨模块 API 依赖声明）

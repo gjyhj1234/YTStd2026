@@ -101,3 +101,33 @@
 5. **constants/permissions.ts** — 平台用户权限码
 6. **utils/notify.ts** — notifySuccess、notifyError、confirmAction、confirmDelete
 7. **common 语言文件更新** — 新增 18 个公共 key
+
+---
+
+## 迭代记录：2026-04-15 缺陷修复
+
+### 问题 1：角色选择失败
+
+**根因**：`getAllPlatformRolesApi()` 返回类型声明为 `PlatformRoleRepDTO[]`（含 Description、CreatedAt），但后端 `/platform-roles/all` 实际返回 `PlatformRoleSimpleRepDTO`（仅 Id、Code、Name、Status）。类型不匹配。
+
+**修复**：
+- `types/platform-roles.ts`：新增 `PlatformRoleSimpleRepDTO` 类型
+- `api/platform-roles.ts`：`getAllPlatformRolesApi()` 返回类型改为 `PlatformRoleSimpleRepDTO[]`
+- `PlatformUsersView.vue`：`allRoles` ref 类型改为 `PlatformRoleSimpleRepDTO[]`
+
+### 问题 2：批量禁用/启用只有一个生效
+
+**根因**：axios 拦截器的 `preventDuplicate` 默认启用，用户快速点击会 abort 前一个请求。同时批量按钮无 loading 锁。
+
+**修复**：
+- `api/platform-users.ts`：批量 API 传 `{ preventDuplicate: false }`
+- `PlatformUsersView.vue`：新增 `batchOperating` ref，批量操作期间锁定按钮
+
+### 提示词更新
+
+- `.github/copilot-instructions.md`：新增规则 #22（跨模块 API 类型精确匹配）、#23（批量操作防重复）
+- `.ai/prompts/03-frontend/03-anti-patterns.md`：新增第八节 N1-N4（API 类型与网络反模式）
+- `.ai/prompts/03-frontend/05-axios-standard.md`：新增 §九-B 批量操作 API 封装规范
+- `.ai/prompts/03-frontend/07-business-prompt-template.md`：新增 §2.6 跨模块 API 依赖（零容忍）
+- `.ai/prompts/08-platform/frontend/0021_platform-user-page.md`：新增"跨模块 API 依赖"表
+- `.ai/rules/api-design.md`：新增"跨模块 API 前端类型契约"章节

@@ -491,6 +491,45 @@ export function checkUsernameExists(username: string) {
 
 ---
 
+## 九-B、批量操作 API 封装规范
+
+批量操作（如批量启用/禁用）必须遵循以下规范：
+
+```typescript
+// ✅ 正确 — 批量操作必须禁用 preventDuplicate，防止 abort 前一个请求
+export function batchEnableUsersApi(ids: Array<string | number>): Promise<void> {
+  return httpPut<void>('/platform-users/batch-enable', { Ids: ids }, { preventDuplicate: false })
+}
+
+// ❌ 错误 — 默认 preventDuplicate: true，连续点击会 abort 前一个请求
+export function batchEnableUsersApi(ids: Array<string | number>): Promise<void> {
+  return httpPut<void>('/platform-users/batch-enable', { Ids: ids })
+}
+```
+
+同时，页面组件中必须用 `batchOperating` ref 锁定按钮：
+
+```typescript
+const batchOperating = ref(false)
+
+async function onBatchEnable(): Promise<void> {
+  if (selectedRowKeys.value.length === 0 || batchOperating.value) return
+  batchOperating.value = true
+  try {
+    await batchEnableUsersApi(selectedRowKeys.value)
+    notifySuccess('批量启用成功')
+    selectedRowKeys.value = []
+    onSearch()
+  } catch {
+    // error handled by interceptor
+  } finally {
+    batchOperating.value = false
+  }
+}
+```
+
+---
+
 ## 十、Code Review 检查点
 
 ```bash

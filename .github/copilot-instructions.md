@@ -315,3 +315,11 @@ curl -s http://localhost:5173/
 ### 21. E2E 结果必须提供证据，不得口头宣称“已测试”
 
 前端任务结束时必须给出：实际运行命令、测试文件、通过/失败数量、覆盖矩阵。**未运行命令 = 未测试。**
+
+### 22. 跨模块 API 前端类型必须与后端 DTO 精确匹配（零容忍）
+
+当前端模块调用其他模块的后端 API 时（例如用户页面调用 `/platform-roles/all`），前端 TypeScript 类型的字段必须与后端实际返回的 DTO 字段**精确一一对应**。禁止用字段更多的类型（如 `PlatformRoleRepDTO`）接收字段更少的响应（如 `PlatformRoleSimpleRepDTO`）。必要时新建专用类型。业务提示词必须包含"跨模块 API 依赖"表。
+
+### 23. 批量操作必须禁用重复请求防护并锁定按钮
+
+批量操作 API 必须传 `{ preventDuplicate: false }` 防止 axios 拦截器 abort 前一个请求。同时必须用 `batchOperating` ref 在操作期间 disabled 按钮，防止用户连续点击。

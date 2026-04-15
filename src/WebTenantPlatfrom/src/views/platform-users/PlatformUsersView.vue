@@ -131,7 +131,7 @@
               :text="$t('批量启用')"
               icon="check"
               styling-mode="outlined"
-              :disabled="selectedRowKeys.length === 0"
+              :disabled="selectedRowKeys.length === 0 || batchOperating"
               @click="onBatchEnable"
             />
             <DxButton
@@ -139,7 +139,7 @@
               :text="$t('批量禁用')"
               icon="close"
               styling-mode="outlined"
-              :disabled="selectedRowKeys.length === 0"
+              :disabled="selectedRowKeys.length === 0 || batchOperating"
               @click="onBatchDisable"
             />
           </div>
@@ -437,7 +437,7 @@ import {
   PLATFORM_USER_RESET_PWD
 } from '../../constants/permissions'
 import type { PlatformUserRepDTO } from '../../types/platform-users'
-import type { PlatformRoleRepDTO } from '../../types/platform-roles'
+import type { PlatformRoleSimpleRepDTO } from '../../types/platform-roles'
 
 const { t } = useI18n()
 const authStore = useAuthStore()
@@ -454,7 +454,8 @@ const searchDateEnd = ref<Date | null>(null)
 const gridRef = ref()
 const selectedRowKeys = ref<Array<string | number>>([])
 const focusedRowKey = ref<string | number | null>(null)
-const allRoles = ref<PlatformRoleRepDTO[]>([])
+const allRoles = ref<PlatformRoleSimpleRepDTO[]>([])
+const batchOperating = ref(false)
 
 // Reactive status options using computed (fixes i18n switch issue)
 const statusOptionsComputed = computed(() => [
@@ -739,9 +740,10 @@ async function onDelete(row: PlatformUserRepDTO): Promise<void> {
 
 // Batch operations
 async function onBatchEnable(): Promise<void> {
-  if (selectedRowKeys.value.length === 0) return
+  if (selectedRowKeys.value.length === 0 || batchOperating.value) return
   const confirmed = await confirmAction('确认批量启用选中用户')
   if (!confirmed) return
+  batchOperating.value = true
   try {
     await batchEnableUsersApi(selectedRowKeys.value)
     notifySuccess('批量启用成功')
@@ -749,13 +751,16 @@ async function onBatchEnable(): Promise<void> {
     onSearch()
   } catch {
     // error handled by interceptor
+  } finally {
+    batchOperating.value = false
   }
 }
 
 async function onBatchDisable(): Promise<void> {
-  if (selectedRowKeys.value.length === 0) return
+  if (selectedRowKeys.value.length === 0 || batchOperating.value) return
   const confirmed = await confirmAction('确认批量禁用选中用户')
   if (!confirmed) return
+  batchOperating.value = true
   try {
     await batchDisableUsersApi(selectedRowKeys.value)
     notifySuccess('批量禁用成功')
@@ -763,6 +768,8 @@ async function onBatchDisable(): Promise<void> {
     onSearch()
   } catch {
     // error handled by interceptor
+  } finally {
+    batchOperating.value = false
   }
 }
 
