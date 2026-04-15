@@ -275,3 +275,98 @@ export const Permissions = {
 - 支持 zh-CN（基准）、en-US、ms-MY、zh-TW、ja-JP
 - DevExtreme 组件本地化需单独配置
 - 新增组件时必须同步创建对应的语言文件
+
+---
+
+## CSS 主题适配规范（零容忍）
+
+项目使用 DevExtreme 主题切换（`dx-swatch-light` / `dx-swatch-dark`）。所有自定义 CSS **禁止硬编码颜色值**，必须使用 CSS 变量：
+
+| 用途 | 正确写法 | 禁止写法 |
+|------|---------|---------|
+| 文本颜色 | `color: var(--base-text-color)` | `color: #333` |
+| 次要文本 | `color: var(--base-text-color-alpha-7, var(--base-text-color))` | `color: #666` / `color: #999` |
+| 背景色 | `background: var(--base-bg-darken-5, var(--base-bg))` | `background: #fafafa` |
+| 主题强调色 | `color: var(--base-accent)` | `color: #1890ff` |
+| 边框色 | `border-color: var(--dx-color-border, #e0e0e0)` | `border-color: #f0f0f0` |
+| 成功色 | `color: var(--dx-color-success, #52c41a)` | `color: #52c41a` |
+| 危险色 | `color: var(--dx-color-danger, #f5222d)` | `color: #f5222d` |
+| 状态背景 | `background-color: rgba(82, 196, 26, 0.1)` | `background-color: #f6ffed` |
+
+可用 CSS 变量来源：
+- `--base-text-color` / `--base-bg` / `--base-accent` / `--base-bg-darken-5` / `--base-text-color-alpha-7`：由 `variables.scss` 定义
+- `--dx-color-*`：由 DevExtreme 主题 CSS 定义（`theme.additional.css` / `theme.additional.dark.css`）
+
+---
+
+## 手机端响应式布局规范
+
+### 设计要求
+
+所有业务页面必须在以下视口宽度下可用：
+- **桌面端**：≥1024px
+- **平板端**：768px–1023px
+- **手机端**：≤767px（重点测试 375px）
+
+### CSS 要求
+
+```css
+/* 手机端搜索区必须竖向排列 */
+@media (max-width: 768px) {
+  .search-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .search-field {
+    width: 100%;
+    min-width: 0;
+  }
+  .search-field :deep(.dx-textbox),
+  .search-field :deep(.dx-selectbox),
+  .search-field :deep(.dx-daterangebox) {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .search-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .toolbar-buttons {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+}
+```
+
+### E2E 测试要求
+
+每个业务页面必须包含手机端 E2E 测试（375×812 视口），覆盖：
+- **M01**：核心元素可见性（标题、搜索区、表格）
+- **M02**：搜索区域所有组件在视口内（不被裁切）
+- **M03**：高级查询展开后所有字段在视口内
+- **M04**：工具栏按钮（新增、批量操作）不被遮挡
+- **M05**：搜索功能可交互
+- **M06**：视觉截图基线
+
+验证方式：使用 `boundingBox()` 检查元素的 x + width ≤ viewport width。
+
+---
+
+## DxForm editor-type 模块导入规范
+
+使用 DxForm 的 `editor-type` 属性（如 `editor-type="dxTagBox"`）时，**必须导入对应的 DevExtreme 模块**，否则编辑器不会渲染：
+
+```typescript
+// ✅ 正确 — 导入模块后 DxForm 才能解析 editor-type="dxTagBox"
+import 'devextreme/ui/tag_box'
+
+// ❌ 错误 — 未导入模块，DxForm 会渲染空白
+// （没有 import 语句）
+```
+
+常见 editor-type 与对应模块：
+| editor-type | 必须导入 |
+|-------------|---------|
+| `dxTagBox` | `import 'devextreme/ui/tag_box'` |
+| `dxColorBox` | `import 'devextreme/ui/color_box'` |
+| `dxHtmlEditor` | `import 'devextreme/ui/html_editor'` |

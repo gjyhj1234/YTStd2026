@@ -123,11 +123,34 @@
 - `api/platform-users.ts`：批量 API 传 `{ preventDuplicate: false }`
 - `PlatformUsersView.vue`：新增 `batchOperating` ref，批量操作期间锁定按钮
 
+### 问题 3（2026-04-15）：DxTagBox 角色下拉不渲染
+
+**根因**：`PlatformUsersView.vue` 使用 `editor-type="dxTagBox"` 但未导入 `devextreme/ui/tag_box` 模块。DevExtreme 的 DxForm 需要目标编辑器模块已注册才能通过 `editor-type` 渲染。
+
+**修复**：
+- `PlatformUsersView.vue`：添加 `import 'devextreme/ui/tag_box'`
+- 新增 E2E 测试 U04c/U04d 验证角色下拉显示和选择
+
+### 问题 4（2026-04-15）：硬编码颜色导致主题切换失效
+
+**根因**：`.search-area { background: #fafafa }` 及 `.page-title { color: #333 }` 等硬编码色值在暗色主题下不跟随切换。
+
+**修复**：
+- 将所有硬编码色值替换为 CSS 变量（`--base-text-color`、`--base-bg-darken-5`、`--dx-color-border`、`--dx-color-success`、`--dx-color-danger`、`--base-accent`、`--base-text-color-alpha-7`）
+- 涉及文件：`PlatformUsersView.vue`、`PlatformRolesView.vue`、`PlatformPermissionsView.vue`、`profile-page.vue`
+
+### 问题 5（2026-04-15）：手机端布局遮挡
+
+**根因**：mobile 媒体查询仅设置 `flex: 1; min-width: 120px`，未使用 `flex-direction: column` 导致搜索字段溢出视口。
+
+**修复**：
+- `.search-row` 在 `@media (max-width: 768px)` 下改为 `flex-direction: column`
+- `.search-field` 设为 `width: 100%`
+- `.search-actions` 设为 `width: 100%; flex-wrap: wrap`
+- `.toolbar-buttons` 已有 `flex-wrap: wrap`，添加 `width: 100%`
+- 新增 M01-M06 六项 Playwright 手机端 E2E 测试，覆盖搜索区可见性、高级查询展开、工具栏按钮定位、搜索功能、视觉截图
+
 ### 提示词更新
 
-- `.github/copilot-instructions.md`：新增规则 #22（跨模块 API 类型精确匹配）、#23（批量操作防重复）
-- `.ai/prompts/03-frontend/03-anti-patterns.md`：新增第八节 N1-N4（API 类型与网络反模式）
-- `.ai/prompts/03-frontend/05-axios-standard.md`：新增 §九-B 批量操作 API 封装规范
-- `.ai/prompts/03-frontend/07-business-prompt-template.md`：新增 §2.6 跨模块 API 依赖（零容忍）
-- `.ai/prompts/08-platform/frontend/0021_platform-user-page.md`：新增"跨模块 API 依赖"表
-- `.ai/rules/api-design.md`：新增"跨模块 API 前端类型契约"章节
+- `.ai/rules/frontend.md`：新增 CSS 主题适配规范和手机端响应式测试要求
+- `.ai/tasks/platform-frontend/00-F2-2-platform-users.md`：本迭代记录
