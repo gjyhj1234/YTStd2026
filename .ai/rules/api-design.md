@@ -225,3 +225,21 @@ GET /api/platform-users/check-username-exists?username=xxx
 - `/api/auth/login`
 - `/api/health`
 - `/api/health/ready`
+
+---
+
+## 跨模块 API 前端类型契约（零容忍）
+
+当前端模块调用其他模块的后端 API 时，前端 TypeScript 类型必须与后端实际返回的 DTO 字段精确一一对应。
+
+### 规则
+
+1. 后端返回 `PlatformRoleSimpleRepDTO { Id, Code, Name, Status }` 时，前端不得用 `PlatformRoleRepDTO { Id, Code, Name, Description, Status, CreatedAt }` 接收。必须新建 `PlatformRoleSimpleRepDTO` 类型。
+2. 每个业务提示词的"API 端点"章节后面必须有"跨模块 API 依赖"小节，列出本模块依赖的其他模块 API 及其精确返回类型。
+3. 前端 API 函数的 TypeScript 泛型参数必须与后端 DTO 精确对应：
+   - `httpGet<PlatformRoleSimpleRepDTO[]>('/platform-roles/all')` ✅
+   - `httpGet<PlatformRoleRepDTO[]>('/platform-roles/all')` ❌
+
+### 批量操作 API
+
+批量操作 API 必须传 `{ preventDuplicate: false }` 以禁用 axios 拦截器的重复请求防护。同时在 UI 层使用 `batchOperating` ref 锁定按钮。

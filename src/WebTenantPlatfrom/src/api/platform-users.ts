@@ -66,10 +66,10 @@ export function checkUsernameExistsApi(username: string): Promise<boolean> {
 
 /** Batch enable users */
 export function batchEnableUsersApi(ids: Array<string | number>): Promise<void> {
-  return httpPut<void>('/platform-users/batch-enable', { Ids: ids })
+  return httpPut<void>('/platform-users/batch-enable', { Ids: ids }, { preventDuplicate: false })
 }
 
 /** Batch disable users */
 export function batchDisableUsersApi(ids: Array<string | number>): Promise<void> {
-  return httpPut<void>('/platform-users/batch-disable', { Ids: ids })
+  return httpPut<void>('/platform-users/batch-disable', { Ids: ids }, { preventDuplicate: false })
 }

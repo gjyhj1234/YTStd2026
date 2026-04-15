@@ -1,6 +1,6 @@
 import { httpGet, httpPost, httpPut, httpDelete } from './http'
 import type { PagedResult } from './http.types'
-import type { PlatformRoleRepDTO, CreatePlatformRoleReqDTO, UpdatePlatformRoleReqDTO } from '../types/platform-roles'
+import type { PlatformRoleRepDTO, PlatformRoleSimpleRepDTO, CreatePlatformRoleReqDTO, UpdatePlatformRoleReqDTO } from '../types/platform-roles'
 
 /** Get role list (paged) */
 export function getPlatformRolesApi(params: {
@@ -78,6 +78,6 @@ export function bindRoleMembersApi(id: string | number, userIds: Array<string | 
 }
 
 /** Get all roles (for select dropdown) */
-export function getAllPlatformRolesApi(): Promise<PlatformRoleRepDTO[]> {
-  return httpGet<PlatformRoleRepDTO[]>('/platform-roles/all')
+export function getAllPlatformRolesApi(): Promise<PlatformRoleSimpleRepDTO[]> {
+  return httpGet<PlatformRoleSimpleRepDTO[]>('/platform-roles/all')
 }

@@ -156,6 +156,16 @@
 | 批量启用 | PUT | `/api/platform-users/batch-enable` | `{ Ids: number[] }` | `ApiResult` |
 | 批量禁用 | PUT | `/api/platform-users/batch-disable` | `{ Ids: number[] }` | `ApiResult` |
 
+### 跨模块 API 依赖（必须精确匹配后端返回类型）
+
+本模块依赖以下其他模块的 API，前端 TypeScript 类型必须与后端实际返回的 DTO 字段精确对应：
+
+| 操作 | HTTP 方法 | URL | 响应体 | 前端类型 | 说明 |
+| ------ | ---------- | ----- | -------- | -------- | ------ |
+| 获取全部角色（下拉用） | GET | `/api/platform-roles/all` | `ApiResult<PlatformRoleSimpleRepDTO[]>` | `PlatformRoleSimpleRepDTO { Id, Code, Name, Status }` | 用户表单角色多选、搜索区角色筛选 |
+
+> **⚠️ 零容忍规则**：跨模块 API 的前端 TypeScript 类型必须与后端 DTO 字段**一一对应**。禁止用错误的 DTO 类型接收（如用 `PlatformRoleRepDTO` 接收 `PlatformRoleSimpleRepDTO`）。如后端返回的 DTO 字段与现有类型不同，必须新建专用的前端类型。
+
 ---
 
 ## 必须产出的文件

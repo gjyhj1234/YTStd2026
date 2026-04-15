@@ -20,6 +20,7 @@
 ## DevExpress 文档查阅
 ## DevExtreme 能力矩阵
 ## API 端点
+## 跨模块 API 依赖
 ## 必须产出的文件
 ## 页面结构
 ## 可视化设计审查包
@@ -173,7 +174,25 @@ flowchart LR
 | 焦点行 | 启用 | 保存后定位 |
 ```
 
-### 2.6 权限入口可见性矩阵
+### 2.6 跨模块 API 依赖（零容忍）
+
+如果本模块前端调用了**其他模块**的后端 API（例如用户管理页面需要调用角色模块的"获取全部角色"接口），必须显式声明：
+
+```markdown
+## 跨模块 API 依赖
+
+| 操作 | HTTP 方法 | URL | 响应体 | 前端 TypeScript 类型 | 用途 |
+|------|-----------|-----|--------|---------------------|------|
+| 获取全部角色（下拉用） | GET | `/api/platform-roles/all` | `ApiResult<PlatformRoleSimpleRepDTO[]>` | `PlatformRoleSimpleRepDTO { Id, Code, Name, Status }` | 角色多选、筛选 |
+```
+
+**零容忍规则**：
+
+1. 前端 TypeScript 类型的字段必须与后端 DTO 字段**精确一一对应**。后端返回 `{ Id, Code, Name, Status }`，前端就必须声明同样的 4 个字段，禁止用含有额外字段（如 `Description`、`CreatedAt`）的类型接收。
+2. 如果后端返回的 DTO 与已有前端类型不同，必须新建专用类型（如 `PlatformRoleSimpleRepDTO`），禁止复用字段更多的类型。
+3. 批量操作 API 必须传 `{ preventDuplicate: false }` 并在 UI 层用 ref 锁定按钮，防止请求被 abort。
+
+### 2.7 权限入口可见性矩阵
 
 这是必须新增的章节，解决“按钮权限对了，入口没了”的问题。
 
@@ -189,7 +208,7 @@ flowchart LR
 | 编辑按钮 | `platform.user.update` | 隐藏 | 可见 |
 ```
 
-### 2.7 E2E 测试证据矩阵
+### 2.8 E2E 测试证据矩阵
 
 必须先定义“打算怎么证明完成了”，不能到最后才模糊补一句“已测”。
 
@@ -204,7 +223,7 @@ flowchart LR
 | 标签绑定 | `platform-users.spec.ts` | `用户名` label 对应 username 输入框 | 无 |
 ```
 
-### 2.8 任务快照与缓存更新要求
+### 2.9 任务快照与缓存更新要求
 
 必须写清当前提示词要求 Agent 更新哪些文件：
 
