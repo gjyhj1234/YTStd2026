@@ -290,13 +290,10 @@
             :label="{ text: $t('角色') }"
             editor-type="dxTagBox"
             :editor-options="roleEditorOptions"
-          >
-            <DxCustomRule
-              :validation-callback="validateRoleIds"
-              :message="$t('请选择至少一个角色')"
-            />
-          </DxSimpleItem>
+            :validation-rules="roleValidationRules"
+          />
         </DxForm>
+        <div v-if="roleError" class="role-error">{{ roleError }}</div>
         <div class="dialog-buttons">
           <DxButton :text="$t('取消')" styling-mode="outlined" @click="closeFormDialog" />
           <DxButton :text="$t('确定')" type="default" :disabled="submitting" @click="onSubmitForm" />
@@ -409,8 +406,7 @@ import {
   DxStringLengthRule,
   DxPatternRule,
   DxAsyncRule,
-  DxEmailRule,
-  DxCustomRule
+  DxEmailRule
 } from 'devextreme-vue/validator'
 import { DxLoadPanel } from 'devextreme-vue/load-panel'
 import FunctionDescriptionCard from '../../components/FunctionDescriptionCard.vue'
@@ -476,6 +472,13 @@ const roleEditorOptions = computed(() => ({
   showSelectionControls: true,
   searchEnabled: true
 }))
+
+// Validation rules for RoleIds (must select at least one role)
+const roleValidationRules = computed(() => [{
+  type: 'custom',
+  validationCallback: (e: { value: unknown }) => Array.isArray(e.value) && e.value.length > 0,
+  message: t('请选择至少一个角色')
+}])
 
 // CustomStore for remote paging
 const dataSource = new CustomStore({
@@ -611,15 +614,19 @@ async function validateUsernameUnique(params: { value: string }): Promise<boolea
   }
 }
 
-function validateRoleIds(e: { value: unknown }): boolean {
-  return Array.isArray(e.value) && e.value.length > 0
-}
+const roleError = ref('')
 
 async function onSubmitForm(): Promise<void> {
   if (formRef.value?.instance) {
     const result = formRef.value.instance.validate()
     if (result && !result.isValid) return
   }
+  // Explicit RoleIds validation (DxForm custom rules may not trigger for dxTagBox editor-type)
+  if (!Array.isArray(formData.value.RoleIds) || formData.value.RoleIds.length === 0) {
+    roleError.value = t('请选择至少一个角色')
+    return
+  }
+  roleError.value = ''
   submitting.value = true
   try {
     let savedId: string | number | null = null
