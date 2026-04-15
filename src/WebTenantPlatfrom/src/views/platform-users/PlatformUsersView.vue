@@ -816,7 +816,7 @@ onMounted(() => {
 }
 
 .role-tags {
-  color: #1890ff;
+  color: var(--base-accent);
   font-size: 12px;
 }
 
@@ -841,11 +841,11 @@ onMounted(() => {
   margin: 0;
   font-size: 18px !important;
   font-weight: 600;
-  color: #333;
+  color: var(--base-text-color);
 }
 
 .search-area {
-  background: #fafafa;
+  background: var(--search-area-bg);
   border-radius: 4px;
   padding: 12px 16px;
   margin-bottom: 12px;
@@ -866,7 +866,7 @@ onMounted(() => {
 
 .search-label {
   font-size: 12px;
-  color: #666;
+  color: var(--base-text-color-alpha-5);
   font-weight: 500;
 }
 
@@ -893,16 +893,16 @@ onMounted(() => {
 }
 
 .status-enabled {
-  color: #52c41a;
-  background-color: #f6ffed;
+  color: var(--status-enabled-color);
+  background-color: var(--status-enabled-bg);
   padding: 2px 8px;
   border-radius: 4px;
   font-size: 12px;
 }
 
 .status-disabled {
-  color: #f5222d;
-  background-color: #fff2f0;
+  color: var(--status-disabled-color);
+  background-color: var(--status-disabled-bg);
   padding: 2px 8px;
   border-radius: 4px;
   font-size: 12px;
@@ -914,7 +914,7 @@ onMounted(() => {
   gap: 12px;
   margin-top: 20px;
   padding-top: 16px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--base-border-color);
 }
 
 .detail-content {
@@ -924,18 +924,18 @@ onMounted(() => {
 .detail-row {
   display: flex;
   padding: 8px 0;
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: 1px solid var(--base-text-color-alpha-3);
 }
 
 .detail-label {
   width: 120px;
-  color: #999;
+  color: var(--base-text-color-alpha-5);
   flex-shrink: 0;
 }
 
 .detail-value {
   flex: 1;
-  color: #333;
+  color: var(--base-text-color);
 }
 
 .guide-steps {
@@ -951,10 +951,10 @@ onMounted(() => {
 .reset-pwd-value {
   font-size: 20px;
   font-weight: bold;
-  color: #1890ff;
+  color: var(--base-accent);
   padding: 16px;
   margin: 12px 0 20px;
-  background: #f0f7ff;
+  background: var(--search-area-bg);
   border-radius: 4px;
   letter-spacing: 1px;
   font-family: monospace;
@@ -979,25 +979,43 @@ onMounted(() => {
 
   .search-area {
     padding: 8px 12px;
+    overflow: visible;
   }
 
   .search-row {
+    flex-direction: column;
     gap: 8px;
   }
 
+  .search-field {
+    width: 100%;
+    min-width: 0;
+  }
+
   .search-field :deep(.dx-textbox),
-  .search-field :deep(.dx-selectbox) {
+  .search-field :deep(.dx-selectbox),
+  .search-field :deep(.dx-daterangebox) {
     width: 100% !important;
   }
 
-  .search-field {
-    flex: 1;
-    min-width: 120px;
+  .search-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: flex-start;
   }
 
   .toolbar-buttons {
     flex-wrap: wrap;
     gap: 4px;
+  }
+
+  .action-buttons {
+    flex-wrap: nowrap;
+  }
+
+  .action-buttons :deep(.dx-button .dx-button-text) {
+    font-size: 12px;
   }
 }
 </style>

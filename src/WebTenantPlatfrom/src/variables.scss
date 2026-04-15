@@ -10,12 +10,21 @@
   $theme: meta.module-variables($theme-name);
   $base-text-color: map.get($theme, 'base-text-color');
   $base-bg: map.get($theme, 'base-bg');
+  $base-border-color: map.get($theme, 'base-border-color');
 
   --base-text-color:  #{$base-text-color};
   --base-bg: #{$base-bg};
   --base-bg-darken-5: #{color.adjust($base-bg, $lightness: -5%)};
   --base-accent:  #{map.get($theme, 'base-accent')};
+  --base-border-color: #{$base-border-color};
   --base-text-color-alpha-7: #{rgba($base-text-color, color.alpha($base-text-color) * 0.7)};
+  --base-text-color-alpha-5: #{rgba($base-text-color, color.alpha($base-text-color) * 0.5)};
+  --base-text-color-alpha-3: #{rgba($base-text-color, color.alpha($base-text-color) * 0.3)};
+  --search-area-bg: #{color.adjust($base-bg, $lightness: -2%)};
+  --status-enabled-color: #{if($base-bg == #ffffff, #52c41a, #54B054)};
+  --status-enabled-bg: #{if($base-bg == #ffffff, #f6ffed, rgba(84, 176, 84, 0.15))};
+  --status-disabled-color: #{if($base-bg == #ffffff, #f5222d, #e37d80)};
+  --status-disabled-bg: #{if($base-bg == #ffffff, #fff2f0, rgba(227, 125, 128, 0.15))};
 }
 
 :root {
