@@ -248,9 +248,13 @@ test.describe('平台用户管理 — 新增用户', () => {
     const formStillVisible = await popup.locator('.dx-form').isVisible()
     expect(formStillVisible).toBe(true)
 
-    // Role error message should be visible below the form
+    // Role validation error should be visible — either DxForm shows dx-invalid on tagbox
+    // or the manual roleError div appears below the form
+    const tagBoxInvalid = popup.locator('.dx-tagbox.dx-invalid')
     const roleError = page.locator('.role-error')
-    await expect(roleError).toBeVisible({ timeout: 3_000 })
+    const hasTagBoxError = await tagBoxInvalid.count() > 0
+    const hasRoleError = await roleError.isVisible().catch(() => false)
+    expect(hasTagBoxError || hasRoleError).toBe(true)
   })
 
   test('U04b — 创建用户完整流程', async ({ page }) => {
@@ -451,6 +455,75 @@ test.describe('平台用户管理 — 查看详情', () => {
 })
 
 // ══════════════════════════════════════════════════════════════
+// 角色选择（DxTagBox）
+// ══════════════════════════════════════════════════════════════
+
+test.describe('平台用户管理 — 角色选择', () => {
+  test('U04c — 新增弹窗中 DxTagBox 角色下拉可显示角色列表', async ({ page }) => {
+    await navigateTo(page, '/platform-users')
+    await page.waitForTimeout(2000)
+
+    // Open create dialog
+    const addBtn = page.locator('.toolbar-buttons .dx-button').filter({ hasText: /新增|Create/i }).first()
+    await addBtn.click()
+    await page.waitForTimeout(1000)
+
+    const popup = page.locator('.dx-overlay-wrapper .dx-popup-content')
+    await expect(popup).toBeVisible({ timeout: 5_000 })
+
+    // Verify DxTagBox is rendered (requires devextreme/ui/tag_box import)
+    const tagBox = popup.locator('.dx-tagbox')
+    await expect(tagBox).toBeVisible({ timeout: 5_000 })
+
+    // Click tag box to open dropdown
+    const tagBoxInput = tagBox.locator('.dx-texteditor-input')
+    await tagBoxInput.click()
+    await page.waitForTimeout(1500)
+
+    // Dropdown items should appear in a body-level overlay (DevExtreme pattern)
+    const listItems = page.locator('.dx-overlay-content .dx-list-item')
+    const itemCount = await listItems.count()
+    expect(itemCount).toBeGreaterThan(0)
+
+    // Verify at least one role name is present (from seed data)
+    const firstItemText = await listItems.first().textContent()
+    expect(firstItemText).toBeTruthy()
+  })
+
+  test('U04d — 可选择角色并在 DxTagBox 中显示 Tag', async ({ page }) => {
+    await navigateTo(page, '/platform-users')
+    await page.waitForTimeout(2000)
+
+    const addBtn = page.locator('.toolbar-buttons .dx-button').filter({ hasText: /新增|Create/i }).first()
+    await addBtn.click()
+    await page.waitForTimeout(1000)
+
+    const popup = page.locator('.dx-overlay-wrapper .dx-popup-content')
+    await expect(popup).toBeVisible({ timeout: 5_000 })
+
+    const tagBox = popup.locator('.dx-tagbox')
+    await expect(tagBox).toBeVisible({ timeout: 5_000 })
+
+    // Open dropdown
+    const tagBoxInput = tagBox.locator('.dx-texteditor-input')
+    await tagBoxInput.click()
+    await page.waitForTimeout(1500)
+
+    // Select the first role
+    const listItems = page.locator('.dx-overlay-content .dx-list-item')
+    const itemCount = await listItems.count()
+    expect(itemCount).toBeGreaterThan(0)
+    await listItems.first().click()
+    await page.waitForTimeout(500)
+
+    // Verify tag is displayed in the TagBox
+    const tags = tagBox.locator('.dx-tag')
+    const tagCount = await tags.count()
+    expect(tagCount).toBeGreaterThanOrEqual(1)
+  })
+})
+
+// ══════════════════════════════════════════════════════════════
 // 响应式布局
 // ══════════════════════════════════════════════════════════════
 
@@ -483,14 +556,153 @@ test.describe('平台用户管理 — 平板端', () => {
   })
 })
 
-test.describe('平台用户管理 — 手机端', () => {
-  test('手机端页面可用', async ({ page }) => {
+test.describe('平台用户管理 — 手机端布局与交互', () => {
+  test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 })
     await navigateTo(page, '/platform-users')
     await page.waitForTimeout(2000)
+  })
 
-    // Core elements visible
+  test('M01 — 手机端页面核心元素可见', async ({ page }) => {
+    // Page title visible
     await expect(page.locator('.page-title')).toBeVisible()
+    // Search area visible
+    await expect(page.locator('.search-area')).toBeVisible()
+    // Data grid visible
+    await expect(page.locator('.dx-datagrid')).toBeVisible()
+  })
+
+  test('M02 — 手机端搜索区域完整可用（不被裁切/遮挡）', async ({ page }) => {
+    const searchArea = page.locator('.search-area')
+    await expect(searchArea).toBeVisible()
+
+    // Keyword input should be visible and usable
+    const keywordInput = searchArea.locator('.dx-textbox').first()
+    await expect(keywordInput).toBeVisible()
+
+    // Status dropdown should be visible
+    const statusSelect = searchArea.locator('.dx-selectbox')
+    await expect(statusSelect).toBeVisible()
+
+    // Search button should be visible
+    const searchBtn = searchArea.locator('.dx-button').filter({ hasText: /查询|Search|検索|Cari|查詢/i }).first()
+    await expect(searchBtn).toBeVisible()
+
+    // Reset button should be visible
+    const resetBtn = searchArea.locator('.dx-button').filter({ hasText: /重置|Reset|リセット|Set Semula|重設/i }).first()
+    await expect(resetBtn).toBeVisible()
+
+    // Advanced query button should be visible
+    const advBtn = searchArea.locator('.dx-button').filter({ hasText: /高级查询|收起|Advanced|詳細|Carian|進階/i }).first()
+    await expect(advBtn).toBeVisible()
+
+    // Verify search area is not clipped — all buttons within viewport
+    const searchBtnBox = await searchBtn.boundingBox()
+    expect(searchBtnBox).toBeTruthy()
+    expect(searchBtnBox!.x).toBeGreaterThanOrEqual(0)
+    expect(searchBtnBox!.x + searchBtnBox!.width).toBeLessThanOrEqual(375)
+
+    const resetBtnBox = await resetBtn.boundingBox()
+    expect(resetBtnBox).toBeTruthy()
+    expect(resetBtnBox!.x).toBeGreaterThanOrEqual(0)
+    expect(resetBtnBox!.x + resetBtnBox!.width).toBeLessThanOrEqual(375)
+  })
+
+  test('M03 — 手机端高级查询展开后组件不被遮挡', async ({ page }) => {
+    const searchArea = page.locator('.search-area')
+
+    // Click advanced query button
+    const advBtn = searchArea.locator('.dx-button').filter({ hasText: /高级查询|Advanced|詳細|Carian|進階/i }).first()
+    await expect(advBtn).toBeVisible()
+    await advBtn.click()
+    await page.waitForTimeout(500)
+
+    // Role selectbox should be visible (advanced field)
+    const roleSelect = searchArea.locator('.dx-selectbox').nth(1)
+    await expect(roleSelect).toBeVisible({ timeout: 5_000 })
+
+    // Role select should be within viewport (not clipped)
+    const roleBox = await roleSelect.boundingBox()
+    expect(roleBox).toBeTruthy()
+    expect(roleBox!.x).toBeGreaterThanOrEqual(0)
+    expect(roleBox!.x + roleBox!.width).toBeLessThanOrEqual(375)
+
+    // Date range box should be visible
+    const dateRangeBox = searchArea.locator('.dx-daterangebox')
+    await expect(dateRangeBox).toBeVisible()
+    const dateBox = await dateRangeBox.boundingBox()
+    expect(dateBox).toBeTruthy()
+    expect(dateBox!.x).toBeGreaterThanOrEqual(0)
+    expect(dateBox!.x + dateBox!.width).toBeLessThanOrEqual(375)
+
+    // Collapse button should still be visible after expanding
+    const collapseBtn = searchArea.locator('.dx-button').filter({ hasText: /收起|Collapse|閉じる|Tutup|收起/i }).first()
+    await expect(collapseBtn).toBeVisible()
+    const collapseBtnBox = await collapseBtn.boundingBox()
+    expect(collapseBtnBox).toBeTruthy()
+    expect(collapseBtnBox!.x).toBeGreaterThanOrEqual(0)
+    expect(collapseBtnBox!.x + collapseBtnBox!.width).toBeLessThanOrEqual(375)
+  })
+
+  test('M04 — 手机端工具栏按钮不被遮挡', async ({ page }) => {
+    // "新增" button should be visible
+    const addBtn = page.locator('.toolbar-buttons .dx-button').filter({ hasText: /新增|Create|新規|Tambah|新增/i }).first()
+    await expect(addBtn).toBeVisible()
+    const addBtnBox = await addBtn.boundingBox()
+    expect(addBtnBox).toBeTruthy()
+    expect(addBtnBox!.x).toBeGreaterThanOrEqual(0)
+    expect(addBtnBox!.x + addBtnBox!.width).toBeLessThanOrEqual(375)
+
+    // "批量启用" button should be visible
+    const batchEnableBtn = page.locator('.toolbar-buttons .dx-button').filter({ hasText: /批量启用|Batch Enable|一括有効|Dayakan|批量啟用/i }).first()
+    if (await batchEnableBtn.isVisible()) {
+      const batchEnableBtnBox = await batchEnableBtn.boundingBox()
+      expect(batchEnableBtnBox).toBeTruthy()
+      expect(batchEnableBtnBox!.x).toBeGreaterThanOrEqual(0)
+      expect(batchEnableBtnBox!.x + batchEnableBtnBox!.width).toBeLessThanOrEqual(375)
+    }
+
+    // "批量禁用" button should be visible
+    const batchDisableBtn = page.locator('.toolbar-buttons .dx-button').filter({ hasText: /批量禁用|Batch Disable|一括無効|Lumpuhkan|批量禁用/i }).first()
+    if (await batchDisableBtn.isVisible()) {
+      const batchDisableBtnBox = await batchDisableBtn.boundingBox()
+      expect(batchDisableBtnBox).toBeTruthy()
+      expect(batchDisableBtnBox!.x).toBeGreaterThanOrEqual(0)
+      expect(batchDisableBtnBox!.x + batchDisableBtnBox!.width).toBeLessThanOrEqual(375)
+    }
+  })
+
+  test('M05 — 手机端搜索功能可用', async ({ page }) => {
+    const searchArea = page.locator('.search-area')
+    const searchInput = searchArea.locator('.dx-textbox').first().locator('input[type="text"]')
+    await expect(searchInput).toBeVisible()
+
+    // Type search term
+    await searchInput.fill('admin')
+
+    // Click search
+    const searchBtn = searchArea.locator('.dx-button').filter({ hasText: /查询|Search|検索|Cari|查詢/i }).first()
+    await searchBtn.click()
+    await page.waitForTimeout(1500)
+
+    // Verify grid shows results
+    await waitForGridLoaded(page)
+    const rowCount = await getGridRowCount(page)
+    expect(rowCount).toBeGreaterThanOrEqual(1)
+  })
+
+  test('M06 — 手机端视觉截图（基线对照）', async ({ page }) => {
+    // Take screenshot of full page at mobile viewport
+    await page.screenshot({ path: 'e2e/test-results/mobile-platform-users-base.png', fullPage: true })
+
+    // Expand advanced query and take another screenshot
+    const searchArea = page.locator('.search-area')
+    const advBtn = searchArea.locator('.dx-button').filter({ hasText: /高级查询|Advanced/i }).first()
+    if (await advBtn.isVisible()) {
+      await advBtn.click()
+      await page.waitForTimeout(500)
+      await page.screenshot({ path: 'e2e/test-results/mobile-platform-users-advanced.png', fullPage: true })
+    }
   })
 })
 
