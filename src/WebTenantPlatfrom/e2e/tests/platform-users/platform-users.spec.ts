@@ -491,6 +491,10 @@ test.describe('平台用户管理 — 手机端', () => {
 
     // Core elements visible
     await expect(page.locator('.page-title')).toBeVisible()
+    // Search area visible
+    await expect(page.locator('.search-area')).toBeVisible()
+    // Grid visible
+    await expect(page.locator('.dx-datagrid')).toBeVisible()
   })
 })
 
@@ -522,4 +526,286 @@ test.describe('平台用户管理 — 多语言切换', () => {
       await expect(title).toContainText(lang.title)
     })
   }
+})
+
+// ══════════════════════════════════════════════════════════════
+// 角色选择 DxTagBox 专项验证
+// ══════════════════════════════════════════════════════════════
+
+test.describe('平台用户管理 — 角色选择 DxTagBox', () => {
+  test('R01 — 新增弹窗中 DxTagBox 角色下拉可见且有数据', async ({ page }) => {
+    await navigateTo(page, '/platform-users')
+    await page.waitForTimeout(2000)
+
+    // Open create dialog
+    const addBtn = page.locator('.toolbar-buttons .dx-button').filter({ hasText: /新增|Create|新規|Tambah|新增/i }).first()
+    await addBtn.click()
+    await page.waitForTimeout(1000)
+
+    const popup = page.locator('.dx-overlay-wrapper .dx-popup-content')
+    await expect(popup).toBeVisible({ timeout: 5_000 })
+
+    // Find the DxTagBox (rendered as dx-tagbox) in the form
+    const tagBox = popup.locator('.dx-tagbox')
+    await expect(tagBox).toBeVisible({ timeout: 5_000 })
+
+    // Click the tagbox to open its dropdown
+    await tagBox.click()
+    await page.waitForTimeout(1000)
+
+    // The dropdown items should appear as a list overlay in the body
+    const dropdownList = page.locator('.dx-overlay-wrapper .dx-list, .dx-popup-content .dx-list').last()
+    await expect(dropdownList).toBeVisible({ timeout: 5_000 })
+
+    // There should be at least one role item (seed data has 3 roles)
+    const items = dropdownList.locator('.dx-list-item')
+    const count = await items.count()
+    expect(count).toBeGreaterThanOrEqual(1)
+
+    // Close dropdown by pressing Escape
+    await page.keyboard.press('Escape')
+  })
+
+  test('R02 — DxTagBox 可以选中角色并显示标签', async ({ page }) => {
+    await navigateTo(page, '/platform-users')
+    await page.waitForTimeout(2000)
+
+    // Open create dialog
+    const addBtn = page.locator('.toolbar-buttons .dx-button').filter({ hasText: /新增|Create|新規|Tambah|新增/i }).first()
+    await addBtn.click()
+    await page.waitForTimeout(1000)
+
+    const popup = page.locator('.dx-overlay-wrapper .dx-popup-content')
+    await expect(popup).toBeVisible({ timeout: 5_000 })
+
+    // Find and click the DxTagBox
+    const tagBox = popup.locator('.dx-tagbox')
+    await tagBox.click()
+    await page.waitForTimeout(1000)
+
+    // Select the first role in the dropdown
+    const dropdownList = page.locator('.dx-overlay-wrapper .dx-list, .dx-popup-content .dx-list').last()
+    await expect(dropdownList).toBeVisible({ timeout: 5_000 })
+
+    const firstItem = dropdownList.locator('.dx-list-item').first()
+    await firstItem.click()
+    await page.waitForTimeout(500)
+
+    // The tagbox should now show the selected tag
+    const tags = popup.locator('.dx-tagbox .dx-tag')
+    const tagCount = await tags.count()
+    expect(tagCount).toBeGreaterThanOrEqual(1)
+
+    // Close dropdown
+    await page.keyboard.press('Escape')
+  })
+
+  test('R03 — 编辑弹窗中已分配角色回显正确', async ({ page }) => {
+    await navigateTo(page, '/platform-users')
+    await page.waitForTimeout(2000)
+    await waitForGridLoaded(page)
+
+    // Click edit on first row
+    const firstRow = page.locator('.dx-datagrid-rowsview .dx-data-row').first()
+    const editBtn = firstRow.locator('.dx-button').filter({ hasText: /编辑|Edit|編集|編輯/i })
+    await expect(editBtn).toBeVisible({ timeout: 5_000 })
+    await editBtn.click()
+    await page.waitForTimeout(1500)
+
+    const popup = page.locator('.dx-overlay-wrapper .dx-popup-content')
+    await expect(popup).toBeVisible({ timeout: 5_000 })
+
+    // The DxTagBox should be visible in the edit form
+    const tagBox = popup.locator('.dx-tagbox')
+    await expect(tagBox).toBeVisible({ timeout: 5_000 })
+
+    // Admin user should have at least one role assigned, so tags should be visible
+    // (If no roles assigned, the tagbox is simply empty which is still valid)
+    const tagCount = await popup.locator('.dx-tagbox .dx-tag').count()
+    // Admin seed data should have super_admin role
+    expect(tagCount).toBeGreaterThanOrEqual(1)
+  })
+})
+
+// ══════════════════════════════════════════════════════════════
+// 手机端详细布局与交互测试
+// ══════════════════════════════════════════════════════════════
+
+test.describe('平台用户管理 — 手机端详细布局', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 })
+    await navigateTo(page, '/platform-users')
+    await page.waitForTimeout(2000)
+  })
+
+  test('M01 — 手机端页面标题与搜索区可见', async ({ page }) => {
+    await expect(page.locator('.page-title')).toBeVisible()
+    await expect(page.locator('.search-area')).toBeVisible()
+
+    // Search field and buttons should be visible (not clipped)
+    const searchArea = page.locator('.search-area')
+    const searchBtn = searchArea.locator('.dx-button').filter({ hasText: /查询|Search|検索|Cari|查詢/i }).first()
+    await expect(searchBtn).toBeVisible()
+
+    const resetBtn = searchArea.locator('.dx-button').filter({ hasText: /重置|Reset|リセット|Set Semula|重設/i }).first()
+    await expect(resetBtn).toBeVisible()
+  })
+
+  test('M02 — 手机端 DxDataGrid 可见且可滚动', async ({ page }) => {
+    await waitForGridLoaded(page)
+    const grid = page.locator('.dx-datagrid')
+    await expect(grid).toBeVisible()
+
+    // Grid should have at least one data row (admin)
+    const rowCount = await getGridRowCount(page)
+    expect(rowCount).toBeGreaterThanOrEqual(1)
+  })
+
+  test('M03 — 手机端高级查询展开后组件完整可见', async ({ page }) => {
+    const searchArea = page.locator('.search-area')
+
+    // Click advanced search button
+    const advBtn = searchArea.locator('.dx-button').filter({ hasText: /高级查询|Advanced|詳細|Carian|進階/i }).first()
+    await expect(advBtn).toBeVisible()
+    await advBtn.click()
+    await page.waitForTimeout(500)
+
+    // Role dropdown should be visible after expanding (not clipped or hidden)
+    const roleSelect = searchArea.locator('.dx-selectbox').nth(1)
+    await expect(roleSelect).toBeVisible()
+
+    // Date range box should be visible
+    const dateRangeBox = searchArea.locator('.dx-daterangebox')
+    await expect(dateRangeBox).toBeVisible()
+
+    // Verify the role select is within the viewport (not overflowing out of sight)
+    const roleBox = await roleSelect.boundingBox()
+    expect(roleBox).not.toBeNull()
+    if (roleBox) {
+      expect(roleBox.x).toBeGreaterThanOrEqual(0)
+      expect(roleBox.y).toBeGreaterThanOrEqual(0)
+      // Should be within the 375px viewport width
+      expect(roleBox.x + roleBox.width).toBeLessThanOrEqual(380) // small tolerance
+    }
+
+    // Verify date range box is within viewport
+    const dateBox = await dateRangeBox.boundingBox()
+    expect(dateBox).not.toBeNull()
+    if (dateBox) {
+      expect(dateBox.x).toBeGreaterThanOrEqual(0)
+      expect(dateBox.x + dateBox.width).toBeLessThanOrEqual(380)
+    }
+
+    // Search and reset buttons should still be visible after expanding
+    const searchBtn = searchArea.locator('.dx-button').filter({ hasText: /查询|Search|検索|Cari|查詢/i }).first()
+    await expect(searchBtn).toBeVisible()
+
+    // Collapse button should be visible
+    const collapseBtn = searchArea.locator('.dx-button').filter({ hasText: /收起|Collapse|閉じる|Tutup|收起/i }).first()
+    await expect(collapseBtn).toBeVisible()
+  })
+
+  test('M04 — 手机端工具栏按钮完整可见（新增、批量启用、批量禁用）', async ({ page }) => {
+    // Check toolbar buttons are visible and not clipped
+    const toolbar = page.locator('.toolbar-buttons')
+    await expect(toolbar).toBeVisible()
+
+    // "新增" button should be visible
+    const addBtn = toolbar.locator('.dx-button').filter({ hasText: /新增|Create|新規|Tambah|新增/i }).first()
+    await expect(addBtn).toBeVisible()
+
+    // "批量启用" button should be visible
+    const batchEnableBtn = toolbar.locator('.dx-button').filter({ hasText: /批量启用|Batch Enable|一括有効|Dayakan|批量啟用/i }).first()
+    await expect(batchEnableBtn).toBeVisible()
+
+    // "批量禁用" button should be visible
+    const batchDisableBtn = toolbar.locator('.dx-button').filter({ hasText: /批量禁用|Batch Disable|一括無効|Lumpuhkan|批量停用/i }).first()
+    await expect(batchDisableBtn).toBeVisible()
+
+    // Verify batch buttons are within viewport
+    const enableBox = await batchEnableBtn.boundingBox()
+    expect(enableBox).not.toBeNull()
+    if (enableBox) {
+      expect(enableBox.x).toBeGreaterThanOrEqual(0)
+      expect(enableBox.x + enableBox.width).toBeLessThanOrEqual(380)
+    }
+
+    const disableBox = await batchDisableBtn.boundingBox()
+    expect(disableBox).not.toBeNull()
+    if (disableBox) {
+      expect(disableBox.x).toBeGreaterThanOrEqual(0)
+      expect(disableBox.x + disableBox.width).toBeLessThanOrEqual(380)
+    }
+  })
+
+  test('M05 — 手机端行操作按钮可交互', async ({ page }) => {
+    await waitForGridLoaded(page)
+
+    // First row should have action buttons
+    const firstRow = page.locator('.dx-datagrid-rowsview .dx-data-row').first()
+
+    // At minimum, some action buttons or more dropdown should be visible
+    // On small screens, DxDataGrid may auto-hide some columns but action column should remain
+    const actionCell = firstRow.locator('.action-buttons')
+    if (await actionCell.isVisible()) {
+      // Check if "更多" dropdown button is accessible
+      const moreBtn = actionCell.locator('.dx-dropdownbutton')
+      await expect(moreBtn).toBeVisible()
+    }
+  })
+
+  test('M06 — 手机端新增弹窗自适应宽度', async ({ page }) => {
+    // Open create dialog
+    const addBtn = page.locator('.toolbar-buttons .dx-button').filter({ hasText: /新增|Create|新規|Tambah|新增/i }).first()
+    await addBtn.click()
+    await page.waitForTimeout(1000)
+
+    // Popup should appear and be within viewport
+    const popup = page.locator('.dx-overlay-wrapper .dx-popup-content')
+    await expect(popup).toBeVisible({ timeout: 5_000 })
+
+    // Form should be visible inside popup
+    const form = popup.locator('.dx-form')
+    await expect(form).toBeVisible()
+
+    // The popup should not overflow the viewport
+    const popupWrapper = page.locator('.dx-overlay-wrapper .dx-popup-normal')
+    const popupBox = await popupWrapper.boundingBox()
+    if (popupBox) {
+      // Popup should not extend beyond viewport width
+      expect(popupBox.x + popupBox.width).toBeLessThanOrEqual(380)
+    }
+  })
+
+  test('M07 — 手机端高级查询展开/收起后搜索功能正常', async ({ page }) => {
+    const searchArea = page.locator('.search-area')
+
+    // Expand advanced search
+    const advBtn = searchArea.locator('.dx-button').filter({ hasText: /高级查询|Advanced|詳細|Carian|進階/i }).first()
+    await advBtn.click()
+    await page.waitForTimeout(500)
+
+    // Fill keyword search
+    const searchInput = searchArea.locator('.dx-textbox').first().locator('input[type="text"]')
+    await searchInput.fill('admin')
+
+    // Click search button
+    const searchBtn = searchArea.locator('.dx-button').filter({ hasText: /查询|Search|検索|Cari|查詢/i }).first()
+    await searchBtn.click()
+    await page.waitForTimeout(1500)
+
+    // Should still show results
+    await waitForGridLoaded(page)
+    const rowCount = await getGridRowCount(page)
+    expect(rowCount).toBeGreaterThanOrEqual(1)
+
+    // Collapse advanced search
+    const collapseBtn = searchArea.locator('.dx-button').filter({ hasText: /收起|Collapse|閉じる|Tutup|收起/i }).first()
+    await collapseBtn.click()
+    await page.waitForTimeout(500)
+
+    // Role select should be hidden again
+    const roleSelect = searchArea.locator('.dx-selectbox').nth(1)
+    await expect(roleSelect).toBeHidden()
+  })
 })

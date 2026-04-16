@@ -204,7 +204,7 @@ onMounted(() => {
   margin: 0 0 12px 0;
   font-size: 18px !important;
   font-weight: 600;
-  color: #333;
+  color: var(--base-text-color);
 }
 
 .search-bar {

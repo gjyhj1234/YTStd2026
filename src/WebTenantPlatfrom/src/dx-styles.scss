@@ -8,7 +8,7 @@ $side-panel-min-width: 60px;
   .content {
     line-height: 1.5;
     flex-grow: 1;
-    padding: 20px 40px;
+    padding: 5px 8px;
 
     h2 {
       font-size: 32px;
@@ -18,7 +18,7 @@ $side-panel-min-width: 60px;
   }
 
   .screen-x-small :not(.dx-card).content {
-    padding: 20px;
+    padding: 1px;
   }
 
   .container {
