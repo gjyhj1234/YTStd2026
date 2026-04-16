@@ -97,7 +97,21 @@
 
 ---
 
-## 九、缺陷回写路径
+## 九、移动端适配反模式
+
+| 编号 | 反模式 | 风险 | 正确做法 |
+| :----: | -------- | ------ | --------- |
+| M1 | 弹窗（DxPopup）使用固定宽度 `:width="600"` | 375px 手机屏幕下弹窗超出屏幕，内容被裁剪 | 弹窗宽度必须用 `computed(() => Math.min(600, windowWidth - 32))`，同时设置 `:max-height="'90vh'"`。FunctionDescriptionCard 和 OperationGuideDrawer 已内置此逻辑 |
+| M2 | DataGrid 使用固定高度或未禁止内部滚动 | 手机页面出现双滚动条（布局 DxScrollView + DataGrid 内滚动） | 移动端 DataGrid 必须 `height: auto`，通过 CSS `overflow: hidden` 禁止内部滚动 |
+| M3 | 工具栏显示超过 2 个按钮 | 375px 下按钮挤压变形或换行混乱 | 移动端工具栏最多 2 个按钮，其余使用 DxDropDownButton("更多") 收纳 |
+| M4 | 搜索区域不支持折叠 | 搜索条件占满屏幕，用户看不到数据 | 搜索区域必须支持折叠（showAdvanced toggle），默认仅显示基础搜索 |
+| M5 | 未设置列隐藏优先级（hiding-priority） | 移动端 DataGrid 出现横向滚动条 | 所有非核心列必须设置 `hiding-priority`，核心列（名称、状态、操作）永不隐藏 |
+| M6 | 页面出现横向滚动 | 移动端体验极差，用户误触横滑 | 页面容器 + DataGrid 都必须 `overflow-x: hidden` |
+| M7 | Header Toolbar 的 DxList 模板缺少 `@item-click` | 移动端 toolbar 溢出菜单中的用户菜单（退出登录等）点击无反应 | `menuUserItem` 模板的 DxList 必须绑定 `@item-click` 处理函数 |
+
+---
+
+## 十、缺陷回写路径
 
 发现反模式后，不要只修代码，还要按下表回写：
 
@@ -111,11 +125,12 @@
 | 执行状态丢失 | `11-delivery-workflow.md` |
 | GitHub 队列不合理 | `12-github-automation-workflow.md` |
 | API 类型/网络问题 | `03-anti-patterns.md` 第八节 |
+| 移动端适配问题 | `03-anti-patterns.md` 第九节 + `0050_common-components-standard.md` 第十一节 |
 
 ---
 
 ## 版本
 
-- 版本：2.1
-- 更新日期：2026-04-15
-- 更新重点：新增 API 类型与网络反模式（N1-N4：跨模块 DTO 类型不匹配、批量操作防重复、按钮锁定、跨模块 API 依赖声明）
+- 版本：2.2
+- 更新日期：2026-04-16
+- 更新重点：新增移动端适配反模式（M1-M7：弹窗固定宽度、双滚动、工具栏溢出、搜索折叠、列隐藏优先级、横向滚动、Header DxList 缺 click handler）

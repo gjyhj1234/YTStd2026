@@ -118,4 +118,11 @@ watch(
 .layout-header {
   z-index: 1505;
 }
+
+/* Mobile: hide footer to save vertical space */
+@media (max-width: 768px) {
+  .side-nav-outer-toolbar .content-block:has(.footer) {
+    display: none;
+  }
+}
 </style>

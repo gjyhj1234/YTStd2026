@@ -66,6 +66,7 @@
           display-expr="text"
           key-expr="id"
           :width="150"
+          @item-click="onUserMenuItemClick"
         />
       </template>
 

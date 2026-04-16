@@ -9,10 +9,11 @@
     <DxPopup
       :visible="visible"
       :title="$t('操作指南')"
-      :width="600"
+      :width="popupWidth"
       :height="'auto'"
+      :max-height="'90vh'"
       :show-close-button="true"
-      :drag-enabled="true"
+      :drag-enabled="!isSmallScreen"
       @hiding="onClose"
     >
       <template #content>
@@ -27,6 +28,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { DxButton } from 'devextreme-vue/button'
 import { DxPopup } from 'devextreme-vue/popup'
 import DxScrollView from 'devextreme-vue/scroll-view'
@@ -38,6 +40,24 @@ defineProps<{
 const emit = defineEmits<{
   (e: 'update:visible', value: boolean): void
 }>()
+
+const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1280)
+const popupWidth = computed(() => Math.min(600, windowWidth.value - 32))
+const isSmallScreen = computed(() => windowWidth.value < 768)
+
+function onWindowResize(): void { windowWidth.value = window.innerWidth }
+
+onMounted(() => {
+  if (typeof window !== 'undefined') {
+    window.addEventListener('resize', onWindowResize)
+  }
+})
+
+onUnmounted(() => {
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('resize', onWindowResize)
+  }
+})
 
 function onToggle() {
   emit('update:visible', true)
