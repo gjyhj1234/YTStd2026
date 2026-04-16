@@ -475,9 +475,6 @@ const batchOperating = ref(false)
 // Responsive popup widths (adapt to mobile screens)
 const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1280)
 function onWindowResize(): void { windowWidth.value = window.innerWidth }
-if (typeof window !== 'undefined') {
-  window.addEventListener('resize', onWindowResize)
-}
 const isMobile = computed(() => windowWidth.value < 768)
 const popupWidth = computed(() => isMobile.value ? windowWidth.value : Math.min(600, windowWidth.value - 32))
 const popupWidthSmall = computed(() => isMobile.value ? windowWidth.value : Math.min(500, windowWidth.value - 32))
@@ -863,6 +860,9 @@ async function loadRoles(): Promise<void> {
 }
 
 onMounted(() => {
+  if (typeof window !== 'undefined') {
+    window.addEventListener('resize', onWindowResize)
+  }
   loadRoles()
 })
 
