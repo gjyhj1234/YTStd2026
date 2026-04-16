@@ -6,6 +6,7 @@ namespace YTStdTenantPlatform.Entity.TenantPlatform;
 /// <summary>租户</summary>
 [Entity(TableName = "sys_tenant", NeedAuditTable = true)]
 [Index("uq_sys_tenant_tenant_code", "tenant_code", Kind = IndexKind.Unique)]
+[Index("idx_sys_tenant_group_id", "group_id")]
 public class Tenant
 {
     /// <summary>主键</summary>
