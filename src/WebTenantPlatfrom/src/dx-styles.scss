@@ -83,3 +83,20 @@ $side-panel-min-width: 60px;
   }
 }
 
+.dx-visibility-change-handler
+{
+  .dx-label-v-align{
+    display: flex;
+    flex-direction: row;
+    height: 25px;
+    padding-top: 3px 3px;
+    .dx-field-item-label-location-top{
+      line-height: 25px;
+      min-height: 25px;
+    }
+    .dx-field-item-content{
+      line-height: 25px;
+      min-height: 25px;
+    }
+  }
+}

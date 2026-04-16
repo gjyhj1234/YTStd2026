@@ -189,14 +189,14 @@
       />
 
       <DxColumn data-field="Id" :caption="$t('ID')" :width="80" :allow-sorting="false" :hiding-priority="0" />
-      <DxColumn data-field="Username" :caption="$t('用户名')" :allow-sorting="true" />
+      <DxColumn data-field="Username" :caption="$t('用户名')" :allow-sorting="true" :hiding-priority="1" />
       <DxColumn data-field="DisplayName" :caption="$t('显示名')" :allow-sorting="false" />
       <DxColumn data-field="Email" :caption="$t('邮箱')" :allow-sorting="false" :hiding-priority="2" />
-      <DxColumn data-field="Phone" :caption="$t('手机')" :width="130" :allow-sorting="false" :hiding-priority="1" />
-      <DxColumn data-field="RoleNames" :caption="$t('角色')" :allow-sorting="false" cell-template="rolesCell" :hiding-priority="3" />
-      <DxColumn data-field="Status" :caption="$t('状态')" :width="100" :allow-sorting="false" cell-template="statusCell" />
-      <DxColumn data-field="CreatedAt" :caption="$t('创建时间')" :width="180" :allow-sorting="true" cell-template="dateCell" :hiding-priority="4" />
-      <DxColumn :caption="$t('操作')" :width="200" :allow-sorting="false" cell-template="actionCell" />
+      <DxColumn data-field="Phone" :caption="$t('手机')" :width="130" :allow-sorting="false" :hiding-priority="3" />
+      <DxColumn data-field="RoleNames" :caption="$t('角色')" :allow-sorting="false" cell-template="rolesCell" :hiding-priority="4" />
+      <DxColumn data-field="Status" :caption="$t('状态')" :width="100" :allow-sorting="false" cell-template="statusCell"  :hiding-priority="5"/>
+      <DxColumn data-field="CreatedAt" :caption="$t('创建时间')" :width="180" :allow-sorting="true" cell-template="dateCell" :hiding-priority="6" />
+      <DxColumn :caption="$t('操作')" :width="200" :allow-sorting="false" cell-template="actionCell" :hiding-priority="7" />
 
       <template #rolesCell="{ data: cellData }">
         <span class="role-tags">{{ (cellData.data.RoleNames || []).join(', ') || '-' }}</span>
