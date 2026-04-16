@@ -43,7 +43,11 @@
 </div>
 ```
 
-### 1.3 内容要求
+### 1.3 弹窗响应式宽度（已内置）
+
+两个组件的弹窗已内置响应式宽度：`Math.min(600, windowWidth - 32)`，在 375px 手机屏幕上自动适配为 343px。同时设置 `max-height: 90vh`，小屏幕下禁用拖拽。**不需要在业务页面额外处理弹窗宽度。**
+
+### 1.4 内容要求
 
 - **功能说明**必须包含：功能用途、字段含义说明、使用场景说明
 - **操作指引**必须包含：分步骤操作流程，覆盖完整使用路径
@@ -403,9 +407,53 @@ const dataSource = new CustomStore({
 
 ---
 
-## 十一、移动端适配规范（DxDataGrid + 页面布局）
+## 十一、移动端适配规范（单滚动 + 页面布局）
 
-### 11.1 DxDataGrid 自适应列隐藏
+> **核心原则：手机页面只允许一个滚动容器（body / DxScrollView），禁止双滚动。**
+
+### 11.0 移动端页面结构（强制）
+
+手机模式下页面必须遵循以下结构，不允许偏离：
+
+```
+Header（固定） → Search（可折叠） → Toolbar（最多 2 按钮） → Content（DataGrid height:auto）
+Footer 隐藏
+```
+
+- 整个页面仅有布局层的 `DxScrollView` 作为唯一滚动容器
+- DataGrid 禁止内部滚动（`height: auto`，CSS `overflow: hidden`）
+- 页面容器禁止横向滚动（`overflow-x: hidden`）
+- Footer 在移动端隐藏
+
+### 11.1 DxDataGrid 禁止内部滚动（移动端）
+
+在移动端，DataGrid 必须使用 `height: auto` + 标准滚动模式，禁止产生自身滚动条：
+
+```css
+@media (max-width: 768px) {
+  /* DataGrid: prevent internal scrolling, let page scroll handle it */
+  :deep(.dx-datagrid) {
+    height: auto !important;
+    overflow: hidden;
+  }
+
+  :deep(.dx-datagrid-rowsview) {
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  /* Prevent horizontal scroll */
+  :deep(.dx-datagrid-content) {
+    overflow-x: hidden !important;
+  }
+
+  :deep(.dx-scrollable-wrapper) {
+    overflow-x: hidden !important;
+  }
+}
+```
+
+### 11.2 DxDataGrid 自适应列隐藏（hiding-priority）
 
 在移动端（窄屏）下，DxDataGrid 不应出现横向滚动条。必须启用 `column-hiding-enabled`，并为不重要的列设置 `hiding-priority`：
 
@@ -432,7 +480,62 @@ const dataSource = new CustomStore({
 - **优先隐藏**：ID 列、辅助信息列（邮箱、手机、描述）
 - **较后隐藏**：时间列、角色列
 
-### 11.2 页面容器 padding
+### 11.3 搜索区域必须支持折叠
+
+搜索区域必须提供折叠/展开功能，移动端默认仅显示基础搜索字段，高级搜索区域可折叠：
+
+```vue
+<DxButton
+  :text="showAdvanced ? $t('收起') : $t('高级查询')"
+  :icon="showAdvanced ? 'chevronup' : 'chevrondown'"
+  styling-mode="text"
+  @click="showAdvanced = !showAdvanced"
+/>
+```
+
+### 11.4 工具栏最多显示 2 个按钮，其余进入"更多"
+
+移动端工具栏最多直接显示 2 个按钮（如"新增" + 一个常用操作），超出的操作使用 `DxDropDownButton`（"更多"）收纳：
+
+```vue
+<!-- Desktop: show all buttons directly -->
+<template v-if="!isMobile">
+  <DxButton :text="$t('批量启用')" ... />
+  <DxButton :text="$t('批量禁用')" ... />
+</template>
+<!-- Mobile: overflow into "more" dropdown -->
+<DxDropDownButton
+  v-if="isMobile && toolbarOverflowItems.length > 0"
+  :text="$t('更多')"
+  icon="overflow"
+  styling-mode="outlined"
+  :items="toolbarOverflowItems"
+  display-expr="text"
+  key-expr="id"
+  :drop-down-options="{ width: 160 }"
+  @item-click="onToolbarOverflowClick"
+/>
+```
+
+```typescript
+// 移动端判断
+const isMobile = computed(() => windowWidth.value < 768)
+```
+
+### 11.5 禁止横向滚动
+
+页面容器和 DataGrid 都必须禁止横向滚动：
+
+```css
+@media (max-width: 768px) {
+  .page-container {
+    padding: 8px;
+    overflow-x: hidden;
+  }
+}
+```
+
+### 11.6 页面容器 padding
 
 桌面端 padding 16px，移动端 8px：
 
@@ -448,7 +551,7 @@ const dataSource = new CustomStore({
 }
 ```
 
-### 11.3 搜索区域移动端适配
+### 11.7 搜索区域移动端适配
 
 ```css
 @media (max-width: 768px) {
@@ -457,22 +560,36 @@ const dataSource = new CustomStore({
   }
 
   .search-row {
+    flex-direction: column;
     gap: 8px;
   }
 
   .search-field {
-    flex: 1;
-    min-width: 120px;
+    width: 100%;
+    min-width: 0;
   }
 
   .search-field :deep(.dx-textbox),
-  .search-field :deep(.dx-selectbox) {
+  .search-field :deep(.dx-selectbox),
+  .search-field :deep(.dx-daterangebox) {
     width: 100% !important;
   }
 }
 ```
 
-### 11.4 DxDataGrid 隐藏列数据查看
+### 11.8 隐藏 Footer
+
+移动端隐藏 Footer 节省垂直空间，在布局层 `side-nav-outer-toolbar.vue` 中处理：
+
+```css
+@media (max-width: 768px) {
+  .side-nav-outer-toolbar .content-block:has(.footer) {
+    display: none;
+  }
+}
+```
+
+### 11.9 DxDataGrid 隐藏列数据查看
 
 被隐藏的列数据可通过点击行末尾的省略号按钮展开「自适应详情行」查看，这是 DevExtreme 内置功能，无需额外开发。
 
@@ -548,8 +665,10 @@ const dataSource = new CustomStore({
 
 ## 版本
 
-- 版本：1.1
+- 版本：1.2
 - 创建日期：2026-04-14
-- 更新日期：2026-04-15
-- 更新内容：新增第十、十一、十二节（页面标题规范、移动端适配规范、权限分配弹窗规范更新）
+- 更新日期：2026-04-16
+- 更新内容：
+  - v1.2: 新增 §1.3 弹窗响应式宽度规范；重写 §十一 移动端适配规范（单滚动容器、DataGrid 禁内滚、工具栏溢出、禁止横向滚动、隐藏 Footer）
+  - v1.1: 新增第十、十一、十二节（页面标题规范、移动端适配规范、权限分配弹窗规范更新）
 - 用途：定义平台前端通用组件与交互规范，确保后续所有模块统一复用
