@@ -78,6 +78,12 @@ public class PlatformUser
 - 必须使用业务语义化命名：`TenantRefId`、`OwnerTenantId`、`SourceTenantId`
 - 原因：框架会把裸 `TenantId` 识别为租户业务分区字段
 
+### 数组字段（long[]）使用约束
+
+- **一对多关系禁止使用数组字段**：父表不允许用 `long[]` 存储子表 ID 集合。必须在子表上添加逻辑外键 + 排序索引
+- **多对多关系优先使用中间关联表**：仅当关联集合元素极少（< 20）、变更极低频、无反向查询需求时，方可考虑 `long[]`
+- 详见 `.ai/rules/database.md` 中的"关系建模规范"
+
 ---
 
 ## 应用服务规范
