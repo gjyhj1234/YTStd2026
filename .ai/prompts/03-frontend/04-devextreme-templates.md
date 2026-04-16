@@ -53,6 +53,7 @@
 | 空态文案 | ✅ | 启用 | `no-data-text` |
 | 加载面板 | ✅ | 启用 | `DxLoadPanel` |
 | 行操作列布局 | ✅ | 直显前 2 个 + 更多下拉 | 对应 `0050` 规范 |
+| **禁止显示 ID 列** | ✅ | **禁止** | **ID 是系统内部字段，禁止在界面上以 DxColumn 形式显示。DxDataGrid、DxTreeList 均适用。详情弹窗同样不可展示 ID。** |
 
 ### 3.1 DataGrid 业务提示词写法模板
 
@@ -97,9 +98,11 @@
 | ------ | --------- | ------ |
 | 标题 | ✅ | 标题文案必须国际化 |
 | 尺寸 | ✅ | `width` / `height` / `fullScreen` |
-| 响应式宽度 | ✅ | 移动端必须使用 `computed(() => Math.min(maxWidth, windowWidth - 32))`，禁止固定 `:width="600"` |
-| 最大高度 | ✅ | 弹窗必须设置 `:max-height="'90vh'"`，防止内容溢出屏幕 |
-| 拖拽 | ✅ | 小屏幕（<768px）禁用 `:drag-enabled="!isSmallScreen"` |
+| 响应式宽度 | ✅ | 移动端必须使用 `computed(() => isMobile.value ? windowWidth.value : Math.min(maxWidth, windowWidth.value - 32))`，禁止固定 `:width="600"` |
+| 移动端全屏 | ✅ | 移动端（<768px）弹窗必须使用 `width: windowWidth`、`height: '100vh'`、`max-height: '100vh'`，确保内容不被裁剪 |
+| 桌面端最大高度 | ✅ | 桌面端弹窗必须设置 `:max-height="'90vh'"`，防止内容溢出屏幕 |
+| 拖拽 | ✅ | 小屏幕（<768px）禁用 `:drag-enabled="!isMobile"` |
+| 关闭按钮 | ✅ | 所有弹窗**必须**设置 `:show-close-button="true"`，移动端全屏弹窗尤为重要 |
 | 内容插槽 | ✅ | 必须声明使用 `template #content` |
 | 关闭方式 | ✅ | 关闭按钮、遮罩点击、ESC 是否允许 |
 | unsaved 行为 | ✅ | 表单有未保存内容时是否提醒 |
@@ -147,6 +150,6 @@
 
 ## 九、版本
 
-- 版本：2.1
+- 版本：2.2
 - 更新日期：2026-04-16
-- 更新重点：§五 DxPopup 能力矩阵新增响应式宽度、最大高度、拖拽禁用声明（修复 375px 弹窗溢出）
+- 更新重点：§三 DxDataGrid 能力矩阵新增「禁止显示 ID 列」规则；§五 DxPopup 能力矩阵新增移动端全屏、关闭按钮强制规则

@@ -188,7 +188,6 @@
         :show-navigation-buttons="true"
       />
 
-      <DxColumn data-field="Id" :caption="$t('ID')" :width="80" :allow-sorting="false" :hiding-priority="0" />
       <DxColumn data-field="Username" :caption="$t('用户名')" :allow-sorting="true" :hiding-priority="1" />
       <DxColumn data-field="DisplayName" :caption="$t('显示名')" :allow-sorting="false" />
       <DxColumn data-field="Email" :caption="$t('邮箱')" :allow-sorting="false" :hiding-priority="2" />
@@ -247,9 +246,10 @@
       :visible="formDialogVisible"
       :title="isEditing ? $t('编辑用户') : $t('新增用户')"
       :width="popupWidth"
-      :height="'auto'"
+      :height="popupHeight"
+      :max-height="popupMaxHeight"
       :show-close-button="true"
-      :drag-enabled="true"
+      :drag-enabled="!isMobile"
       @hiding="onFormDialogHiding"
     >
       <template #content>
@@ -321,16 +321,13 @@
       :visible="detailDialogVisible"
       :title="$t('用户详情')"
       :width="popupWidthSmall"
-      :height="'auto'"
+      :height="popupHeight"
+      :max-height="popupMaxHeight"
       :show-close-button="true"
       @hiding="detailDialogVisible = false"
     >
       <template #content>
         <div v-if="detailData" class="detail-content">
-          <div class="detail-row">
-            <span class="detail-label">{{ $t('ID') }}</span>
-            <span class="detail-value">{{ detailData.Id }}</span>
-          </div>
           <div class="detail-row">
             <span class="detail-label">{{ $t('用户名') }}</span>
             <span class="detail-value">{{ detailData.Username }}</span>
@@ -378,7 +375,8 @@
       :visible="resetPwdResultVisible"
       :title="$t('重置密码成功')"
       :width="popupWidthSmall"
-      :height="'auto'"
+      :height="popupHeight"
+      :max-height="popupMaxHeight"
       :show-close-button="true"
       @hiding="resetPwdResultVisible = false"
     >
@@ -477,12 +475,11 @@ const batchOperating = ref(false)
 // Responsive popup widths (adapt to mobile screens)
 const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1280)
 function onWindowResize(): void { windowWidth.value = window.innerWidth }
-if (typeof window !== 'undefined') {
-  window.addEventListener('resize', onWindowResize)
-}
-const popupWidth = computed(() => Math.min(600, windowWidth.value - 20))
-const popupWidthSmall = computed(() => Math.min(500, windowWidth.value - 20))
 const isMobile = computed(() => windowWidth.value < 768)
+const popupWidth = computed(() => isMobile.value ? windowWidth.value : Math.min(600, windowWidth.value - 32))
+const popupWidthSmall = computed(() => isMobile.value ? windowWidth.value : Math.min(500, windowWidth.value - 32))
+const popupHeight = computed(() => isMobile.value ? '100vh' : 'auto')
+const popupMaxHeight = computed(() => isMobile.value ? '100vh' : '90vh')
 
 // Reactive status options using computed (fixes i18n switch issue)
 const statusOptionsComputed = computed(() => [
@@ -863,6 +860,9 @@ async function loadRoles(): Promise<void> {
 }
 
 onMounted(() => {
+  if (typeof window !== 'undefined') {
+    window.addEventListener('resize', onWindowResize)
+  }
   loadRoles()
 })
 

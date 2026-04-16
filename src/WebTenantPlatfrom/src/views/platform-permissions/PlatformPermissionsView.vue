@@ -38,7 +38,6 @@
       :hover-state-enabled="true"
       :no-data-text="$t('暂无权限数据')"
     >
-      <DxColumn data-field="Id" :caption="$t('ID')" :width="80" />
       <DxColumn data-field="Code" :caption="$t('权限编码')" />
       <DxColumn data-field="Name" :caption="$t('权限名称')" />
       <DxColumn data-field="PermissionType" :caption="$t('权限类型')" :width="120" cell-template="typeCell" />

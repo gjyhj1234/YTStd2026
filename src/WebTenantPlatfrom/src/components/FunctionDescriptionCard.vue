@@ -10,8 +10,8 @@
       :visible="visible"
       :title="$t('功能说明')"
       :width="popupWidth"
-      :height="'auto'"
-      :max-height="'90vh'"
+      :height="popupHeight"
+      :max-height="popupMaxHeight"
       :show-close-button="true"
       :drag-enabled="!isSmallScreen"
       @hiding="onClose"
@@ -42,8 +42,10 @@ const emit = defineEmits<{
 }>()
 
 const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1280)
-const popupWidth = computed(() => Math.min(600, windowWidth.value - 32))
 const isSmallScreen = computed(() => windowWidth.value < 768)
+const popupWidth = computed(() => isSmallScreen.value ? windowWidth.value : Math.min(600, windowWidth.value - 32))
+const popupHeight = computed(() => isSmallScreen.value ? '100vh' : 'auto')
+const popupMaxHeight = computed(() => isSmallScreen.value ? '100vh' : '90vh')
 
 function onWindowResize(): void { windowWidth.value = window.innerWidth }
 
