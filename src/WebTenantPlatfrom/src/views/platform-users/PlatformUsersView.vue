@@ -126,21 +126,36 @@
               type="default"
               @click="openCreateDialog"
             />
-            <DxButton
-              v-if="authStore.hasPermission(PLATFORM_USER_ENABLE)"
-              :text="$t('批量启用')"
-              icon="check"
+            <!-- Desktop: show batch buttons directly -->
+            <template v-if="!isMobile">
+              <DxButton
+                v-if="authStore.hasPermission(PLATFORM_USER_ENABLE)"
+                :text="$t('批量启用')"
+                icon="check"
+                styling-mode="outlined"
+                :disabled="selectedRowKeys.length === 0 || batchOperating"
+                @click="onBatchEnable"
+              />
+              <DxButton
+                v-if="authStore.hasPermission(PLATFORM_USER_DISABLE)"
+                :text="$t('批量禁用')"
+                icon="close"
+                styling-mode="outlined"
+                :disabled="selectedRowKeys.length === 0 || batchOperating"
+                @click="onBatchDisable"
+              />
+            </template>
+            <!-- Mobile: overflow into "more" dropdown -->
+            <DxDropDownButton
+              v-if="isMobile && toolbarOverflowItems.length > 0"
+              :text="$t('更多')"
+              icon="overflow"
               styling-mode="outlined"
-              :disabled="selectedRowKeys.length === 0 || batchOperating"
-              @click="onBatchEnable"
-            />
-            <DxButton
-              v-if="authStore.hasPermission(PLATFORM_USER_DISABLE)"
-              :text="$t('批量禁用')"
-              icon="close"
-              styling-mode="outlined"
-              :disabled="selectedRowKeys.length === 0 || batchOperating"
-              @click="onBatchDisable"
+              :items="toolbarOverflowItems"
+              display-expr="text"
+              key-expr="id"
+              :drop-down-options="{ width: 160 }"
+              @item-click="onToolbarOverflowClick"
             />
           </div>
         </template>
@@ -467,6 +482,7 @@ if (typeof window !== 'undefined') {
 }
 const popupWidth = computed(() => Math.min(600, windowWidth.value - 20))
 const popupWidthSmall = computed(() => Math.min(500, windowWidth.value - 20))
+const isMobile = computed(() => windowWidth.value < 768)
 
 // Reactive status options using computed (fixes i18n switch issue)
 const statusOptionsComputed = computed(() => [
@@ -491,6 +507,36 @@ const roleValidationRules = computed(() => [{
   validationCallback: (e: { value: unknown }) => Array.isArray(e.value) && e.value.length > 0,
   message: t('请选择至少一个角色')
 }])
+
+// Mobile toolbar overflow: batch actions go into "more" dropdown
+const toolbarOverflowItems = computed(() => {
+  const items: Array<{ id: string; text: string; icon: string; disabled: boolean }> = []
+  if (authStore.hasPermission(PLATFORM_USER_ENABLE)) {
+    items.push({
+      id: 'batch-enable',
+      text: t('批量启用'),
+      icon: 'check',
+      disabled: selectedRowKeys.value.length === 0 || batchOperating.value
+    })
+  }
+  if (authStore.hasPermission(PLATFORM_USER_DISABLE)) {
+    items.push({
+      id: 'batch-disable',
+      text: t('批量禁用'),
+      icon: 'close',
+      disabled: selectedRowKeys.value.length === 0 || batchOperating.value
+    })
+  }
+  return items
+})
+
+function onToolbarOverflowClick(e: { itemData: { id: string } }): void {
+  if (e.itemData.id === 'batch-enable') {
+    onBatchEnable()
+  } else if (e.itemData.id === 'batch-disable') {
+    onBatchDisable()
+  }
+}
 
 // CustomStore for remote paging
 const dataSource = new CustomStore({
@@ -988,6 +1034,7 @@ onUnmounted(() => {
 @media (max-width: 768px) {
   .platform-users-page {
     padding: 8px;
+    overflow-x: hidden;
   }
 
   .page-title {
@@ -1033,6 +1080,26 @@ onUnmounted(() => {
 
   .action-buttons :deep(.dx-button .dx-button-text) {
     font-size: 12px;
+  }
+
+  /* DataGrid: prevent internal scrolling, let page scroll handle it */
+  :deep(.dx-datagrid) {
+    height: auto !important;
+    overflow: hidden;
+  }
+
+  :deep(.dx-datagrid-rowsview) {
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  /* Prevent horizontal scroll */
+  :deep(.dx-datagrid-content) {
+    overflow-x: hidden !important;
+  }
+
+  :deep(.dx-scrollable-wrapper) {
+    overflow-x: hidden !important;
   }
 }
 </style>
