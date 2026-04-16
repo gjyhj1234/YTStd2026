@@ -26,6 +26,9 @@ public class TenantGroup
     /// <summary>父级分组 ID</summary>
     public long? ParentId { get; set; }
 
+    /// <summary>分组中的租户 ID 数组（PostgreSQL bigint[]，替代中间表）</summary>
+    public long[]? TenantRefIds { get; set; }
+
     /// <summary>创建人</summary>
     public long? CreatedBy { get; set; }
 

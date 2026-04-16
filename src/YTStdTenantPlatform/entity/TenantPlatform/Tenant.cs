@@ -111,6 +111,9 @@ public class Tenant
     /// <summary>删除时间</summary>
     public DateTime? DeletedAt { get; set; }
 
+    /// <summary>关联标签 ID 数组（PostgreSQL bigint[]，替代中间表）</summary>
+    public long[]? TagIds { get; set; }
+
     /// <summary>创建人</summary>
     public long? CreatedBy { get; set; }
 

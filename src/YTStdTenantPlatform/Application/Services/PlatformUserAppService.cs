@@ -24,8 +24,6 @@ namespace YTStdTenantPlatform.Application.Services
             if (!queryResult.Success || data == null)
                 return new PagedResult<PlatformUserRepDTO> { Page = request.NormalizedPage, PageSize = request.NormalizedPageSize };
 
-            // Load all role members for building user-role mapping
-            var (rmResult, rmData) = await PlatformRoleMemberCRUD.GetListAsync(tenantId, operatorId);
             // Load all roles for role name mapping
             var (rolesResult, rolesData) = await PlatformRoleCRUD.GetListAsync(tenantId, operatorId);
 
@@ -37,29 +35,23 @@ namespace YTStdTenantPlatform.Application.Services
                     roleNameMap[r.Id] = r.Name;
             }
 
-            // Build user→role mapping
-            var userRoleMap = new Dictionary<long, List<long>>();
-            if (rmResult.Success && rmData != null)
-            {
-                foreach (var rm in rmData)
-                {
-                    if (!userRoleMap.ContainsKey(rm.UserId))
-                        userRoleMap[rm.UserId] = new List<long>();
-                    userRoleMap[rm.UserId].Add(rm.RoleId);
-                }
-            }
-
-            // Load role members if RoleId filter is specified
+            // Filter by RoleId if specified (using PlatformUser.RoleIds array)
             HashSet<long>? roleUserIds = null;
             if (request.RoleId.HasValue)
             {
                 roleUserIds = new HashSet<long>();
-                if (rmResult.Success && rmData != null)
+                foreach (var u in data)
                 {
-                    foreach (var rm in rmData)
+                    if (u.RoleIds != null)
                     {
-                        if (rm.RoleId == request.RoleId.Value)
-                            roleUserIds.Add(rm.UserId);
+                        for (int i = 0; i < u.RoleIds.Length; i++)
+                        {
+                            if (u.RoleIds[i] == request.RoleId.Value)
+                            {
+                                roleUserIds.Add(u.Id);
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -70,15 +62,15 @@ namespace YTStdTenantPlatform.Application.Services
             foreach (var u in paged)
             {
                 var dto = MapToDto(u);
-                // Attach role info
-                if (userRoleMap.ContainsKey(u.Id))
+                // Attach role info from PlatformUser.RoleIds array
+                if (u.RoleIds != null && u.RoleIds.Length > 0)
                 {
-                    dto.RoleIds = userRoleMap[u.Id];
+                    dto.RoleIds = new List<long>(u.RoleIds);
                     dto.RoleNames = new List<string>();
-                    foreach (var rId in userRoleMap[u.Id])
+                    for (int i = 0; i < u.RoleIds.Length; i++)
                     {
-                        if (roleNameMap.ContainsKey(rId))
-                            dto.RoleNames.Add(roleNameMap[rId]);
+                        if (roleNameMap.ContainsKey(u.RoleIds[i]))
+                            dto.RoleNames.Add(roleNameMap[u.RoleIds[i]]);
                     }
                 }
                 items.Add(dto);
@@ -147,6 +139,7 @@ namespace YTStdTenantPlatform.Application.Services
                 PasswordSalt = salt,
                 Status = (int)PlatformUserStatus.Active,
                 MfaEnabled = false,
+                RoleIds = req.RoleIds,
                 Remark = req.Remark,
                 CreatedAt = now,
                 UpdatedAt = now
@@ -173,22 +166,8 @@ namespace YTStdTenantPlatform.Application.Services
 
             Logger.Info(tenantId, operatorId, "[PlatformUserAppService] 创建用户: " + req.Username);
 
-            // 绑定角色（如果有传入 RoleIds）
             if (req.RoleIds != null && req.RoleIds.Length > 0)
             {
-                var now2 = DateTime.UtcNow;
-                foreach (var roleId in req.RoleIds)
-                {
-                    var rm = new PlatformRoleMember
-                    {
-                        Id = await DB.GetNextLongIdAsync(),
-                        RoleId = roleId,
-                        UserId = user.Id,
-                        AssignedBy = operatorId,
-                        AssignedAt = now2
-                    };
-                    await PlatformRoleMemberCRUD.InsertAsync(tenantId, operatorId, rm);
-                }
                 await PlatformCacheCoordinator.InvalidateUserRolesAsync();
             }
 
@@ -216,41 +195,20 @@ namespace YTStdTenantPlatform.Application.Services
             if (req.Remark != null) target.Remark = req.Remark;
             target.UpdatedAt = DateTime.UtcNow;
 
+            // 更新角色绑定（如果有传入 RoleIds，直接写入数组字段）
+            if (req.RoleIds != null)
+            {
+                target.RoleIds = req.RoleIds;
+            }
+
             var updResult = await PlatformUserCRUD.UpdateAsync(tenantId, operatorId, target);
             if (!updResult.Success)
                 return ApiResult.Fail(ErrorCodes.UserUpdateFailed);
 
             Logger.Info(tenantId, operatorId, "[PlatformUserAppService] 更新用户: " + target.Username);
 
-            // 绑定角色（如果有传入 RoleIds）
             if (req.RoleIds != null)
             {
-                // 先清除该用户现有的所有角色绑定
-                var (rmResult, rmData) = await PlatformRoleMemberCRUD.GetListAsync(tenantId, operatorId);
-                if (rmResult.Success && rmData != null)
-                {
-                    foreach (var rm in rmData)
-                    {
-                        if (rm.UserId == id)
-                        {
-                            await PlatformRoleMemberCRUD.DeleteAsync(tenantId, operatorId, rm.Id);
-                        }
-                    }
-                }
-                // 插入新的角色绑定
-                var now2 = DateTime.UtcNow;
-                foreach (var roleId in req.RoleIds)
-                {
-                    var rm = new PlatformRoleMember
-                    {
-                        Id = await DB.GetNextLongIdAsync(),
-                        RoleId = roleId,
-                        UserId = id,
-                        AssignedBy = operatorId,
-                        AssignedAt = now2
-                    };
-                    await PlatformRoleMemberCRUD.InsertAsync(tenantId, operatorId, rm);
-                }
                 await PlatformCacheCoordinator.InvalidateUserRolesAsync();
             }
 

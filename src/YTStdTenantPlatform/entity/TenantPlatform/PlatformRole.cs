@@ -27,6 +27,9 @@ public class PlatformRole
     [Column(DbType = "smallint", IsRequired = true)]
     public int Status { get; set; }
 
+    /// <summary>角色关联的权限 ID 数组（PostgreSQL bigint[]，替代中间表）</summary>
+    public long[]? PermissionIds { get; set; }
+
     /// <summary>创建人</summary>
     public long? CreatedBy { get; set; }
 

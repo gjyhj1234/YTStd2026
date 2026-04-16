@@ -81,30 +81,15 @@ namespace YTStdTenantPlatform.Infrastructure.Cache
             }
         }
 
-        /// <summary>预热角色-权限缓存</summary>
+        /// <summary>预热角色-权限缓存（从 PlatformRole.PermissionIds 数组字段读取）</summary>
         public static async ValueTask WarmUpRolePermissionsAsync(int tenantId, long userId)
         {
-            var (rpResult, rpData) = await PlatformRolePermissionCRUD.GetListAsync(tenantId, userId);
-            if (!rpResult.Success || rpData == null) return;
-
             var (roleResult, roleData) = await PlatformRoleCRUD.GetListAsync(tenantId, userId);
             if (!roleResult.Success || roleData == null) return;
 
             var permCache = _permissionCache;
             var dict = new Dictionary<long, IReadOnlyList<string>>();
             var roleCodeDict = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
-
-            // 先收集每个 RoleId 的 PermissionId 列表
-            var rolePermIds = new Dictionary<long, List<long>>();
-            foreach (var rp in rpData)
-            {
-                if (!rolePermIds.TryGetValue(rp.RoleId, out var list))
-                {
-                    list = new List<long>();
-                    rolePermIds[rp.RoleId] = list;
-                }
-                list.Add(rp.PermissionId);
-            }
 
             // 需要 Id→Code 反查
             var idToCode = new Dictionary<long, string>();
@@ -113,27 +98,21 @@ namespace YTStdTenantPlatform.Infrastructure.Cache
                 idToCode[kvp.Value.Id] = kvp.Key;
             }
 
-            var roleIdToCode = new Dictionary<long, string>();
             foreach (var role in roleData)
             {
-                roleIdToCode[role.Id] = role.Code;
-            }
+                if (role.PermissionIds == null || role.PermissionIds.Length == 0)
+                    continue;
 
-            foreach (var kvp in rolePermIds)
-            {
-                var codes = new List<string>(kvp.Value.Count);
-                foreach (var permId in kvp.Value)
+                var codes = new List<string>(role.PermissionIds.Length);
+                for (int i = 0; i < role.PermissionIds.Length; i++)
                 {
-                    if (idToCode.TryGetValue(permId, out var code))
+                    if (idToCode.TryGetValue(role.PermissionIds[i], out var code))
                     {
                         codes.Add(code);
                     }
                 }
-                dict[kvp.Key] = codes;
-                if (roleIdToCode.TryGetValue(kvp.Key, out var roleCode))
-                {
-                    roleCodeDict[roleCode] = codes;
-                }
+                dict[role.Id] = codes;
+                roleCodeDict[role.Code] = codes;
             }
 
             _rolePermissionCache = dict;
@@ -142,11 +121,11 @@ namespace YTStdTenantPlatform.Infrastructure.Cache
                 "[PlatformCacheWarmer] 角色-权限缓存已加载, 角色数=" + dict.Count);
         }
 
-        /// <summary>预热用户-角色缓存</summary>
+        /// <summary>预热用户-角色缓存（从 PlatformUser.RoleIds 数组字段读取）</summary>
         public static async ValueTask WarmUpUserRolesAsync(int tenantId, long userId)
         {
-            var (rmResult, rmData) = await PlatformRoleMemberCRUD.GetListAsync(tenantId, userId);
-            if (!rmResult.Success || rmData == null) return;
+            var (usersResult, usersData) = await PlatformUserCRUD.GetListAsync(tenantId, userId);
+            if (!usersResult.Success || usersData == null) return;
 
             var (roleResult, roleData) = await PlatformRoleCRUD.GetListAsync(tenantId, userId);
             if (!roleResult.Success || roleData == null) return;
@@ -158,28 +137,20 @@ namespace YTStdTenantPlatform.Infrastructure.Cache
             }
 
             var dict = new Dictionary<long, IReadOnlyList<string>>();
-            var userRoleIds = new Dictionary<long, List<long>>();
-            foreach (var rm in rmData)
+            foreach (var u in usersData)
             {
-                if (!userRoleIds.TryGetValue(rm.UserId, out var list))
-                {
-                    list = new List<long>();
-                    userRoleIds[rm.UserId] = list;
-                }
-                list.Add(rm.RoleId);
-            }
+                if (u.RoleIds == null || u.RoleIds.Length == 0)
+                    continue;
 
-            foreach (var kvp in userRoleIds)
-            {
-                var codes = new List<string>(kvp.Value.Count);
-                foreach (var roleId in kvp.Value)
+                var codes = new List<string>(u.RoleIds.Length);
+                for (int i = 0; i < u.RoleIds.Length; i++)
                 {
-                    if (roleIdToCode.TryGetValue(roleId, out var code))
+                    if (roleIdToCode.TryGetValue(u.RoleIds[i], out var code))
                     {
                         codes.Add(code);
                     }
                 }
-                dict[kvp.Key] = codes;
+                dict[u.Id] = codes;
             }
 
             _userRoleCache = dict;
