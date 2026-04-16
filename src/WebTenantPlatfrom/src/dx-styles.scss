@@ -57,11 +57,10 @@ $side-panel-min-width: 60px;
     border-left: 0;
   }
 
-  .with-footer > .dx-scrollable-wrapper >
-  .dx-scrollable-container > .dx-scrollable-content {
+  .with-footer>.dx-scrollable-wrapper>.dx-scrollable-container>.dx-scrollable-content {
     height: 100%;
 
-    & > .dx-scrollview-content {
+    &>.dx-scrollview-content {
       display: flex;
       flex-direction: column;
       min-height: 100%;
@@ -76,6 +75,7 @@ $side-panel-min-width: 60px;
 
 .dx-theme-fluent {
   .dx-drawer-wrapper {
+
     .dx-drawer-panel-content,
     .dx-overlay-content {
       box-shadow: 0 4px 4px 0 var(--shadow-color-first), 0 1px 2px 0 var(--shadow-color-second);
@@ -83,20 +83,23 @@ $side-panel-min-width: 60px;
   }
 }
 
-.dx-visibility-change-handler
-{
-  .dx-label-v-align{
-    display: flex;
-    flex-direction: row;
-    height: 25px;
-    padding-top: 3px 3px;
-    .dx-field-item-label-location-top{
-      line-height: 25px;
-      min-height: 25px;
-    }
-    .dx-field-item-content{
-      line-height: 25px;
-      min-height: 25px;
+.dx-visibility-change-handler {
+  &:not(div.dx-popup-content *) {
+    .dx-label-v-align {
+      display: flex;
+      flex-direction: row;
+      height: 25px;
+      padding-top: 3px 3px;
+
+      .dx-field-item-label-location-top {
+        line-height: 25px;
+        min-height: 25px;
+      }
+
+      .dx-field-item-content {
+        line-height: 25px;
+        min-height: 25px;
+      }
     }
   }
 }
