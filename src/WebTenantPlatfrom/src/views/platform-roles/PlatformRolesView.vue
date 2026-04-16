@@ -116,7 +116,6 @@
         :show-navigation-buttons="true"
       />
 
-      <DxColumn data-field="Id" :caption="$t('ID')" :width="80" :allow-sorting="false" :hiding-priority="0" />
       <DxColumn data-field="Code" :caption="$t('角色编码')" :allow-sorting="true" />
       <DxColumn data-field="Name" :caption="$t('角色名称')" :allow-sorting="true" />
       <DxColumn data-field="Description" :caption="$t('描述')" :allow-sorting="false" :hiding-priority="1" />
@@ -168,10 +167,11 @@
     <DxPopup
       :visible="formDialogVisible"
       :title="isEditing ? $t('编辑角色') : $t('新增角色')"
-      :width="600"
-      :height="'auto'"
+      :width="popupWidth"
+      :height="popupHeight"
+      :max-height="popupMaxHeight"
       :show-close-button="true"
-      :drag-enabled="true"
+      :drag-enabled="!isMobile"
       @hiding="onFormDialogHiding"
     >
       <template #content>
@@ -218,17 +218,14 @@
     <DxPopup
       :visible="detailDialogVisible"
       :title="$t('角色详情')"
-      :width="500"
-      :height="'auto'"
+      :width="popupWidthSmall"
+      :height="popupHeight"
+      :max-height="popupMaxHeight"
       :show-close-button="true"
       @hiding="detailDialogVisible = false"
     >
       <template #content>
         <div v-if="detailData" class="detail-content">
-          <div class="detail-row">
-            <span class="detail-label">{{ $t('ID') }}</span>
-            <span class="detail-value">{{ detailData.Id }}</span>
-          </div>
           <div class="detail-row">
             <span class="detail-label">{{ $t('角色编码') }}</span>
             <span class="detail-value">{{ detailData.Code }}</span>
@@ -259,10 +256,11 @@
     <DxPopup
       :visible="permDialogVisible"
       :title="$t('分配权限')"
-      :width="800"
-      :height="'auto'"
-      :max-height="'90vh'"
+      :width="popupWidthLarge"
+      :height="popupHeight"
+      :max-height="popupMaxHeight"
       :show-close-button="true"
+      :drag-enabled="!isMobile"
       @hiding="permDialogVisible = false"
     >
       <template #content>
@@ -278,8 +276,8 @@
               @click="applyPermTemplate(tpl.id)"
             />
           </div>
-          <!-- Search & Count -->
-          <div class="perm-toolbar">
+          <!-- Search & Count (single row) -->
+          <div class="perm-search-row">
             <DxTextBox
               v-model:value="permSearchText"
               :placeholder="$t('搜索权限')"
@@ -325,9 +323,11 @@
     <DxPopup
       :visible="memberDialogVisible"
       :title="$t('分配成员')"
-      :width="800"
-      :height="600"
+      :width="popupWidthLarge"
+      :height="popupHeight"
+      :max-height="popupMaxHeight"
       :show-close-button="true"
+      :drag-enabled="!isMobile"
       @hiding="memberDialogVisible = false"
     >
       <template #content>
@@ -353,7 +353,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CustomStore from 'devextreme/data/custom_store'
 import type { LoadOptions } from 'devextreme/data'
@@ -418,6 +418,21 @@ import type { PlatformUserRepDTO } from '../../types/platform-users'
 
 const { t } = useI18n()
 const authStore = useAuthStore()
+
+// Responsive popup widths
+const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1280)
+function onWindowResize(): void { windowWidth.value = window.innerWidth }
+if (typeof window !== 'undefined') {
+  window.addEventListener('resize', onWindowResize)
+}
+onMounted(() => { windowWidth.value = window.innerWidth })
+onUnmounted(() => { window.removeEventListener('resize', onWindowResize) })
+const isMobile = computed(() => windowWidth.value < 768)
+const popupWidth = computed(() => isMobile.value ? windowWidth.value : Math.min(600, windowWidth.value - 32))
+const popupWidthSmall = computed(() => isMobile.value ? windowWidth.value : Math.min(500, windowWidth.value - 32))
+const popupWidthLarge = computed(() => isMobile.value ? windowWidth.value : Math.min(960, windowWidth.value - 32))
+const popupHeight = computed(() => isMobile.value ? '100vh' : 'auto')
+const popupMaxHeight = computed(() => isMobile.value ? '100vh' : '90vh')
 
 const pageLoading = ref(false)
 const showDescription = ref(false)
@@ -786,13 +801,27 @@ function togglePermFilter(): void {
 function onPermTreeSelectionChanged(): void {
   if (!permTreeRef.value?.instance) return
   const nodes = permTreeRef.value.instance.getSelectedNodes()
-  const keys: Array<string | number> = []
-  nodes.forEach((node: { itemData?: { Id?: string | number } }) => {
+  const newKeys: Array<string | number> = []
+  for (const node of nodes) {
     if (node.itemData && node.itemData.Id) {
-      keys.push(node.itemData.Id)
+      newKeys.push(node.itemData.Id)
     }
-  })
-  selectedPermKeys.value = keys
+  }
+  // Only update reactive state if selection actually changed to avoid
+  // unnecessary re-renders that reset TreeView expand/collapse state
+  const oldKeys = selectedPermKeys.value
+  if (newKeys.length === oldKeys.length) {
+    const oldSet = new Set(oldKeys)
+    let same = true
+    for (const k of newKeys) {
+      if (!oldSet.has(k)) {
+        same = false
+        break
+      }
+    }
+    if (same) return
+  }
+  selectedPermKeys.value = newKeys
 }
 
 async function onSavePermissions(): Promise<void> {
@@ -994,7 +1023,7 @@ function formatDateTime(value: string): string {
 .perm-dialog-content {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .perm-templates {
@@ -1009,10 +1038,11 @@ function formatDateTime(value: string): string {
   color: var(--base-text-color-alpha-5);
 }
 
-.perm-toolbar {
+.perm-search-row {
   display: flex;
   align-items: center;
   gap: 16px;
+  flex-wrap: wrap;
 }
 
 .perm-count {

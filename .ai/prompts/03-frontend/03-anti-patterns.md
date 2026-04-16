@@ -26,6 +26,9 @@
 | D4 | 使用了 DataGrid，但没有声明排序、列宽、分页、列隐藏、固定列 | 页面“能用但不好用”，且模块间能力不一致 | 每个业务提示词都必须填写 DataGrid 能力矩阵 |
 | D5 | 侧边栏 `DxTreeView` 选中态引起布局偏移 | 菜单点击后错位 | 参考 dxdocs + CSS 覆盖方案 |
 | D6 | 弹窗/抽屉只实现 happy path，不考虑空态、加载态、关闭行为 | 交互不完整 | Popup/Drawer 必须写清 visible、close、loading、unsaved 行为 |
+| D7 | 在 DxDataGrid / DxTreeList / 详情弹窗中显示 ID 字段 | ID 是系统内部字段，用户不应看到 | 禁止在列表、树、详情弹窗中展示 ID 字段。`key-expr="Id"` 可保留但不渲染为 DxColumn |
+| D8 | 弹窗在移动端使用固定宽度而非全屏 | 小屏设备内容溢出或显示不全 | 移动端（<768px）弹窗必须使用 `width: windowWidth`、`height: '100vh'`，同时确保关闭按钮可见 |
+| D9 | DxTreeView `selection-changed` 处理函数每次都更新 reactive 状态 | 展开/收起节点时触发不必要的 Vue 重渲染，导致树状态重置（展开后无法收起） | 必须先比较新旧选中 key 集合，仅在选中项实际变化时才更新 reactive ref |
 
 ---
 

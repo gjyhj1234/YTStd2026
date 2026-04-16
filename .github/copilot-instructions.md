@@ -323,3 +323,41 @@ curl -s http://localhost:5173/
 ### 23. 批量操作必须禁用重复请求防护并锁定按钮
 
 批量操作 API 必须传 `{ preventDuplicate: false }` 防止 axios 拦截器 abort 前一个请求。同时必须用 `batchOperating` ref 在操作期间 disabled 按钮，防止用户连续点击。
+
+### 24. DxDataGrid / DxTreeList / DxForm 禁止显示 ID 字段（零容忍）
+
+ID 是系统内部使用的字段，**禁止在界面上以任何形式展示给用户**。具体要求：
+
+```vue
+<!-- ❌ 错误 — 禁止在列表中显示 ID 列 -->
+<DxColumn data-field="Id" :caption="$t('ID')" :width="80" />
+
+<!-- ❌ 错误 — 禁止在详情弹窗中展示 ID -->
+<div class="detail-row">
+  <span class="detail-label">{{ $t('ID') }}</span>
+  <span class="detail-value">{{ detailData.Id }}</span>
+</div>
+
+<!-- ✅ 正确 — key-expr 可以使用 Id，但不在界面上渲染 -->
+<DxDataGrid key-expr="Id" ... >
+  <DxColumn data-field="Code" ... />  <!-- 第一列是业务编码，不是 ID -->
+</DxDataGrid>
+```
+
+**此规则适用于所有 DxDataGrid、DxTreeList、DxForm 详情弹窗。任何新建的页面都禁止添加 ID 列或 ID 展示行。**
+
+### 25. 移动端弹窗必须全屏显示并保留关闭按钮
+
+```typescript
+// ✅ 正确 — 移动端弹窗铺满屏幕
+const isMobile = computed(() => windowWidth.value < 768)
+const popupWidth = computed(() => isMobile.value ? windowWidth.value : Math.min(600, windowWidth.value - 32))
+const popupHeight = computed(() => isMobile.value ? '100vh' : 'auto')
+const popupMaxHeight = computed(() => isMobile.value ? '100vh' : '90vh')
+
+// ❌ 错误 — 固定宽度在移动端会导致显示不全
+:width="600"
+:height="'auto'"
+```
+
+**所有 DxPopup 在移动端必须使用全屏宽高，同时 `:show-close-button="true"` 确保用户可以关闭弹窗。**
