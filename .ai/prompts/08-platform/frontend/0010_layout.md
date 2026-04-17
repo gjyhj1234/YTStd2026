@@ -192,6 +192,8 @@ export function getNavigationItems(t: (key: string) => string): NavigationItem[]
 
 菜单数据通过 `authStore.hasAnyPermission()` 按权限过滤后传给 `side-navigation-menu.vue`。
 
+> **⚠️ 超级管理员权限旁路（零容忍）**：`store/auth.ts` 中的 `hasPermission()` 和 `hasAnyPermission()` 必须先检查 `user.IsSuperAdmin`，若为 true 则直接返回 true，与后端 `CurrentUser.HasPermission` 逻辑一致。否则超级管理员登录后侧边栏菜单全部消失（后端不为超管分配具体权限码，`Permissions` 数组为空）。`CurrentUser` 接口必须包含 `IsSuperAdmin: boolean` 字段，登录时从 `LoginRepDTO.IsSuperAdmin` 赋值。
+
 ### 2.3 顶栏工具条定制（header-toolbar.vue）
 
 Application Template 的 `header-toolbar.vue` 使用 `DxToolbar` + `DxItem` 组织顶栏。本项目需要在标准模板基础上扩展以下自定义项：
