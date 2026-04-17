@@ -24,21 +24,23 @@ setup('authenticate as admin', async ({ page, request }) => {
 
   // 2. 导航到页面并注入 Token 和用户信息到 localStorage
   await page.goto('/')
-  await page.evaluate((loginData: { Token: string; UserId: number; Username: string; DisplayName: string; Permissions: string[] }) => {
+  await page.evaluate((loginData: { Token: string; UserId: number; Username: string; DisplayName: string; Permissions: string[]; IsSuperAdmin: boolean }) => {
     localStorage.setItem('auth_token', loginData.Token)
     localStorage.setItem('auth_user', JSON.stringify({
       Id: loginData.UserId,
       Username: loginData.Username,
       DisplayName: loginData.DisplayName,
       Email: '',
-      Permissions: loginData.Permissions
+      Permissions: loginData.Permissions,
+      IsSuperAdmin: loginData.IsSuperAdmin
     }))
   }, {
     Token: result.Data.Token,
     UserId: result.Data.UserId,
     Username: result.Data.Username,
     DisplayName: result.Data.DisplayName,
-    Permissions: result.Data.Permissions || []
+    Permissions: result.Data.Permissions || [],
+    IsSuperAdmin: result.Data.IsSuperAdmin ?? false
   })
 
   // 3. Reload page to ensure Pinia store initializes from localStorage
