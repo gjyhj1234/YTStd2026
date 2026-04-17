@@ -61,6 +61,9 @@ public class PlatformUser
     [Column(ColumnName = "is_mfa_enabled")]
     public bool MfaEnabled { get; set; }
 
+    /// <summary>用户关联的角色 ID 数组（PostgreSQL bigint[]，替代中间表）</summary>
+    public long[]? RoleIds { get; set; }
+
     /// <summary>备注</summary>
     public string? Remark { get; set; }
 

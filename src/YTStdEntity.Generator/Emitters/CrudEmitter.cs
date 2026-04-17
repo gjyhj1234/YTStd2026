@@ -62,6 +62,12 @@ internal static class CrudEmitter
         EmitIndexMethods(sb, model);
         sb.AppendLine();
         EmitGetListAsync(sb, model);
+        sb.AppendLine();
+        EmitGetCountAsync(sb, model);
+        sb.AppendLine();
+        EmitGetPagedListAsync(sb, model);
+        sb.AppendLine();
+        EmitColumnNameMap(sb, model);
 
         sb.AppendLine("    }");
         sb.AppendLine("}");
@@ -740,9 +746,26 @@ internal static class CrudEmitter
             else
             {
                 EmitNormalIndexMethod(sb, model, index, indexColumns);
+                sb.AppendLine();
+                EmitIndexPagedMethod(sb, model, index, indexColumns);
             }
 
             emitted = true;
+        }
+
+        // Emit prefix-based ordered index methods for composite indexes
+        for (int i = 0; i < model.Indexes.Count; i++)
+        {
+            var index = model.Indexes[i];
+            if (index.Columns.Length < 2)
+                continue;
+            var indexColumns = ResolveIndexColumns(model, index);
+            if (indexColumns.Count < 2)
+                continue;
+
+            // Generate method for querying by first column of composite index
+            sb.AppendLine();
+            EmitIndexPrefixMethod(sb, model, index, indexColumns);
         }
     }
 
@@ -974,5 +997,315 @@ internal static class CrudEmitter
         if (camel == "tenantId" || camel == "userId" || camel == "id" || camel == "batch" || camel == "columns")
             return "field_" + camel;
         return camel;
+    }
+
+    /// <summary>为非唯一索引生成分页查询方法</summary>
+    private static void EmitIndexPagedMethod(StringBuilder sb, EntityModel model, IndexModel index, List<ColumnModel> indexColumns)
+    {
+        var cn = model.ClassName;
+        var tn = model.TableName;
+        var methodName = GetIndexMethodName(index.IndexName) + "_Paged";
+        var whereClause = BuildIndexWhereClause(indexColumns);
+
+        sb.AppendLine($"        /// <summary>按索引 {index.IndexName} 分页查询 {cn} 列表，支持多字段排序</summary>");
+        sb.AppendLine($"        public static async ValueTask<(DbUdqResult Result, List<{cn}>? Data, long Total)> {methodName}(");
+        sb.AppendLine("            int tenantId, long userId,");
+        for (int i = 0; i < indexColumns.Count; i++)
+        {
+            var col = indexColumns[i];
+            sb.AppendLine($"            {GetMethodParameterType(col)} {ToCamelCase(col.PropertyName)},");
+        }
+        sb.AppendLine("            int offset, int limit,");
+        sb.AppendLine("            (string Column, bool Descending)[]? sortFields = null)");
+        sb.AppendLine("        {");
+        sb.AppendLine($"            Logger.Debug(tenantId, userId, () => $\"[{cn}CRUD.{methodName}] 进入方法, offset={{offset}}, limit={{limit}}\");");
+        sb.AppendLine();
+
+        // Count
+        sb.AppendLine($"            var countSql = \"SELECT COUNT(*) FROM \\\"{tn}\\\" WHERE {whereClause}\";");
+        sb.AppendLine();
+        EmitIndexParameters(sb, indexColumns, "            ", "parameters");
+        sb.AppendLine();
+
+        sb.AppendLine("            try");
+        sb.AppendLine("            {");
+        sb.AppendLine("                var countResult = await DB.GetScalarAsync<long>(countSql, parameters, tenantId, userId);");
+        sb.AppendLine("                long total = countResult.Success ? countResult.Value : 0L;");
+        sb.AppendLine("                if (total == 0)");
+        sb.AppendLine("                {");
+        sb.AppendLine($"                    return (new DbUdqResult {{ Success = true }}, new List<{cn}>(), 0);");
+        sb.AppendLine("                }");
+        sb.AppendLine();
+
+        sb.AppendLine("                var orderClause = BuildOrderByClause(sortFields);");
+        sb.AppendLine($"                var sql = \"SELECT \" +");
+        EmitSelectColumnList(sb, model.Columns, "                    ");
+        sb.AppendLine($"                    \"FROM \\\"{tn}\\\" WHERE {whereClause} \" +");
+        sb.AppendLine("                    orderClause +");
+        sb.AppendLine($"                    \" LIMIT \" + limit + \" OFFSET \" + offset;");
+        sb.AppendLine();
+
+        sb.AppendLine($"                var (result, data) = await DB.GetListAsync<{cn}>(");
+        sb.AppendLine($"                    sql, parameters, ReadEntity, tenantId, userId);");
+        sb.AppendLine($"                Logger.Debug(tenantId, userId, () => $\"[{cn}CRUD.{methodName}] 完成, total={{total}}, 记录数={{data?.Count ?? 0}}\");");
+        sb.AppendLine("                return (result, data, total);");
+        sb.AppendLine("            }");
+        sb.AppendLine("            catch (Exception ex)");
+        sb.AppendLine("            {");
+        sb.AppendLine($"                Logger.Error(tenantId, userId, $\"[{cn}CRUD.{methodName}] 异常: {{ex}}\");");
+        sb.AppendLine("                throw;");
+        sb.AppendLine("            }");
+        sb.AppendLine("        }");
+    }
+
+    /// <summary>为复合索引生成按第一列查询的方法（前缀索引查询）</summary>
+    private static void EmitIndexPrefixMethod(StringBuilder sb, EntityModel model, IndexModel index, List<ColumnModel> indexColumns)
+    {
+        var cn = model.ClassName;
+        var tn = model.TableName;
+        var firstCol = indexColumns[0];
+        var methodName = GetIndexMethodName(index.IndexName) + "_ByFirst";
+
+        sb.AppendLine($"        /// <summary>按索引 {index.IndexName} 的首列 {firstCol.PropertyName} 查询 {cn} 列表（利用复合索引前缀）</summary>");
+        sb.AppendLine($"        public static async ValueTask<List<{cn}>?> {methodName}(");
+        sb.AppendLine($"            int tenantId, long userId,");
+        sb.AppendLine($"            {GetMethodParameterType(firstCol)} {ToCamelCase(firstCol.PropertyName)},");
+        sb.AppendLine("            params string[] columns)");
+        sb.AppendLine("        {");
+        sb.AppendLine($"            Logger.Debug(tenantId, userId, () => $\"[{cn}CRUD.{methodName}] 进入方法\");");
+        sb.AppendLine();
+
+        var firstColWhere = "\\\"" + firstCol.ColumnName + "\\\" = @" + firstCol.ColumnName;
+
+        sb.AppendLine("            if (columns == null || columns.Length == 0)");
+        sb.AppendLine("            {");
+        sb.AppendLine("                const string sql =");
+        sb.AppendLine("                    \"SELECT \" +");
+        EmitSelectColumnList(sb, model.Columns, "                    ");
+        sb.AppendLine($"                    \"FROM \\\"{tn}\\\" WHERE {firstColWhere}\";");
+        sb.AppendLine();
+        EmitIndexParameters(sb, new List<ColumnModel> { firstCol }, "                ", "parameters");
+        sb.AppendLine();
+        sb.AppendLine("                try");
+        sb.AppendLine("                {");
+        sb.AppendLine($"                    var (result, data) = await DB.GetListAsync<{cn}>(sql, parameters, ReadEntity, tenantId, userId);");
+        sb.AppendLine($"                    Logger.Debug(tenantId, userId, () => $\"[{cn}CRUD.{methodName}] 完成, 记录数={{data?.Count ?? 0}}\");");
+        sb.AppendLine("                    return data;");
+        sb.AppendLine("                }");
+        sb.AppendLine("                catch (Exception ex)");
+        sb.AppendLine("                {");
+        sb.AppendLine($"                    Logger.Error(tenantId, userId, $\"[{cn}CRUD.{methodName}] 异常: {{ex}}\");");
+        sb.AppendLine("                    throw;");
+        sb.AppendLine("                }");
+        sb.AppendLine("            }");
+        sb.AppendLine();
+        sb.AppendLine("            var quotedCols = new string[columns.Length];");
+        sb.AppendLine("            for (int i = 0; i < columns.Length; i++)");
+        sb.AppendLine("            {");
+        sb.AppendLine("                quotedCols[i] = \"\\\"\" + columns[i] + \"\\\"\";");
+        sb.AppendLine("            }");
+        sb.AppendLine();
+        sb.AppendLine($"            var partialSql = \"SELECT \" + string.Join(\", \", quotedCols) + \" FROM \\\"{tn}\\\" WHERE {firstColWhere}\";");
+        sb.AppendLine();
+        EmitIndexParameters(sb, new List<ColumnModel> { firstCol }, "            ", "partialParameters");
+        sb.AppendLine();
+        sb.AppendLine("            try");
+        sb.AppendLine("            {");
+        sb.AppendLine($"                var (result, data) = await DB.GetListAsync<{cn}>(partialSql, partialParameters, ReadEntityPartial, tenantId, userId);");
+        sb.AppendLine($"                Logger.Debug(tenantId, userId, () => $\"[{cn}CRUD.{methodName}] 完成, 记录数={{data?.Count ?? 0}}\");");
+        sb.AppendLine("                return data;");
+        sb.AppendLine("            }");
+        sb.AppendLine("            catch (Exception ex)");
+        sb.AppendLine("            {");
+        sb.AppendLine($"                Logger.Error(tenantId, userId, $\"[{cn}CRUD.{methodName}] 异常: {{ex}}\");");
+        sb.AppendLine("                throw;");
+        sb.AppendLine("            }");
+        sb.AppendLine("        }");
+    }
+
+    private static void EmitGetCountAsync(StringBuilder sb, EntityModel model)
+    {
+        var cn = model.ClassName;
+        var tn = model.TableName;
+
+        sb.AppendLine($"        /// <summary>查询 {cn} 总记录数</summary>");
+        sb.AppendLine($"        public static async ValueTask<long> GetCountAsync(");
+        sb.AppendLine($"            int tenantId, long userId)");
+        sb.AppendLine("        {");
+        sb.AppendLine($"            Logger.Debug(tenantId, userId, () => \"[{cn}CRUD.GetCountAsync] 进入方法\");");
+        sb.AppendLine();
+        sb.AppendLine($"            const string sql = \"SELECT COUNT(*) FROM \\\"{tn}\\\"\";");
+        sb.AppendLine();
+        sb.AppendLine("            try");
+        sb.AppendLine("            {");
+        sb.AppendLine("                var result = await DB.GetScalarAsync<long>(sql, System.Array.Empty<PgSqlParam>(), tenantId, userId);");
+        sb.AppendLine($"                Logger.Debug(tenantId, userId, () => $\"[{cn}CRUD.GetCountAsync] 完成, count={{result.Value}}\");");
+        sb.AppendLine("                return result.Success ? result.Value : 0L;");
+        sb.AppendLine("            }");
+        sb.AppendLine("            catch (Exception ex)");
+        sb.AppendLine("            {");
+        sb.AppendLine($"                Logger.Error(tenantId, userId, $\"[{cn}CRUD.GetCountAsync] 异常: {{ex}}\");");
+        sb.AppendLine("                throw;");
+        sb.AppendLine("            }");
+        sb.AppendLine("        }");
+    }
+
+    private static void EmitGetPagedListAsync(StringBuilder sb, EntityModel model)
+    {
+        var cn = model.ClassName;
+        var tn = model.TableName;
+        var pk = model.PrimaryKey;
+        var pkCol = pk != null ? pk.ColumnName : "id";
+
+        sb.AppendLine($"        /// <summary>");
+        sb.AppendLine($"        /// 分页查询 {cn} 列表，支持多字段排序。");
+        sb.AppendLine($"        /// sortFields 格式：(columnName, descending) 元组数组，按索引顺序排列。");
+        sb.AppendLine($"        /// 传入 null 或空数组时默认按主键升序。");
+        sb.AppendLine($"        /// </summary>");
+        sb.AppendLine($"        public static async ValueTask<(DbUdqResult Result, List<{cn}>? Data, long Total)> GetPagedListAsync(");
+        sb.AppendLine($"            int tenantId, long userId,");
+        sb.AppendLine($"            int offset, int limit,");
+        sb.AppendLine($"            (string Column, bool Descending)[]? sortFields = null)");
+        sb.AppendLine("        {");
+        sb.AppendLine($"            Logger.Debug(tenantId, userId, () => $\"[{cn}CRUD.GetPagedListAsync] 进入方法, offset={{offset}}, limit={{limit}}\");");
+        sb.AppendLine();
+
+        // Count query
+        sb.AppendLine($"            const string countSql = \"SELECT COUNT(*) FROM \\\"{tn}\\\"\";");
+        sb.AppendLine();
+        sb.AppendLine("            try");
+        sb.AppendLine("            {");
+        sb.AppendLine("                // 1. 查询总数");
+        sb.AppendLine("                var countResult = await DB.GetScalarAsync<long>(countSql, System.Array.Empty<PgSqlParam>(), tenantId, userId);");
+        sb.AppendLine("                long total = countResult.Success ? countResult.Value : 0L;");
+        sb.AppendLine("                if (total == 0)");
+        sb.AppendLine("                {");
+        sb.AppendLine($"                    Logger.Debug(tenantId, userId, () => \"[{cn}CRUD.GetPagedListAsync] 总数为0，跳过数据查询\");");
+        sb.AppendLine($"                    return (new DbUdqResult {{ Success = true }}, new List<{cn}>(), 0);");
+        sb.AppendLine("                }");
+        sb.AppendLine();
+
+        // Build ORDER BY
+        sb.AppendLine("                // 2. 构建排序和分页 SQL");
+        sb.AppendLine("                var orderClause = BuildOrderByClause(sortFields);");
+        sb.AppendLine($"                var sql = \"SELECT \" +");
+        EmitSelectColumnList(sb, model.Columns, "                    ");
+        sb.AppendLine($"                    \"FROM \\\"{tn}\\\" \" +");
+        sb.AppendLine("                    orderClause +");
+        sb.AppendLine($"                    \" LIMIT \" + limit + \" OFFSET \" + offset;");
+        sb.AppendLine();
+
+        // Execute query
+        sb.AppendLine("                // 3. 查询分页数据");
+        sb.AppendLine($"                var (result, data) = await DB.GetListAsync<{cn}>(");
+        sb.AppendLine($"                    sql, System.Array.Empty<PgSqlParam>(), ReadEntity, tenantId, userId);");
+        sb.AppendLine($"                Logger.Debug(tenantId, userId, () => $\"[{cn}CRUD.GetPagedListAsync] 完成, total={{total}}, 记录数={{data?.Count ?? 0}}\");");
+        sb.AppendLine("                return (result, data, total);");
+        sb.AppendLine("            }");
+        sb.AppendLine("            catch (Exception ex)");
+        sb.AppendLine("            {");
+        sb.AppendLine($"                Logger.Error(tenantId, userId, $\"[{cn}CRUD.GetPagedListAsync] 异常: {{ex}}\");");
+        sb.AppendLine("                throw;");
+        sb.AppendLine("            }");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+
+        // Emit overload with SQL WHERE condition
+        sb.AppendLine($"        /// <summary>");
+        sb.AppendLine($"        /// 分页查询 {cn} 列表（带 WHERE 条件），支持多字段排序。");
+        sb.AppendLine($"        /// whereClause 不含 WHERE 关键字（例如 \"\\\"status\\\" = @status\"）。");
+        sb.AppendLine($"        /// </summary>");
+        sb.AppendLine($"        public static async ValueTask<(DbUdqResult Result, List<{cn}>? Data, long Total)> GetPagedListAsync(");
+        sb.AppendLine($"            int tenantId, long userId,");
+        sb.AppendLine($"            int offset, int limit,");
+        sb.AppendLine($"            string whereClause, PgSqlParam[] parameters,");
+        sb.AppendLine($"            (string Column, bool Descending)[]? sortFields = null)");
+        sb.AppendLine("        {");
+        sb.AppendLine($"            Logger.Debug(tenantId, userId, () => $\"[{cn}CRUD.GetPagedListAsync(where)] 进入方法, offset={{offset}}, limit={{limit}}\");");
+        sb.AppendLine();
+
+        sb.AppendLine($"            var countSql = \"SELECT COUNT(*) FROM \\\"{tn}\\\" WHERE \" + whereClause;");
+        sb.AppendLine();
+        sb.AppendLine("            try");
+        sb.AppendLine("            {");
+        sb.AppendLine("                // 1. 查询满足条件的总数");
+        sb.AppendLine("                var countResult = await DB.GetScalarAsync<long>(countSql, parameters, tenantId, userId);");
+        sb.AppendLine("                long total = countResult.Success ? countResult.Value : 0L;");
+        sb.AppendLine("                if (total == 0)");
+        sb.AppendLine("                {");
+        sb.AppendLine($"                    Logger.Debug(tenantId, userId, () => \"[{cn}CRUD.GetPagedListAsync(where)] 总数为0，跳过数据查询\");");
+        sb.AppendLine($"                    return (new DbUdqResult {{ Success = true }}, new List<{cn}>(), 0);");
+        sb.AppendLine("                }");
+        sb.AppendLine();
+
+        sb.AppendLine("                // 2. 构建排序和分页 SQL");
+        sb.AppendLine("                var orderClause = BuildOrderByClause(sortFields);");
+        sb.AppendLine($"                var sql = \"SELECT \" +");
+        EmitSelectColumnList(sb, model.Columns, "                    ");
+        sb.AppendLine($"                    \"FROM \\\"{tn}\\\" WHERE \" + whereClause + \" \" +");
+        sb.AppendLine("                    orderClause +");
+        sb.AppendLine($"                    \" LIMIT \" + limit + \" OFFSET \" + offset;");
+        sb.AppendLine();
+
+        sb.AppendLine("                // 3. 查询分页数据");
+        sb.AppendLine($"                var (result, data) = await DB.GetListAsync<{cn}>(");
+        sb.AppendLine($"                    sql, parameters, ReadEntity, tenantId, userId);");
+        sb.AppendLine($"                Logger.Debug(tenantId, userId, () => $\"[{cn}CRUD.GetPagedListAsync(where)] 完成, total={{total}}, 记录数={{data?.Count ?? 0}}\");");
+        sb.AppendLine("                return (result, data, total);");
+        sb.AppendLine("            }");
+        sb.AppendLine("            catch (Exception ex)");
+        sb.AppendLine("            {");
+        sb.AppendLine($"                Logger.Error(tenantId, userId, $\"[{cn}CRUD.GetPagedListAsync(where)] 异常: {{ex}}\");");
+        sb.AppendLine("                throw;");
+        sb.AppendLine("            }");
+        sb.AppendLine("        }");
+    }
+
+    private static void EmitColumnNameMap(StringBuilder sb, EntityModel model)
+    {
+        var cn = model.ClassName;
+
+        sb.AppendLine($"        /// <summary>");
+        sb.AppendLine($"        /// {cn} 属性名到数据库列名的映射字典。");
+        sb.AppendLine($"        /// 用于排序时将前端传入的属性名转换为安全的数据库列名，防止 SQL 注入。");
+        sb.AppendLine($"        /// </summary>");
+        sb.AppendLine($"        public static readonly System.Collections.Generic.Dictionary<string, string> ColumnNameMap = new(System.StringComparer.OrdinalIgnoreCase)");
+        sb.AppendLine("        {");
+        for (int i = 0; i < model.Columns.Count; i++)
+        {
+            var col = model.Columns[i];
+            var sep = i < model.Columns.Count - 1 ? "," : "";
+            sb.AppendLine($"            {{ \"{col.PropertyName}\", \"{col.ColumnName}\" }}{sep}");
+        }
+        sb.AppendLine("        };");
+        sb.AppendLine();
+
+        // Static helper: build ORDER BY clause from sort fields with validation
+        sb.AppendLine($"        /// <summary>根据排序字段数组构建 ORDER BY 子句（含 SQL 注入防护）</summary>");
+        sb.AppendLine($"        private static string BuildOrderByClause((string Column, bool Descending)[]? sortFields)");
+        sb.AppendLine("        {");
+        sb.AppendLine("            if (sortFields == null || sortFields.Length == 0)");
+        sb.AppendLine("            {");
+        // Default sort: by PK ASC
+        sb.AppendLine($"                return \"ORDER BY \\\"{model.Columns[0].ColumnName}\\\" ASC\";");
+        sb.AppendLine("            }");
+        sb.AppendLine();
+        sb.AppendLine("            var parts = new System.Collections.Generic.List<string>(sortFields.Length);");
+        sb.AppendLine("            for (int i = 0; i < sortFields.Length; i++)");
+        sb.AppendLine("            {");
+        sb.AppendLine("                var field = sortFields[i];");
+        sb.AppendLine("                if (ColumnNameMap.TryGetValue(field.Column, out var dbCol))");
+        sb.AppendLine("                {");
+        sb.AppendLine("                    parts.Add(\"\\\"\" + dbCol + \"\\\" \" + (field.Descending ? \"DESC\" : \"ASC\"));");
+        sb.AppendLine("                }");
+        sb.AppendLine("            }");
+        sb.AppendLine();
+        sb.AppendLine("            if (parts.Count == 0)");
+        sb.AppendLine("            {");
+        sb.AppendLine($"                return \"ORDER BY \\\"{model.Columns[0].ColumnName}\\\" ASC\";");
+        sb.AppendLine("            }");
+        sb.AppendLine();
+        sb.AppendLine("            return \"ORDER BY \" + string.Join(\", \", parts);");
+        sb.AppendLine("        }");
     }
 }

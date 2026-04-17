@@ -34,6 +34,9 @@ public class TenantWebhook
     [Column(DbType = "jsonb")]
     public string? RetryPolicy { get; set; }
 
+    /// <summary>订阅的事件 ID 数组（PostgreSQL bigint[]，替代中间表）</summary>
+    public long[]? EventIds { get; set; }
+
     /// <summary>创建时间</summary>
     public DateTime CreatedAt { get; set; }
 

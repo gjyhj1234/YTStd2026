@@ -361,3 +361,25 @@ const popupMaxHeight = computed(() => isMobile.value ? '100vh' : '90vh')
 ```
 
 **所有 DxPopup 在移动端必须使用全屏宽高，同时 `:show-close-button="true"` 确保用户可以关闭弹窗。**
+
+### 26. 一对多关系禁止在父表使用 `long[]` 数组字段（零容忍）
+
+一对多关系中，**禁止**在父表使用 `long[]`（PostgreSQL `bigint[]`）数组字段存储子表 ID 集合。必须在子表添加逻辑外键 + 排序索引。
+
+```csharp
+// ❌ 错误 — 父表用数组存储子表 ID（数据膨胀、写放大）
+public class TenantGroup
+{
+    public long[]? TenantRefIds { get; set; }  // 禁止：数组太大且变更频繁
+}
+
+// ✅ 正确 — 子表添加逻辑外键 + 排序索引
+[Index("idx_sys_tenant_group_id", "group_id")]
+public class Tenant
+{
+    public long? GroupId { get; set; }  // 逻辑外键指向 TenantGroup.Id
+}
+// 查询：SELECT * FROM sys_tenant WHERE group_id = @groupId
+```
+
+**多对多关系**中，仅当关联集合元素极少（< 20）、变更极低频（配置级别）、无反向查询需求时方可使用 `long[]`，否则必须使用中间关联表。详见 `.ai/rules/database.md` 关系建模规范。

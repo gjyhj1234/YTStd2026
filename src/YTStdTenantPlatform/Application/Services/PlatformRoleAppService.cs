@@ -190,37 +190,23 @@ namespace YTStdTenantPlatform.Application.Services
             return ApiResult.Ok();
         }
 
-        /// <summary>角色授权（绑定权限）</summary>
+        /// <summary>角色授权（绑定权限 — 直接更新 PlatformRole.PermissionIds 数组字段）</summary>
         public static async ValueTask<ApiResult> BindPermissionsAsync(
             int tenantId, long operatorId, long roleId, RolePermissionBindReqDTO req)
         {
-            // 先清除该角色现有的所有权限绑定
-            var (existResult, existData) = await PlatformRolePermissionCRUD.GetListAsync(tenantId, operatorId);
-            if (existResult.Success && existData != null)
-            {
-                foreach (var rp in existData)
-                {
-                    if (rp.RoleId == roleId)
-                    {
-                        await PlatformRolePermissionCRUD.DeleteAsync(tenantId, operatorId, rp.Id);
-                    }
-                }
-            }
+            var (getResult, roles) = await PlatformRoleCRUD.GetListAsync(tenantId, operatorId);
+            if (!getResult.Success || roles == null) return ApiResult.Fail(ErrorCodes.RoleQueryFailed);
 
-            // 插入新的权限绑定
-            var now = DateTime.UtcNow;
-            foreach (var permId in req.PermissionIds)
-            {
-                var rp = new PlatformRolePermission
-                {
-                    Id = await DB.GetNextLongIdAsync(),
-                    RoleId = roleId,
-                    PermissionId = permId,
-                    GrantedBy = operatorId,
-                    GrantedAt = now
-                };
-                await PlatformRolePermissionCRUD.InsertAsync(tenantId, operatorId, rp);
-            }
+            PlatformRole? target = null;
+            foreach (var r in roles) { if (r.Id == roleId) { target = r; break; } }
+            if (target == null) return ApiResult.Fail(ErrorCodes.RoleNotFound);
+
+            target.PermissionIds = req.PermissionIds;
+            target.UpdatedBy = operatorId;
+            target.UpdatedAt = DateTime.UtcNow;
+
+            var updResult = await PlatformRoleCRUD.UpdateAsync(tenantId, operatorId, target);
+            if (!updResult.Success) return ApiResult.Fail(ErrorCodes.RoleUpdateFailed);
 
             await PlatformCacheCoordinator.InvalidatePermissionsAsync();
             Logger.Info(tenantId, operatorId,
@@ -228,36 +214,59 @@ namespace YTStdTenantPlatform.Application.Services
             return ApiResult.Ok();
         }
 
-        /// <summary>角色成员管理（绑定用户）</summary>
+        /// <summary>角色成员管理（绑定用户 — 批量更新 PlatformUser.RoleIds 数组字段）</summary>
         public static async ValueTask<ApiResult> BindMembersAsync(
             int tenantId, long operatorId, long roleId, RoleMemberBindReqDTO req)
         {
-            // 先清除该角色现有的所有成员绑定
-            var (existResult, existData) = await PlatformRoleMemberCRUD.GetListAsync(tenantId, operatorId);
-            if (existResult.Success && existData != null)
+            var (usersResult, usersData) = await PlatformUserCRUD.GetListAsync(tenantId, operatorId);
+            if (!usersResult.Success || usersData == null) return ApiResult.Fail(ErrorCodes.UserQueryFailed);
+
+            // 1. 先移除现有所有用户对该角色的绑定
+            foreach (var u in usersData)
             {
-                foreach (var rm in existData)
+                if (u.DeletedAt != null || u.RoleIds == null) continue;
+                bool hasRole = false;
+                for (int i = 0; i < u.RoleIds.Length; i++)
                 {
-                    if (rm.RoleId == roleId)
+                    if (u.RoleIds[i] == roleId) { hasRole = true; break; }
+                }
+                if (hasRole)
+                {
+                    var newRoleIds = new List<long>(u.RoleIds.Length);
+                    for (int i = 0; i < u.RoleIds.Length; i++)
                     {
-                        await PlatformRoleMemberCRUD.DeleteAsync(tenantId, operatorId, rm.Id);
+                        if (u.RoleIds[i] != roleId)
+                            newRoleIds.Add(u.RoleIds[i]);
                     }
+                    u.RoleIds = newRoleIds.Count > 0 ? newRoleIds.ToArray() : null;
+                    u.UpdatedAt = DateTime.UtcNow;
+                    await PlatformUserCRUD.UpdateAsync(tenantId, operatorId, u);
                 }
             }
 
-            // 插入新的成员绑定
-            var now = DateTime.UtcNow;
-            foreach (var userId in req.UserIds)
+            // 2. 为指定用户添加该角色
+            var userIdSet = new HashSet<long>(req.UserIds);
+            foreach (var u in usersData)
             {
-                var rm = new PlatformRoleMember
+                if (u.DeletedAt != null) continue;
+                if (!userIdSet.Contains(u.Id)) continue;
+
+                var existingRoles = u.RoleIds ?? Array.Empty<long>();
+                bool alreadyHas = false;
+                for (int i = 0; i < existingRoles.Length; i++)
                 {
-                    Id = await DB.GetNextLongIdAsync(),
-                    RoleId = roleId,
-                    UserId = userId,
-                    AssignedBy = operatorId,
-                    AssignedAt = now
-                };
-                await PlatformRoleMemberCRUD.InsertAsync(tenantId, operatorId, rm);
+                    if (existingRoles[i] == roleId) { alreadyHas = true; break; }
+                }
+                if (!alreadyHas)
+                {
+                    var newRoleIds = new long[existingRoles.Length + 1];
+                    for (int i = 0; i < existingRoles.Length; i++)
+                        newRoleIds[i] = existingRoles[i];
+                    newRoleIds[existingRoles.Length] = roleId;
+                    u.RoleIds = newRoleIds;
+                    u.UpdatedAt = DateTime.UtcNow;
+                    await PlatformUserCRUD.UpdateAsync(tenantId, operatorId, u);
+                }
             }
 
             await PlatformCacheCoordinator.InvalidateUserRolesAsync();
@@ -279,14 +288,18 @@ namespace YTStdTenantPlatform.Application.Services
             if (string.Equals(target.Code, "super-admin", StringComparison.OrdinalIgnoreCase))
                 return ApiResult.Fail(ErrorCodes.RoleCannotDeleteSuperAdmin);
 
-            // Check if role has associated users
-            var (rmResult, rmData) = await PlatformRoleMemberCRUD.GetListAsync(tenantId, operatorId);
-            if (rmResult.Success && rmData != null)
+            // Check if any user has this role (using PlatformUser.RoleIds array)
+            var (usersResult, usersData) = await PlatformUserCRUD.GetListAsync(tenantId, operatorId);
+            if (usersResult.Success && usersData != null)
             {
-                foreach (var rm in rmData)
+                foreach (var u in usersData)
                 {
-                    if (rm.RoleId == id)
-                        return ApiResult.Fail(ErrorCodes.RoleHasAssociatedUsers);
+                    if (u.DeletedAt != null || u.RoleIds == null) continue;
+                    for (int i = 0; i < u.RoleIds.Length; i++)
+                    {
+                        if (u.RoleIds[i] == id)
+                            return ApiResult.Fail(ErrorCodes.RoleHasAssociatedUsers);
+                    }
                 }
             }
 
@@ -298,32 +311,46 @@ namespace YTStdTenantPlatform.Application.Services
             return ApiResult.Ok();
         }
 
-        /// <summary>获取角色已绑定的权限 ID 列表</summary>
+        /// <summary>获取角色已绑定的权限 ID 列表（从 PlatformRole.PermissionIds 数组字段读取）</summary>
         public static async ValueTask<ApiResult<List<long>>> GetPermissionIdsAsync(int tenantId, long operatorId, long roleId)
         {
-            var (result, data) = await PlatformRolePermissionCRUD.GetListAsync(tenantId, operatorId);
+            var (result, data) = await PlatformRoleCRUD.GetListAsync(tenantId, operatorId);
             if (!result.Success || data == null) return ApiResult<List<long>>.Fail(ErrorCodes.RoleQueryFailed);
 
-            var ids = new List<long>();
-            foreach (var rp in data)
+            foreach (var r in data)
             {
-                if (rp.RoleId == roleId)
-                    ids.Add(rp.PermissionId);
+                if (r.Id == roleId)
+                {
+                    var ids = new List<long>();
+                    if (r.PermissionIds != null)
+                    {
+                        for (int i = 0; i < r.PermissionIds.Length; i++)
+                            ids.Add(r.PermissionIds[i]);
+                    }
+                    return ApiResult<List<long>>.Ok(ids);
+                }
             }
-            return ApiResult<List<long>>.Ok(ids);
+            return ApiResult<List<long>>.Ok(new List<long>());
         }
 
-        /// <summary>获取角色已绑定的用户 ID 列表</summary>
+        /// <summary>获取角色已绑定的用户 ID 列表（从 PlatformUser.RoleIds 数组字段反查）</summary>
         public static async ValueTask<ApiResult<List<long>>> GetMemberIdsAsync(int tenantId, long operatorId, long roleId)
         {
-            var (result, data) = await PlatformRoleMemberCRUD.GetListAsync(tenantId, operatorId);
+            var (result, data) = await PlatformUserCRUD.GetListAsync(tenantId, operatorId);
             if (!result.Success || data == null) return ApiResult<List<long>>.Fail(ErrorCodes.RoleQueryFailed);
 
             var ids = new List<long>();
-            foreach (var rm in data)
+            foreach (var u in data)
             {
-                if (rm.RoleId == roleId)
-                    ids.Add(rm.UserId);
+                if (u.DeletedAt != null || u.RoleIds == null) continue;
+                for (int i = 0; i < u.RoleIds.Length; i++)
+                {
+                    if (u.RoleIds[i] == roleId)
+                    {
+                        ids.Add(u.Id);
+                        break;
+                    }
+                }
             }
             return ApiResult<List<long>>.Ok(ids);
         }
