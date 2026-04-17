@@ -9,6 +9,15 @@ import { test as setup, expect } from '@playwright/test'
  * 默认管理员账号：admin / gjwq1234
  */
 
+interface LoginData {
+  Token: string
+  UserId: number
+  Username: string
+  DisplayName: string
+  Permissions: string[]
+  IsSuperAdmin: boolean
+}
+
 const AUTH_FILE = './e2e/.auth/user.json'
 
 setup('authenticate as admin', async ({ page, request }) => {
@@ -24,22 +33,24 @@ setup('authenticate as admin', async ({ page, request }) => {
 
   // 2. 导航到页面并注入 Token 和用户信息到 localStorage
   await page.goto('/')
-  await page.evaluate((loginData: { Token: string; UserId: number; Username: string; DisplayName: string; Permissions: string[] }) => {
+  await page.evaluate((loginData: LoginData) => {
     localStorage.setItem('auth_token', loginData.Token)
     localStorage.setItem('auth_user', JSON.stringify({
       Id: loginData.UserId,
       Username: loginData.Username,
       DisplayName: loginData.DisplayName,
       Email: '',
-      Permissions: loginData.Permissions
+      Permissions: loginData.Permissions,
+      IsSuperAdmin: loginData.IsSuperAdmin
     }))
   }, {
     Token: result.Data.Token,
     UserId: result.Data.UserId,
     Username: result.Data.Username,
     DisplayName: result.Data.DisplayName,
-    Permissions: result.Data.Permissions || []
-  })
+    Permissions: result.Data.Permissions || [],
+    IsSuperAdmin: result.Data.IsSuperAdmin ?? false
+  } as LoginData)
 
   // 3. Reload page to ensure Pinia store initializes from localStorage
   //    (hash navigation alone may not trigger a full app re-initialization)

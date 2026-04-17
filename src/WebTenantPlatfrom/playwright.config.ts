@@ -81,6 +81,7 @@ export default defineConfig({
         storageState: './e2e/.auth/user.json',
       },
       dependencies: ['auth-setup'],
+      testIgnore: /.*\.noauth\.spec\.ts/,
     },
     // 无需登录的测试（如登录页本身）
     {

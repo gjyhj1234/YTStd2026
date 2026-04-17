@@ -45,7 +45,8 @@ test('collapsed sidebar icons are centered', async ({ page, request }) => {
       Username: loginData.Username,
       DisplayName: loginData.DisplayName,
       Email: '',
-      Permissions: loginData.Permissions
+      Permissions: loginData.Permissions,
+      IsSuperAdmin: loginData.IsSuperAdmin
     }))
   }, result.Data)
   

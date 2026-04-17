@@ -121,12 +121,9 @@ namespace YTStdTenantPlatform.Infrastructure.Cache
                 "[PlatformCacheWarmer] 角色-权限缓存已加载, 角色数=" + dict.Count);
         }
 
-        /// <summary>预热用户-角色缓存（从 PlatformUser.RoleIds 数组字段读取）</summary>
+        /// <summary>预热用户-角色缓存（从 PlatformRoleMember 关联表读取）</summary>
         public static async ValueTask WarmUpUserRolesAsync(int tenantId, long userId)
         {
-            var (usersResult, usersData) = await PlatformUserCRUD.GetListAsync(tenantId, userId);
-            if (!usersResult.Success || usersData == null) return;
-
             var (roleResult, roleData) = await PlatformRoleCRUD.GetListAsync(tenantId, userId);
             if (!roleResult.Success || roleData == null) return;
 
@@ -136,26 +133,32 @@ namespace YTStdTenantPlatform.Infrastructure.Cache
                 roleIdToCode[r.Id] = r.Code;
             }
 
-            var dict = new Dictionary<long, IReadOnlyList<string>>();
-            foreach (var u in usersData)
+            var (rmResult, rmData) = await PlatformRoleMemberCRUD.GetListAsync(tenantId, userId);
+            if (!rmResult.Success || rmData == null) return;
+
+            var dict = new Dictionary<long, List<string>>();
+            foreach (var rm in rmData)
             {
-                if (u.RoleIds == null || u.RoleIds.Length == 0)
+                if (!roleIdToCode.TryGetValue(rm.RoleId, out var code))
                     continue;
 
-                var codes = new List<string>(u.RoleIds.Length);
-                for (int i = 0; i < u.RoleIds.Length; i++)
+                if (!dict.TryGetValue(rm.UserId, out var codes))
                 {
-                    if (roleIdToCode.TryGetValue(u.RoleIds[i], out var code))
-                    {
-                        codes.Add(code);
-                    }
+                    codes = new List<string>();
+                    dict[rm.UserId] = codes;
                 }
-                dict[u.Id] = codes;
+                codes.Add(code);
             }
 
-            _userRoleCache = dict;
+            var result = new Dictionary<long, IReadOnlyList<string>>(dict.Count);
+            foreach (var kvp in dict)
+            {
+                result[kvp.Key] = kvp.Value;
+            }
+
+            _userRoleCache = result;
             Logger.Info(tenantId, userId,
-                "[PlatformCacheWarmer] 用户-角色缓存已加载, 用户数=" + dict.Count);
+                "[PlatformCacheWarmer] 用户-角色缓存已加载, 用户数=" + result.Count);
         }
 
         /// <summary>预热功能开关缓存</summary>
