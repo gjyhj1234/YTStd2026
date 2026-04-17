@@ -327,7 +327,8 @@ async function onSubmit() {
       Username: data.Username,
       DisplayName: data.DisplayName,
       Email: '',
-      Permissions: data.Permissions
+      Permissions: data.Permissions,
+      IsSuperAdmin: data.IsSuperAdmin
     })
 
     // RequirePasswordReset 检查

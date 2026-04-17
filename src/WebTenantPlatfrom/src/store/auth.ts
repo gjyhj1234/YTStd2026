@@ -7,6 +7,7 @@ export interface CurrentUser {
   DisplayName: string
   Email: string
   Permissions: string[]
+  IsSuperAdmin: boolean
 }
 
 const USER_STORAGE_KEY = 'auth_user'
@@ -54,10 +55,12 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function hasPermission(code: string): boolean {
+    if (user.value?.IsSuperAdmin) return true
     return permissions.value.includes(code)
   }
 
   function hasAnyPermission(...codes: string[]): boolean {
+    if (user.value?.IsSuperAdmin) return true
     return codes.some(code => permissions.value.includes(code))
   }
 
